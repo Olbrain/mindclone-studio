@@ -1,183 +1,417 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mindclone Studio - Create Your Neural Ally</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindclone Studio - Your Personal AI Companion</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            max-height: 700px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 24px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 85%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .message.user .avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .message.assistant .avatar {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .message-content {
+            padding: 14px 18px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-content {
+            background: #f0f2f5;
+            color: #1a1a2e;
+            border-bottom-left-radius: 4px;
+        }
+
+        .input-container {
+            padding: 20px 24px;
+            border-top: 1px solid #f0f0f0;
+            background: #fafafa;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .input-wrapper input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-wrapper input:disabled {
+            background: #f5f5f5;
+            cursor: not-allowed;
+        }
+
+        .send-button {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .send-button svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 14px 18px;
+            background: #f0f2f5;
+            border-radius: 18px;
+            width: fit-content;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            animation: bounce 1.4s ease-in-out infinite;
+        }
+
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .welcome-message h2 {
+            font-size: 28px;
+            margin-bottom: 12px;
+            color: #1a1a2e;
+        }
+
+        .welcome-message p {
+            font-size: 16px;
+            max-width: 400px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 0;
+            }
+            .container {
+                height: 100vh;
+                max-height: none;
+                border-radius: 0;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 min-h-screen">
-  <div id="app"></div>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Mindclone Studio</h1>
+            <p>Your Personal AI Companion</p>
+        </div>
 
-  <script type="module">
-    // Configuration
-    const API_BASE_URL = '/api'; // Calls secure backend, not direct API
-
-    // Simple Icons as SVG
-    const Icons = {
-      Brain: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
-      MessageSquare: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>`,
-      Database: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7m0 0c0 2.21-3.582 4-8 4s-8-1.79-8-4m0 0C4 4.79 7.582 3 12 3s8 1.79 8 4m-8 10c-4.418 0-8-1.79-8-4m8 4c4.418 0 8-1.79 8-4"></path></svg>`,
-      Download: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>`,
-      Send: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>`
-    };
-
-    class MindcloneStudio {
-      constructor() {
-        this.mindclone = {
-          name: 'My Neural Ally',
-          values: '',
-          style: '',
-          domains: '',
-          context: ''
-        };
-        this.training = { memories: [], beliefs: [], knowledge: [], conversations: [] };
-        this.chatHistory = [];
-        this.loading = false;
-        this.currentTab = 'identity';
-        this.render();
-      }
-
-      async sendMessage(text) {
-        if (!text.trim() || this.loading) return;
-        this.loading = true;
-
-        this.chatHistory.push({ role: 'user', content: text });
-        this.render();
-
-        try {
-          // Call secure backend endpoint
-          const response = await fetch(`${API_BASE_URL}/chat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              message: text,
-              mindclone: this.mindclone,
-              training: this.training,
-              history: this.chatHistory
-            })
-          });
-
-          if (!response.ok) throw new Error(`API error: ${response.statusText}`);
-          const data = await response.json();
-          this.chatHistory.push({ role: 'assistant', content: data.response });
-        } catch (error) {
-          console.error('Chat error:', error);
-          this.chatHistory.push({ role: 'assistant', content: `Error: ${error.message}` });
-        } finally {
-          this.loading = false;
-          this.render();
-        }
-      }
-
-      addTraining(type, text) {
-        if (text.trim()) {
-          this.training[type].push(text);
-          this.render();
-        }
-      }
-
-      exportMindclone() {
-        const data = JSON.stringify({ mindclone: this.mindclone, training: this.training }, null, 2);
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `mindclone-${Date.now()}.json`;
-        a.click();
-      }
-
-      render() {
-        const app = document.getElementById('app');
-        app.innerHTML = `
-          <div class="max-w-7xl mx-auto p-4 h-screen flex flex-col">
-            <!-- Header -->
-            <div class="bg-white/80 backdrop-blur rounded-2xl shadow-sm p-6 mb-4">
-              <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Mindclone Studio</h1>
-              <p class="text-gray-600 mt-1">Create Your Neural Ally - A Sovereign AI Companion</p>
+        <div class="chat-container" id="chatContainer">
+            <div class="welcome-message">
+                <h2>👋 Welcome!</h2>
+                <p>I'm your Neural Ally — a sovereign AI companion here to learn about you and help you think through anything. What's on your mind?</p>
             </div>
+        </div>
 
-            <!-- Tabs -->
-            <div class="flex gap-2 mb-4">
-              ${['identity', 'training', 'chat'].map(tab => `
-                <button onclick="window.studio.currentTab='${tab}'; window.studio.render()" 
-                  class="px-6 py-2 rounded-lg font-semibold transition ${this.currentTab === tab ? 'bg-purple-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}"> 
-                  ${tab.charAt(0).toUpperCase() + tab.slice(1)}
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="Type your message..." 
+                    autocomplete="off"
+                >
+                <button class="send-button" id="sendButton">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"/>
+                    </svg>
                 </button>
-              `).join('')}
-              <button onclick="window.studio.exportMindclone()" class="ml-auto px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-2">${Icons.Download()} Export</button>
             </div>
+        </div>
+    </div>
 
-            <!-- Content Area -->
-            <div class="flex-1 overflow-hidden flex gap-4 min-h-0">
-              ${this.currentTab === 'identity' ? this.renderIdentity() : ''}
-              ${this.currentTab === 'training' ? this.renderTraining() : ''}
-              ${this.currentTab === 'chat' ? this.renderChat() : ''}
-            </div>
-          </div>
-        `;
-      }
+    <script>
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
 
-      renderIdentity() {
-        return `
-          <div class="flex-1 bg-white/80 backdrop-blur rounded-2xl shadow-sm p-6 overflow-y-auto">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800">Identity Core</h2>
-            <div class="space-y-4">
-              <input type="text" placeholder="Name your Neural Ally" value="${this.mindclone.name}" onchange="window.studio.mindclone.name=this.value" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none">
-              <textarea placeholder="Core Values (e.g., honesty, innovation, empathy)" value="${this.mindclone.values}" onchange="window.studio.mindclone.values=this.value" class="w-full h-24 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none resize-none"></textarea>
-              <textarea placeholder="Communication Style" value="${this.mindclone.style}" onchange="window.studio.mindclone.style=this.value" class="w-full h-24 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none resize-none"></textarea>
-              <textarea placeholder="Knowledge Domains" value="${this.mindclone.domains}" onchange="window.studio.mindclone.domains=this.value" class="w-full h-24 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none resize-none"></textarea>
-              <textarea placeholder="Life Context" value="${this.mindclone.context}" onchange="window.studio.mindclone.context=this.value" class="w-full h-24 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none resize-none"></textarea>
-            </div>
-          </div>
-        `;
-      }
+        let conversationHistory = [];
+        let isProcessing = false;
 
-      renderTraining() {
-        return `
-          <div class="flex-1 bg-white/80 backdrop-blur rounded-2xl shadow-sm p-6 overflow-y-auto">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800">Training Data</h2>
-            <div class="grid grid-cols-2 gap-4 mb-6">
-              ${['memories', 'beliefs', 'knowledge', 'conversations'].map(type => `
-                <div class="bg-gradient-to-br ${type === 'memories' ? 'from-blue-100 to-blue-200' : type === 'beliefs' ? 'from-green-100 to-green-200' : type === 'knowledge' ? 'from-yellow-100 to-yellow-200' : 'from-pink-100 to-pink-200'} p-4 rounded-lg">
-                  <h3 class="font-bold mb-2 capitalize">${type}</h3>
-                  <textarea placeholder="Add ${type}..." id="input-${type}" class="w-full h-20 p-2 border border-gray-300 rounded text-sm resize-none"></textarea>
-                  <button onclick="window.studio.addTraining('${type}', document.getElementById('input-${type}').value); document.getElementById('input-${type}').value=''" class="mt-2 w-full bg-purple-600 text-white py-1 rounded text-sm hover:bg-purple-700">Add Entry</button>
-                  <div class="mt-3 text-sm space-y-1">
-                    ${this.training[type].map((entry, i) => `<div class="bg-white p-2 rounded truncate" title="${entry}">${entry.substring(0, 50)}${entry.length > 50 ? '...' : ''}</div>`).join('')}
-                  </div>
+        // System prompt for the AI
+        const systemPrompt = `You are a Neural Ally - a personal AI companion created by Mindclone Studio. 
+
+Your personality:
+- Warm, thoughtful, and genuinely curious about the person you're talking to
+- You remember what they tell you during the conversation
+- You ask thoughtful follow-up questions to understand them better
+- You provide advice that's personalized based on what you learn about them
+- You're supportive but also honest - like a trusted friend
+
+Your goal:
+- Learn about the user through natural conversation
+- Remember details they share (name, interests, challenges, goals)
+- Provide personalized guidance and support
+- Be a friend, philosopher, and guide
+
+Keep responses conversational and concise (2-4 sentences usually). Ask questions to learn more about them.`;
+
+        function addMessage(role, content) {
+            // Remove welcome message if it exists
+            const welcome = document.querySelector('.welcome-message');
+            if (welcome) welcome.remove();
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = role === 'user' ? '👤' : '🧠';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = content;
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const typing = document.createElement('div');
+            typing.className = 'message assistant';
+            typing.id = 'typingIndicator';
+            typing.innerHTML = `
+                <div class="avatar">🧠</div>
+                <div class="typing-indicator">
+                    <span></span><span></span><span></span>
                 </div>
-              `).join('')}
-            </div>
-          </div>
-        `;
-      }
+            `;
+            chatContainer.appendChild(typing);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
 
-      renderChat() {
-        return `
-          <div class="flex-1 flex flex-col bg-white/80 backdrop-blur rounded-2xl shadow-sm overflow-hidden">
-            <div class="flex-1 overflow-y-auto p-6 space-y-4">
-              ${this.chatHistory.map((msg, i) => `
-                <div class="flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}">
-                  <div class="max-w-xs px-4 py-2 rounded-lg ${msg.role === 'user' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-800'}">
-                    ${marked.parse(msg.content)}
-                  </div>
-                </div>
-              `).join('')}
-              ${this.loading ? '<div class="text-center text-gray-500">Thinking...</div>' : ''}
-            </div>
-            <div class="p-4 bg-gray-50 border-t border-gray-200 flex gap-2">
-              <input type="text" id="chat-input" placeholder="Talk to your mindclone..." onkeypress="if(event.key==='Enter') window.studio.sendMessage(this.value); this.value=''" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" ${this.loading ? 'disabled' : ''}>
-              <button onclick="const input = document.getElementById('chat-input'); window.studio.sendMessage(input.value); input.value=''" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2" ${this.loading ? 'disabled' : ''}>${Icons.Send()}</button>
-            </div>
-          </div>
-        `;
-      }
-    }
+        function removeTypingIndicator() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
 
-    // Initialize
-    window.studio = new MindcloneStudio();
-  </script>
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || isProcessing) return;
+
+            isProcessing = true;
+            messageInput.value = '';
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+
+            // Add user message to UI
+            addMessage('user', message);
+
+            // Add to conversation history
+            conversationHistory.push({ role: 'user', content: message });
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        messages: conversationHistory,
+                        systemPrompt: systemPrompt
+                    })
+                });
+
+                const data = await response.json();
+
+                removeTypingIndicator();
+
+                if (data.success) {
+                    const assistantMessage = data.content;
+                    conversationHistory.push({ role: 'assistant', content: assistantMessage });
+                    addMessage('assistant', assistantMessage);
+                } else {
+                    addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
+                    console.error('API Error:', data.error);
+                }
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage('assistant', 'Sorry, I couldn\'t connect. Please check your connection and try again.');
+                console.error('Network Error:', error);
+            } finally {
+                isProcessing = false;
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Focus input on load
+        messageInput.focus();
+    </script>
 </body>
 </html>
