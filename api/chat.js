@@ -36,7 +36,7 @@ module.exports = async function handler(req, res) {
 
   try {
     // Check if API key exists
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = "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";
     if (!apiKey) {
       console.error('❌ OPENAI_API_KEY not found in environment variables');
       return res.status(500).json({ 
