@@ -1,6 +1,7 @@
 {
   "buildCommand": "npm install",
   "installCommand": "npm install",
+  "publicDirectory": ".",
   "env": {
     "NODE_ENV": "production"
   },
