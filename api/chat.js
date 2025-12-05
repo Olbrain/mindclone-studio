@@ -1,5 +1,5 @@
-// Mindclone Studio Chat API Handler
-// This handles requests to /api/chat
+// Mindclone Studio Chat API Handler - OpenAI Version
+// This handles requests to /api/chat using OpenAI's GPT API
 
 module.exports = async function handler(req, res) {
   // Set CORS headers to allow requests from any origin
@@ -12,12 +12,14 @@ module.exports = async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Handle GET requests - return API info instead of error
+  // Handle GET requests - return API info
   if (req.method === 'GET') {
     return res.status(200).json({
       service: 'Mindclone Studio Chat API',
       status: 'operational',
       version: '1.0.0',
+      provider: 'OpenAI',
+      model: 'gpt-4o-mini',
       methods: ['POST'],
       message: 'Send POST requests with messages array to use this API',
       timestamp: new Date().toISOString()
@@ -34,12 +36,12 @@ module.exports = async function handler(req, res) {
 
   try {
     // Check if API key exists
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      console.error('❌ ANTHROPIC_API_KEY not found in environment variables');
+      console.error('❌ OPENAI_API_KEY not found in environment variables');
       return res.status(500).json({ 
         success: false, 
-        error: 'API key not configured. Please check environment variables.' 
+        error: 'API key not configured. Please add OPENAI_API_KEY to environment variables.' 
       });
     }
 
@@ -68,28 +70,41 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // Call Anthropic API
-    console.log('📤 Calling Anthropic API...');
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Build messages array for OpenAI
+    const openaiMessages = [];
+
+    // Add system prompt if provided
+    if (systemPrompt) {
+      openaiMessages.push({
+        role: 'system',
+        content: systemPrompt
+      });
+    }
+
+    // Add conversation messages
+    openaiMessages.push(...messages);
+
+    // Call OpenAI API
+    console.log('📤 Calling OpenAI API...');
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        system: systemPrompt || 'You are a helpful AI assistant.',
-        messages: messages
+        model: 'gpt-4o-mini', // Fast and cost-effective model
+        messages: openaiMessages,
+        temperature: 0.7,
+        max_tokens: 1024
       })
     });
 
     const data = await response.json();
 
-    // Check for Anthropic API errors
+    // Check for OpenAI API errors
     if (!response.ok) {
-      console.error('❌ Anthropic API error:', {
+      console.error('❌ OpenAI API error:', {
         status: response.status,
         error: data.error
       });
@@ -99,13 +114,24 @@ module.exports = async function handler(req, res) {
       });
     }
 
+    // Extract the response text
+    const aiResponse = data.choices?.[0]?.message?.content;
+    
+    if (!aiResponse) {
+      console.error('❌ Unexpected OpenAI response format:', data);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Unexpected response format from AI' 
+      });
+    }
+
     // Success! Return the AI's response
-    console.log('✅ Successfully received AI response');
+    console.log('✅ Successfully received OpenAI response');
     return res.status(200).json({
       success: true,
-      content: data.content[0].text,
-      model: data.model,
-      usage: data.usage
+      content: aiResponse,
+      model: 'gpt-4o-mini',
+      provider: 'OpenAI'
     });
 
   } catch (error) {
