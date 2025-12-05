@@ -19,11 +19,6 @@
       "src": "/(.*)",
       "dest": "/$1"
     }
-  ],
-  "functions": {
-    "api/**/*.{js,cjs}": {
-      "maxDuration": 30
-    }
-  }
+]  
 }
  
