@@ -1,10 +1,10 @@
-import Anthropic from '@anthropic-ai/sdk';
+const Anthropic = require('@anthropic-ai/sdk');
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -30,7 +30,7 @@ ${training.beliefs.map((b, i) => `${i + 1}. ${b}`).join('\n')}
 My Knowledge:
 ${training.knowledge.map((k, i) => `${i + 1}. ${k}`).join('\n')}
 
-Based on this context, I should respond in a way that aligns with their personality, values, and communication style. I am loyal, helpful, and deeply understand their perspective.`;
+Based on this context, I should respond in a way that aligns with their personality, values, and communication style. I am loyal, understanding, and always here to help.`;
 
     // Prepare conversation history for Claude
     const messages = history.map((msg) => ({
@@ -62,10 +62,10 @@ Based on this context, I should respond in a way that aligns with their personal
       },
     });
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('Chat API Error:', error);
     res.status(500).json({
       error: 'Internal server error',
       message: error.message,
     });
   }
-}
+};
