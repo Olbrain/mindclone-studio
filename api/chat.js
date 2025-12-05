@@ -1,10 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk';
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+const Anthropic = require('@anthropic-ai/sdk');
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-) {
+module.exports = async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
@@ -20,9 +16,18 @@ export default async function handler(
   }
 
   try {
+    // Check API key exists
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error('ANTHROPIC_API_KEY not set');
+      return res.status(500).json({
+        success: false,
+        error: 'API key not configured'
+      });
+    }
+
     // Initialize Anthropic client
     const anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY || '',
+      apiKey: process.env.ANTHROPIC_API_KEY,
     });
 
     const { messages, systemPrompt } = req.body;
@@ -34,6 +39,8 @@ export default async function handler(
       });
     }
 
+    console.log('Calling Anthropic API...');
+
     // Call Anthropic API
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -42,14 +49,16 @@ export default async function handler(
       messages: messages,
     });
 
+    console.log('API call successful');
+
     // Return response
     return res.status(200).json({
       success: true,
       content: response.content[0].text,
       usage: response.usage,
     });
-  } catch (error: any) {
-    console.error('Chat API Error:', error);
+  } catch (error) {
+    console.error('Error:', error.message);
     return res.status(500).json({
       success: false,
       error: error.message || 'Internal server error',
