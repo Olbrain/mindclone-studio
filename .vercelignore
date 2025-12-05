@@ -1,0 +1,2 @@
+# Ensure API routes are not ignored
+!api
