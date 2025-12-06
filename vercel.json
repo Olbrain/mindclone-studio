@@ -3,7 +3,49 @@
     "api/**/*.js": {
       "maxDuration": 60
     }
-  }
+  },
+  "routes": [
+    {
+      "src": "^/api/chat$",
+      "dest": "/api/chat.js"
+    },
+    {
+      "src": "^/api/chat-public$",
+      "dest": "/api/chat-public.js"
+    },
+    {
+      "src": "^/api/username$",
+      "dest": "/api/username.js"
+    },
+    {
+      "src": "^/api/profile$",
+      "dest": "/api/profile.js"
+    },
+    {
+      "src": "^/api/link-settings$",
+      "dest": "/api/link-settings.js"
+    },
+    {
+      "src": "^/api/analytics$",
+      "dest": "/api/analytics.js"
+    },
+    {
+      "src": "^/api/messages/mark-public$",
+      "dest": "/api/messages/mark-public.js"
+    },
+    {
+      "src": "^/settings$",
+      "dest": "/settings.html"
+    },
+    {
+      "src": "^/([a-z][a-z0-9_]{2,19})$",
+      "dest": "/link.html?username=$1"
+    },
+    {
+      "src": "^/$",
+      "dest": "/index.html"
+    }
+  ]
 }
 
 

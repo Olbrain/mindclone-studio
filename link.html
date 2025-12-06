@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindclone Link</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: #0d0d0d;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            max-height: 800px;
+        }
+
+        /* Profile Header */
+        .profile-header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+            padding: 25px;
+            border-bottom: 1px solid #333;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            border: 3px solid #4CAF50;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .profile-username {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+
+        .profile-bio {
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .profile-greeting {
+            font-size: 14px;
+            color: #4CAF50;
+            font-style: italic;
+            padding: 10px 15px;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: #0d0d0d;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* Messages */
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .message-content {
+            max-width: 70%;
+            background: #1a1a1a;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .message.ai .message-content {
+            background: #1a1a1a;
+            border: 1px solid #333;
+        }
+
+        /* Markdown in AI messages */
+        .message-content p {
+            margin-bottom: 10px;
+        }
+
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-content code {
+            background: #0d0d0d;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .message-content pre {
+            background: #0d0d0d;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .message-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .message-content ul, .message-content ol {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .message-content a {
+            color: #4CAF50;
+            text-decoration: underline;
+        }
+
+        /* Copy button for code blocks */
+        .code-block-wrapper {
+            position: relative;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #333;
+            border: none;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .copy-button:hover {
+            opacity: 1;
+        }
+
+        /* Timestamp */
+        .message-timestamp {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .message.user .message-timestamp {
+            text-align: left;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #666;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #999;
+        }
+
+        .empty-state-subtitle {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Input Container */
+        .input-container {
+            padding: 20px;
+            background: #0d0d0d;
+            border-top: 1px solid #333;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            max-height: 120px;
+            transition: border-color 0.3s;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .message-input::placeholder {
+            color: #666;
+        }
+
+        .send-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .send-button:hover:not(:disabled) {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+
+        .send-button:disabled {
+            background: #333;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* Footer CTA */
+        .footer-cta {
+            padding: 15px;
+            background: #0a0a0a;
+            border-top: 1px solid #333;
+            text-align: center;
+        }
+
+        .footer-cta a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .footer-cta a:hover {
+            color: #45a049;
+            text-decoration: underline;
+        }
+
+        /* Error State */
+        .error-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .error-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .error-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .error-message {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .error-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .error-button:hover {
+            background: #45a049;
+        }
+
+        /* Loading */
+        .loading-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #333;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Rate Limit Warning */
+        .rate-limit-warning {
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+            color: #ff9800;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                height: 100vh;
+                max-height: none;
+                border-radius: 0;
+            }
+
+            .profile-header {
+                padding: 20px;
+            }
+
+            .profile-avatar {
+                width: 60px;
+                height: 60px;
+            }
+
+            .profile-name {
+                font-size: 20px;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .chat-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Profile Header -->
+        <div id="profileHeader" class="profile-header" style="display: none;">
+            <img id="profileAvatar" class="profile-avatar" alt="Profile">
+            <div id="profileName" class="profile-name"></div>
+            <div id="profileUsername" class="profile-username"></div>
+            <div id="profileBio" class="profile-bio"></div>
+            <div id="profileGreeting" class="profile-greeting"></div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingContainer" class="loading-container">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorContainer" class="error-container" style="display: none;">
+            <div class="error-icon">⚠️</div>
+            <div id="errorTitle" class="error-title">Oops!</div>
+            <div id="errorMessage" class="error-message">Something went wrong.</div>
+            <a href="https://mindclone-studio.vercel.app" class="error-button">Create Your Own Mindclone</a>
+        </div>
+
+        <!-- Chat Container -->
+        <div id="chatContainer" class="chat-container" style="display: none;">
+            <!-- Messages will be added here dynamically -->
+        </div>
+
+        <!-- Typing Indicator -->
+        <div id="typingIndicator" class="typing-indicator">
+            <div class="message-avatar">🔮</div>
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+
+        <!-- Input Container -->
+        <div id="inputContainer" class="input-container" style="display: none;">
+            <div id="rateLimitWarning" class="rate-limit-warning" style="display: none;"></div>
+            <div class="input-wrapper">
+                <textarea
+                    id="messageInput"
+                    class="message-input"
+                    placeholder="Type your message..."
+                    rows="1"
+                ></textarea>
+                <button id="sendButton" class="send-button">Send</button>
+            </div>
+        </div>
+
+        <!-- Footer CTA -->
+        <div class="footer-cta">
+            <a href="https://mindclone-studio.vercel.app" target="_blank">
+                🔮 Create your own Mindclone →
+            </a>
+        </div>
+    </div>
+
+    <!-- Markdown library -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+        // Get username from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('username');
+
+        // DOM Elements
+        const loadingContainer = document.getElementById('loadingContainer');
+        const errorContainer = document.getElementById('errorContainer');
+        const errorTitle = document.getElementById('errorTitle');
+        const errorMessage = document.getElementById('errorMessage');
+        const profileHeader = document.getElementById('profileHeader');
+        const profileAvatar = document.getElementById('profileAvatar');
+        const profileName = document.getElementById('profileName');
+        const profileUsername = document.getElementById('profileUsername');
+        const profileBio = document.getElementById('profileBio');
+        const profileGreeting = document.getElementById('profileGreeting');
+        const chatContainer = document.getElementById('chatContainer');
+        const inputContainer = document.getElementById('inputContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const rateLimitWarning = document.getElementById('rateLimitWarning');
+
+        // State
+        let profile = null;
+        let visitorId = null;
+        let conversationHistory = [];
+        let isProcessing = false;
+
+        // Initialize
+        init();
+
+        async function init() {
+            if (!username) {
+                showError('Invalid Link', 'This Mindclone link appears to be invalid.');
+                return;
+            }
+
+            // Get or create visitor ID
+            visitorId = getOrCreateVisitorId();
+
+            // Load profile
+            await loadProfile();
+        }
+
+        // Get or create visitor ID from localStorage
+        function getOrCreateVisitorId() {
+            const storageKey = `mindclone_visitor_${username}`;
+            let id = localStorage.getItem(storageKey);
+
+            if (!id) {
+                id = generateUUID();
+                localStorage.setItem(storageKey, id);
+            }
+
+            return id;
+        }
+
+        // Generate UUID v4
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // Load profile from API
+        async function loadProfile() {
+            try {
+                const response = await fetch(`/api/profile?username=${encodeURIComponent(username)}`);
+
+                if (response.status === 404) {
+                    showError('Username Not Found', 'This Mindclone link doesn\'t exist.');
+                    return;
+                }
+
+                if (response.status === 403) {
+                    showError('Link Disabled', 'This Mindclone link has been disabled by its owner.');
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Failed to load profile');
+                }
+
+                profile = await response.json();
+                showProfile();
+                await loadConversation();
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showError('Connection Error', 'Failed to load this Mindclone. Please try again later.');
+            }
+        }
+
+        // Show profile
+        function showProfile() {
+            loadingContainer.style.display = 'none';
+            profileHeader.style.display = 'block';
+            chatContainer.style.display = 'flex';
+            inputContainer.style.display = 'block';
+
+            profileAvatar.src = profile.photoURL || 'https://via.placeholder.com/80';
+            profileName.textContent = profile.displayName;
+            profileUsername.textContent = `@${profile.username}`;
+            profileBio.textContent = profile.bio || '';
+            profileGreeting.textContent = profile.customGreeting || 'Hello! Ask me anything.';
+
+            // Hide bio if empty
+            if (!profile.bio) {
+                profileBio.style.display = 'none';
+            }
+
+            // Auto-resize textarea
+            messageInput.addEventListener('input', autoResizeTextarea);
+
+            // Send button click
+            sendButton.addEventListener('click', sendMessage);
+
+            // Enter key to send (Shift+Enter for new line)
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+
+        // Show error
+        function showError(title, message) {
+            loadingContainer.style.display = 'none';
+            errorContainer.style.display = 'flex';
+            errorTitle.textContent = title;
+            errorMessage.textContent = message;
+        }
+
+        // Load conversation history
+        async function loadConversation() {
+            // For now, just show empty state
+            // Conversation history will be loaded from the server when we implement chat-public API
+            if (conversationHistory.length === 0) {
+                showEmptyState();
+            }
+        }
+
+        // Show empty state
+        function showEmptyState() {
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.innerHTML = `
+                <div class="empty-state-icon">💬</div>
+                <div class="empty-state-title">Start a Conversation</div>
+                <div class="empty-state-subtitle">
+                    Send a message to start chatting with this Mindclone!
+                </div>
+            `;
+            chatContainer.appendChild(emptyState);
+        }
+
+        // Auto-resize textarea
+        function autoResizeTextarea() {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+        }
+
+        // Send message
+        async function sendMessage() {
+            const content = messageInput.value.trim();
+
+            if (!content || isProcessing) return;
+
+            // Disable input
+            isProcessing = true;
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+
+            // Clear empty state if present
+            const emptyState = chatContainer.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            // Add user message to UI
+            addMessage('user', content);
+
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            // Add to conversation history
+            conversationHistory.push({ role: 'user', content });
+
+            // Show typing indicator
+            typingIndicator.classList.add('active');
+            scrollToBottom();
+
+            try {
+                // Call public chat API
+                const response = await fetch('/api/chat-public', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username,
+                        visitorId,
+                        messages: conversationHistory
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    if (response.status === 429) {
+                        // Rate limit exceeded
+                        showRateLimitWarning(data.message || 'Rate limit exceeded. Please try again later.');
+                        // Remove the user message we just added
+                        conversationHistory.pop();
+                        // TODO: Remove from UI as well
+                        throw new Error('Rate limit exceeded');
+                    }
+                    throw new Error(data.error || 'Failed to send message');
+                }
+
+                // Add AI response
+                addMessage('ai', data.content);
+                conversationHistory.push({ role: 'assistant', content: data.content });
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                if (error.message !== 'Rate limit exceeded') {
+                    addMessage('error', 'Sorry, I encountered an error. Please try again.');
+                }
+            } finally {
+                // Hide typing indicator
+                typingIndicator.classList.remove('active');
+
+                // Re-enable input
+                isProcessing = false;
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        // Add message to UI
+        function addMessage(type, content, timestamp = new Date()) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = type === 'user' ? '👤' : '🔮';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+
+            if (type === 'ai') {
+                // Render markdown for AI messages
+                contentDiv.innerHTML = marked.parse(content);
+
+                // Add copy buttons to code blocks
+                const codeBlocks = contentDiv.querySelectorAll('pre code');
+                codeBlocks.forEach(addCopyButton);
+            } else {
+                contentDiv.textContent = content;
+            }
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+
+            chatContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Add copy button to code block
+        function addCopyButton(codeBlock) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'code-block-wrapper';
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-button';
+            copyBtn.textContent = 'Copy';
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(codeBlock.textContent);
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyBtn.textContent = 'Copy';
+                }, 2000);
+            };
+
+            const pre = codeBlock.parentElement;
+            pre.parentElement.insertBefore(wrapper, pre);
+            wrapper.appendChild(pre);
+            wrapper.appendChild(copyBtn);
+        }
+
+        // Show rate limit warning
+        function showRateLimitWarning(message) {
+            rateLimitWarning.textContent = message;
+            rateLimitWarning.style.display = 'block';
+
+            setTimeout(() => {
+                rateLimitWarning.style.display = 'none';
+            }, 10000);
+        }
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+// Analytics API - visitor statistics for link owners
+const admin = require('firebase-admin');
+
+// Initialize Firebase Admin SDK
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+  });
+}
+
+const db = admin.firestore();
+
+// Verify Firebase ID token
+async function verifyToken(idToken) {
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    return decodedToken.uid;
+  } catch (error) {
+    throw new Error('Invalid or expired token');
+  }
+}
+
+// Get visitor statistics
+async function getVisitorStats(userId) {
+  try {
+    // Get all visitors
+    const visitorsSnapshot = await db.collection('users').doc(userId)
+      .collection('visitors')
+      .orderBy('lastVisit', 'desc')
+      .get();
+
+    const totalVisitors = visitorsSnapshot.size;
+    let totalMessages = 0;
+    const recentVisitors = [];
+
+    // Process each visitor
+    for (const visitorDoc of visitorsSnapshot.docs) {
+      const visitorData = visitorDoc.data();
+      const visitorId = visitorDoc.id;
+
+      // Count messages for this visitor
+      const messagesSnapshot = await db.collection('users').doc(userId)
+        .collection('visitors').doc(visitorId)
+        .collection('messages')
+        .get();
+
+      const messageCount = messagesSnapshot.size;
+      totalMessages += messageCount;
+
+      // Add to recent visitors (limit to 10)
+      if (recentVisitors.length < 10) {
+        recentVisitors.push({
+          visitorId: visitorId,
+          firstVisit: visitorData.firstVisit || visitorData.lastVisit,
+          lastVisit: visitorData.lastVisit,
+          messageCount: messageCount,
+          lastMessage: visitorData.lastMessage || 'No messages yet'
+        });
+      }
+    }
+
+    // Count public messages
+    const publicMessagesSnapshot = await db.collection('users').doc(userId)
+      .collection('messages')
+      .where('isPublic', '==', true)
+      .get();
+
+    const publicMessages = publicMessagesSnapshot.size;
+
+    return {
+      totalVisitors,
+      totalMessages,
+      publicMessages,
+      recentVisitors
+    };
+  } catch (error) {
+    console.error('Error getting visitor stats:', error);
+    throw error;
+  }
+}
+
+// Get detailed visitor info
+async function getVisitorDetails(userId, visitorId) {
+  try {
+    // Get visitor metadata
+    const visitorDoc = await db.collection('users').doc(userId)
+      .collection('visitors').doc(visitorId).get();
+
+    if (!visitorDoc.exists) {
+      throw new Error('Visitor not found');
+    }
+
+    const visitorData = visitorDoc.data();
+
+    // Get visitor messages
+    const messagesSnapshot = await db.collection('users').doc(userId)
+      .collection('visitors').doc(visitorId)
+      .collection('messages')
+      .orderBy('timestamp', 'desc')
+      .limit(50)
+      .get();
+
+    const messages = messagesSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        messageId: doc.id,
+        role: data.role,
+        content: data.content,
+        timestamp: data.timestamp
+      };
+    });
+
+    return {
+      visitorId: visitorId,
+      firstVisit: visitorData.firstVisit || visitorData.lastVisit,
+      lastVisit: visitorData.lastVisit,
+      messageCount: messages.length,
+      messages: messages
+    };
+  } catch (error) {
+    console.error('Error getting visitor details:', error);
+    throw error;
+  }
+}
+
+// Get time-based statistics
+async function getTimeBasedStats(userId, days = 30) {
+  try {
+    const now = Date.now();
+    const startTime = now - (days * 24 * 60 * 60 * 1000);
+    const startDate = admin.firestore.Timestamp.fromMillis(startTime);
+
+    // Get recent visitors
+    const visitorsSnapshot = await db.collection('users').doc(userId)
+      .collection('visitors')
+      .where('lastVisit', '>=', startDate)
+      .get();
+
+    const recentVisitors = visitorsSnapshot.size;
+
+    // Count recent messages
+    let recentMessages = 0;
+    for (const visitorDoc of visitorsSnapshot.docs) {
+      const messagesSnapshot = await db.collection('users').doc(userId)
+        .collection('visitors').doc(visitorDoc.id)
+        .collection('messages')
+        .where('timestamp', '>=', startDate)
+        .get();
+
+      recentMessages += messagesSnapshot.size;
+    }
+
+    return {
+      period: `${days} days`,
+      visitors: recentVisitors,
+      messages: recentMessages,
+      startDate: startDate.toDate()
+    };
+  } catch (error) {
+    console.error('Error getting time-based stats:', error);
+    throw error;
+  }
+}
+
+// Main handler
+module.exports = async (req, res) => {
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    // Get token from Authorization header
+    const authHeader = req.headers.authorization;
+    const idToken = authHeader ? authHeader.replace('Bearer ', '') : null;
+
+    if (!idToken) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const userId = await verifyToken(idToken);
+
+    const { visitorId, period } = req.query;
+
+    // Get specific visitor details
+    if (visitorId) {
+      const visitorDetails = await getVisitorDetails(userId, visitorId);
+      return res.status(200).json(visitorDetails);
+    }
+
+    // Get time-based stats
+    if (period) {
+      const days = parseInt(period, 10);
+      if (isNaN(days) || days < 1 || days > 365) {
+        return res.status(400).json({ error: 'Period must be between 1 and 365 days' });
+      }
+
+      const timeStats = await getTimeBasedStats(userId, days);
+      return res.status(200).json(timeStats);
+    }
+
+    // Get overall visitor statistics
+    const stats = await getVisitorStats(userId);
+    return res.status(200).json(stats);
+
+  } catch (error) {
+    console.error('Analytics API error:', error);
+    return res.status(500).json({
+      error: error.message || 'Internal server error'
+    });
+  }
+};
