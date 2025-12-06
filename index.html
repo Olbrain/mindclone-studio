@@ -640,17 +640,42 @@
             .sidebar {
                 width: 100%;
                 height: auto;
-                max-height: 40vh;
+                max-height: none;
                 border-right: none;
                 border-bottom: 1px solid #333;
+                overflow: visible;
             }
 
             .sidebar-header {
-                padding: 15px;
+                padding: 12px 15px;
+            }
+
+            .sidebar-header .logo {
+                width: 30px;
+                height: 30px;
+                font-size: 20px;
             }
 
             .sidebar-header h1 {
-                font-size: 20px;
+                font-size: 18px;
+                margin-bottom: 4px;
+            }
+
+            .sidebar-header .tagline {
+                display: none;
+            }
+
+            .sidebar-header .settings-link {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .sidebar-spacer {
+                display: none;
+            }
+
+            .sidebar-profile {
+                padding: 10px 15px;
             }
 
             .sidebar-profile .user-avatar {
@@ -658,8 +683,17 @@
                 height: 35px;
             }
 
+            .sidebar-profile .user-name {
+                font-size: 13px;
+            }
+
+            .sidebar-profile .user-email {
+                font-size: 11px;
+            }
+
             .main-content {
                 flex: 1;
+                min-height: 0;
             }
 
             .message-content {
