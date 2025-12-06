@@ -25,28 +25,50 @@ module.exports = async (req, res) => {
     const apiKey = process.env.GEMINI_API_KEY;
     
     if (!apiKey) {
-      return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+      return res.status(500).json({
+        success: false,
+        error: 'GEMINI_API_KEY not configured'
+      });
     }
 
-    const { message } = req.body;
-    if (!message) {
-      return res.status(400).json({ error: 'Message required' });
+    const { messages, systemPrompt } = req.body;
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Messages array required'
+      });
+    }
+
+    // Convert conversation history to Gemini format
+    const contents = messages.map(msg => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }]
+    }));
+
+    // Prepend system prompt if provided
+    let systemInstruction = undefined;
+    if (systemPrompt) {
+      systemInstruction = {
+        parts: [{ text: systemPrompt }]
+      };
     }
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
-    
+
+    const requestBody = {
+      contents: contents
+    };
+
+    if (systemInstruction) {
+      requestBody.systemInstruction = systemInstruction;
+    }
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: message
-          }]
-        }]
-      })
+      body: JSON.stringify(requestBody)
     });
 
     const data = await response.json();
@@ -58,14 +80,14 @@ module.exports = async (req, res) => {
     const text = data.candidates[0].content.parts[0].text;
 
     return res.status(200).json({
-      response: text,
-      provider: 'gemini'
+      success: true,
+      content: text
     });
 
   } catch (error) {
-    return res.status(500).json({ 
-      error: 'Failed to generate response',
-      details: error.message 
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to generate response: ' + error.message
     });
   }
 };
