@@ -14,6 +14,18 @@
       "dest": "/api/chat-public.js"
     },
     {
+      "src": "^/api/username/check$",
+      "dest": "/api/username.js?action=check"
+    },
+    {
+      "src": "^/api/username/claim$",
+      "dest": "/api/username.js?action=claim"
+    },
+    {
+      "src": "^/api/username/release$",
+      "dest": "/api/username.js?action=release"
+    },
+    {
       "src": "^/api/username$",
       "dest": "/api/username.js"
     },
