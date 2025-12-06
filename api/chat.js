@@ -1,160 +1,114 @@
-// Mindclone Studio Chat API Handler - Google Gemini Version
-// This handles requests to /api/chat using Google's Gemini API
+// CORRECTED VERSION - Mindclone Studio Chat API Handler
+// This version fixes the export format for Vercel and adds comprehensive logging
 
-module.exports = async function handler(req, res) {
-  // Set CORS headers to allow requests from any origin
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+// This is the CORRECT export format for Vercel serverless functions
+module.exports = async (req, res) => {
+  // Log everything for debugging
+  console.log('=== CHAT API CALLED ===');
+  console.log('Method:', req.method);
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('Environment variables available:', Object.keys(process.env).filter(k => k.includes('GEMINI') || k.includes('API')));
+  
+  // CORS headers - MUST come before any response
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  // Handle preflight requests (OPTIONS)
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  // Handle OPTIONS request (CORS preflight)
   if (req.method === 'OPTIONS') {
+    console.log('Handling OPTIONS request');
     return res.status(200).end();
   }
-
-  // Handle GET requests - return API info
+  
+  // Handle GET request (health check)
   if (req.method === 'GET') {
+    console.log('Handling GET request - health check');
+    const apiKeyExists = !!process.env.GEMINI_API_KEY;
     return res.status(200).json({
-      service: 'Mindclone Studio Chat API',
-      status: 'operational',
-      version: '1.0.0',
-      provider: 'Google Gemini',
+      status: 'ok',
+      provider: 'gemini',
       model: 'gemini-pro',
-      methods: ['POST'],
-      message: 'Send POST requests with messages array to use this API',
-      timestamp: new Date().toISOString()
+      apiKeyConfigured: apiKeyExists,
+      message: 'Chat API is running'
     });
   }
-
-  // Only allow POST for actual chat requests
-  if (req.method !== 'POST') {
-    return res.status(405).json({ 
-      success: false,
-      error: 'Method not allowed. Use POST to send messages.' 
-    });
+  
+  // Handle POST request (actual chat)
+  if (req.method === 'POST') {
+    console.log('Handling POST request - chat message');
+    
+    try {
+      // Check for API key
+      const apiKey = process.env.GEMINI_API_KEY;
+      console.log('API Key check:', apiKey ? 'EXISTS (length: ' + apiKey.length + ')' : 'MISSING');
+      
+      if (!apiKey) {
+        console.error('ERROR: GEMINI_API_KEY not found in environment variables');
+        return res.status(500).json({
+          error: 'API key not configured. Please add GEMINI_API_KEY to environment variables.',
+          debug: {
+            availableEnvVars: Object.keys(process.env).filter(k => k.includes('GEMINI') || k.includes('API'))
+          }
+        });
+      }
+      
+      // Get message from request
+      const { message, conversationHistory = [] } = req.body;
+      console.log('User message:', message);
+      console.log('Conversation history length:', conversationHistory.length);
+      
+      if (!message) {
+        console.error('ERROR: No message provided');
+        return res.status(400).json({ error: 'Message is required' });
+      }
+      
+      // Initialize Gemini
+      console.log('Initializing Gemini AI...');
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+      
+      // Build conversation context
+      let prompt = message;
+      if (conversationHistory && conversationHistory.length > 0) {
+        const context = conversationHistory
+          .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+          .join('\n');
+        prompt = `${context}\nUser: ${message}\nAssistant:`;
+      }
+      
+      console.log('Sending request to Gemini...');
+      
+      // Generate response
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      console.log('Gemini response received, length:', text.length);
+      console.log('First 100 chars:', text.substring(0, 100));
+      
+      return res.status(200).json({
+        response: text,
+        provider: 'gemini',
+        model: 'gemini-pro'
+      });
+      
+    } catch (error) {
+      console.error('=== ERROR IN CHAT API ===');
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      
+      return res.status(500).json({
+        error: 'Failed to generate response',
+        details: error.message,
+        provider: 'gemini'
+      });
+    }
   }
-
-  try {
-    console.log('🔍 DEBUG: All environment variables:', Object.keys(process.env));
-console.log('🔍 DEBUG: GEMINI_API_KEY exists?', !!process.env.GEMINI_API_KEY);
-console.log('🔍 DEBUG: GEMINI_API_KEY value:', process.env.GEMINI_API_KEY ? 'EXISTS' : 'UNDEFINED');
-    // Check if API key exists
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.error('❌ GEMINI_API_KEY not found in environment variables');
-      return res.status(500).json({ 
-        success: false, 
-        error: 'API key not configured. Please add GEMINI_API_KEY to environment variables.' 
-      });
-    }
-
-    // Log incoming request (helpful for debugging)
-    console.log('✅ Received chat request:', {
-      timestamp: new Date().toISOString(),
-      hasMessages: !!req.body?.messages,
-      messageCount: req.body?.messages?.length || 0
-    });
-
-    // Get request body
-    const { messages, systemPrompt } = req.body;
-
-    // Validate messages
-    if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Messages array is required' 
-      });
-    }
-
-    if (messages.length === 0) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Messages array cannot be empty' 
-      });
-    }
-
-    // Build the conversation for Gemini
-    // Gemini expects a different format than OpenAI
-    let conversationText = '';
-    
-    // Add system prompt if provided
-    if (systemPrompt) {
-      conversationText += `${systemPrompt}\n\n`;
-    }
-
-    // Add conversation history
-    for (const msg of messages) {
-      const role = msg.role === 'assistant' ? 'AI' : 'User';
-      conversationText += `${role}: ${msg.content}\n`;
-    }
-
-    // Add final prompt for AI response
-    conversationText += `AI:`;
-
-    // Call Gemini API
-    console.log('📤 Calling Gemini API...');
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
-    
-    const response = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: conversationText
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        }
-      })
-    });
-
-    const data = await response.json();
-
-    // Check for Gemini API errors
-    if (!response.ok) {
-      console.error('❌ Gemini API error:', {
-        status: response.status,
-        error: data.error
-      });
-      return res.status(500).json({ 
-        success: false, 
-        error: data.error?.message || 'Failed to get response from AI' 
-      });
-    }
-
-    // Extract the response text
-    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!aiResponse) {
-      console.error('❌ Unexpected Gemini response format:', data);
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Unexpected response format from AI' 
-      });
-    }
-
-    // Success! Return the AI's response
-    console.log('✅ Successfully received Gemini response');
-    return res.status(200).json({
-      success: true,
-      content: aiResponse.trim(),
-      model: 'gemini-pro',
-      provider: 'Google Gemini'
-    });
-
-  } catch (error) {
-    // Catch any unexpected errors
-    console.error('❌ Server error:', error);
-    return res.status(500).json({ 
-      success: false, 
-      error: error.message || 'Internal server error' 
-    });
-  }
+  
+  // Method not allowed
+  console.log('Method not allowed:', req.method);
+  return res.status(405).json({ error: 'Method not allowed' });
 };
