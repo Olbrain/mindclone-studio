@@ -186,31 +186,61 @@
 
         .link-status {
             width: 100%;
-            padding: 10px 15px;
-            background: #0d0d0d;
-            border: 1px solid #333;
-            border-radius: 6px;
-            font-size: 12px;
-            margin-top: 10px;
+            margin-top: 12px;
+            padding: 0;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             gap: 8px;
         }
 
-        .link-indicator {
-            color: #4CAF50;
+        .link-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 20px;
+            font-size: 11px;
             font-weight: 600;
-        }
-
-        .view-link {
             color: #4CAF50;
             text-decoration: none;
-            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
-        .view-link:hover {
-            text-decoration: underline;
+        .link-badge:hover {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.15) 0%, rgba(76, 175, 80, 0.08) 100%);
+            border-color: rgba(76, 175, 80, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .link-badge .pulse {
+            width: 6px;
+            height: 6px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(0.9);
+            }
+        }
+
+        .link-badge .arrow {
+            font-size: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .link-badge:hover .arrow {
+            transform: translateX(2px);
         }
 
         /* Main Content (Right Panel - Chat Area) */
@@ -676,8 +706,11 @@
                         <div id="userName" class="user-name"></div>
                         <div id="userEmail" class="user-email"></div>
                         <div id="linkStatus" class="link-status hidden">
-                            <span class="link-indicator">🔗 Link Active</span>
-                            <a href="#" id="viewLinkBtn" class="view-link" target="_blank">View →</a>
+                            <a href="#" id="viewLinkBtn" class="link-badge" target="_blank">
+                                <span class="pulse"></span>
+                                <span>Public Link</span>
+                                <span class="arrow">→</span>
+                            </a>
                         </div>
                     </div>
                     <button id="signOutBtn" class="sign-out-btn">Sign Out</button>
