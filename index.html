@@ -31,10 +31,10 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: white;
             padding: 30px;
             text-align: center;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid black;
         }
 
         .logo {
@@ -43,13 +43,13 @@
         }
 
         h1 {
-            color: #333;
+            color: black;
             margin-bottom: 5px;
             font-size: 32px;
         }
 
         .tagline {
-            color: #666;
+            color: black;
             font-size: 16px;
         }
 
@@ -60,13 +60,13 @@
         }
 
         .auth-screen h2 {
-            color: #333;
+            color: black;
             margin-bottom: 15px;
             font-size: 28px;
         }
 
         .auth-screen p {
-            color: #666;
+            color: black;
             margin-bottom: 40px;
             font-size: 16px;
             line-height: 1.6;
@@ -77,9 +77,9 @@
             align-items: center;
             gap: 12px;
             background: white;
-            color: #333;
+            color: black;
             padding: 14px 28px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid black;
             border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
@@ -89,8 +89,9 @@
         }
 
         .google-sign-in-btn:hover {
-            background: #f8f9fa;
-            border-color: #667eea;
+            background: black;
+            color: white;
+            border-color: black;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
@@ -106,15 +107,15 @@
             align-items: center;
             gap: 15px;
             padding: 20px 30px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e0e0e0;
+            background: white;
+            border-bottom: 1px solid black;
         }
 
         .user-avatar {
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            border: 2px solid #667eea;
+            border: 2px solid black;
         }
 
         .user-info {
@@ -123,18 +124,18 @@
 
         .user-name {
             font-weight: 600;
-            color: #333;
+            color: black;
             margin-bottom: 2px;
         }
 
         .user-email {
             font-size: 14px;
-            color: #666;
+            color: black;
         }
 
         .sign-out-btn {
             padding: 8px 16px;
-            background: #667eea;
+            background: black;
             color: white;
             border: none;
             border-radius: 6px;
@@ -144,7 +145,7 @@
         }
 
         .sign-out-btn:hover {
-            background: #5568d3;
+            background: #333;
         }
 
         /* Chat Interface */
@@ -196,32 +197,35 @@
         }
 
         .message.ai .message-avatar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: white;
+            border: 2px solid black;
         }
 
         .message.user .message-avatar {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: black;
+            color: white;
         }
 
         .message-content {
-            background: #f5f5f5;
+            background: white;
+            border: 1px solid black;
             padding: 15px 20px;
             border-radius: 18px;
             max-width: 70%;
             word-wrap: break-word;
             line-height: 1.5;
-            color: #333;
+            color: black;
         }
 
         .message.user .message-content {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: black;
             color: white;
         }
 
         .chat-input-container {
             padding: 25px 30px;
             background: white;
-            border-top: 1px solid #e0e0e0;
+            border-top: 1px solid black;
             display: flex;
             gap: 15px;
         }
@@ -229,7 +233,7 @@
         .chat-input {
             flex: 1;
             padding: 15px 20px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid black;
             border-radius: 25px;
             font-size: 16px;
             outline: none;
@@ -237,14 +241,14 @@
         }
 
         .chat-input:focus {
-            border-color: #667eea;
+            border-color: black;
         }
 
         .send-button {
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: black;
             color: white;
             border: none;
             cursor: pointer;
@@ -258,7 +262,7 @@
 
         .send-button:hover {
             transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
 
         .send-button:disabled {
