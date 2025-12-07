@@ -274,6 +274,7 @@
             display: flex;
             gap: 15px;
             animation: fadeIn 0.3s ease;
+            margin-bottom: 12px;
         }
 
         @keyframes fadeIn {
@@ -285,6 +286,12 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+
+        /* AI messages - left aligned WITH avatar */
+        .message.ai {
+            flex-direction: row;
+            justify-content: flex-start;
         }
 
         /* User messages - right aligned, no avatar (WhatsApp style) */
@@ -330,6 +337,19 @@
             color: black;
             border: none;
             border-radius: 18px 18px 4px 18px; /* WhatsApp-style tail on bottom right */
+            position: relative;
+            padding-right: 30px; /* Space for checkmark */
+        }
+
+        /* WhatsApp-style checkmark for sent messages */
+        .message.user .message-content::after {
+            content: '✓';
+            position: absolute;
+            right: 10px;
+            bottom: 8px;
+            font-size: 14px;
+            color: #999;
+            font-weight: bold;
         }
 
         .message.ai .message-content {
