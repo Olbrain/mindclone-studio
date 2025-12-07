@@ -2663,19 +2663,36 @@
 
                                 // Update or add activity item
                                 if (lastMessage) {
-                                    updateActivityItem(visitorId, {
+                                    const activityItem = {
                                         visitorId: visitorId,
                                         lastMessage: lastMessage,
                                         lastResponse: lastResponse,
                                         lastTimestamp: visitorData.lastVisit,
                                         isNew: change.type === 'modified' // Mark as new if modified (new message)
-                                    });
+                                    };
+
+                                    // Update activityData array
+                                    const existingIndex = activityData.findIndex(a => a.visitorId === visitorId);
+                                    if (existingIndex >= 0) {
+                                        activityData[existingIndex] = activityItem;
+                                    } else {
+                                        activityData.unshift(activityItem);
+                                    }
+
+                                    // Update DOM
+                                    updateActivityItem(visitorId, activityItem);
                                 }
                             } catch (error) {
                                 console.error('[Activity] Error fetching messages for visitor:', visitorId, error);
                             }
                         } else if (change.type === 'removed') {
-                            // Remove activity item
+                            // Remove from activityData array
+                            const index = activityData.findIndex(a => a.visitorId === visitorId);
+                            if (index >= 0) {
+                                activityData.splice(index, 1);
+                            }
+
+                            // Remove from DOM
                             removeActivityItem(visitorId);
                         }
                     }
