@@ -3599,7 +3599,7 @@ For example:
                     workflowState.currentDraft = null;
                     workflowState.currentSection = null;
 
-                    // Move to next section
+                    // Move to next section (only for section steps, not CoF steps)
                     if (step === 'section_about') {
                         workflowState.step = 'section_product';
                         const response = `✅ Approved! Saved to knowledge base.
@@ -3636,15 +3636,23 @@ Let me show you a preview of your complete knowledge base.`;
                         setTimeout(() => showKnowledgeBasePreview(), 1000);
                         return true;
                     }
-                } else if (lowerMsg.startsWith('edit') || lowerMsg.includes('change') || lowerMsg.includes('revise')) {
-                    // User wants to edit - use their feedback to regenerate
-                    const feedback = message;
-                    await generateSectionDraft(workflowState.currentSection, workflowState.userInput, feedback);
-                    return true;
+                    // For CoF steps, fall through to their handlers below
                 } else {
-                    // User said something else - treat as feedback
-                    await generateSectionDraft(workflowState.currentSection, workflowState.userInput, message);
-                    return true;
+                    // User provided feedback - regenerate based on current step
+                    if (step === 'purpose_draft') {
+                        await draftPurpose(workflowState.userInput, message);
+                        return true;
+                    } else if (step === 'audiences_draft') {
+                        await draftAudiences(workflowState.userInput, message);
+                        return true;
+                    } else if (step === 'actions_draft') {
+                        await draftActions(workflowState.userInput, message);
+                        return true;
+                    } else if (workflowState.currentSection) {
+                        // User wants to edit section - use their feedback to regenerate
+                        await generateSectionDraft(workflowState.currentSection, workflowState.userInput, message);
+                        return true;
+                    }
                 }
             }
 
@@ -3779,14 +3787,27 @@ Tell me about yourself or your business. What do you do? What problem do you sol
         }
 
         // Helper functions to draft content using AI
-        async function draftPurpose(userInput) {
+        async function draftPurpose(userInput, feedback = null) {
             showTypingIndicator();
             try {
-                const draftPrompt = `The user is setting up their public link's Core Objective Function. They told you about their purpose: "${userInput}"
+                let draftPrompt;
+                if (feedback) {
+                    draftPrompt = `The user is setting up their public link's Core Objective Function.
+
+Original input: "${userInput}"
+Previous draft: "${workflowState.currentDraft}"
+User feedback: "${feedback}"
+
+Revise the purpose statement based on their feedback. Keep it clear, concise (1-2 sentences), professional but authentic.
+
+Return ONLY the revised purpose statement, nothing else.`;
+                } else {
+                    draftPrompt = `The user is setting up their public link's Core Objective Function. They told you about their purpose: "${userInput}"
 
 Draft a clear, concise purpose statement (1-2 sentences) based on what they said. Make it professional but authentic.
 
 Return ONLY the purpose statement, nothing else.`;
+                }
 
                 const draft = await callAIForDraft(draftPrompt);
                 removeTypingIndicator();
@@ -3794,11 +3815,10 @@ Return ONLY the purpose statement, nothing else.`;
                 workflowState.currentDraft = draft;
                 workflowState.waitingForApproval = true;
 
-                const response = `Based on what you told me, here's the purpose I drafted:
+                const response = feedback
+                    ? `Here's the revised purpose:\n\n**"${draft}"**\n\nType **"approve"** to save, or tell me how to adjust further.`
+                    : `Based on what you told me, here's the purpose I drafted:\n\n**"${draft}"**\n\nDoes this capture it well? Type **"approve"** to save it, or tell me how to adjust it.`;
 
-**"${draft}"**
-
-Does this capture it well? Type **"approve"** to save it, or tell me how to adjust it.`;
                 addMessage('ai', response, new Date());
             } catch (error) {
                 removeTypingIndicator();
@@ -3807,10 +3827,22 @@ Does this capture it well? Type **"approve"** to save it, or tell me how to adju
             }
         }
 
-        async function draftAudiences(userInput) {
+        async function draftAudiences(userInput, feedback = null) {
             showTypingIndicator();
             try {
-                const draftPrompt = `The user is defining who visits their public link. They said: "${userInput}"
+                let draftPrompt;
+                if (feedback) {
+                    draftPrompt = `The user is defining who visits their public link.
+
+Original input: "${userInput}"
+Previous draft: "${workflowState.currentDraft}"
+User feedback: "${feedback}"
+
+Revise the target audiences list based on their feedback. Format as bullet points (•). Be specific and concise.
+
+Return ONLY the revised bulleted list, nothing else.`;
+                } else {
+                    draftPrompt = `The user is defining who visits their public link. They said: "${userInput}"
 
 Based on that, list the target audiences as a clean list. Format as bullet points (•). Be specific and concise.
 
@@ -3818,6 +3850,7 @@ Return ONLY the bulleted list, nothing else. Example format:
 • Investors and VCs
 • Potential customers
 • Job candidates`;
+                }
 
                 const draft = await callAIForDraft(draftPrompt);
                 removeTypingIndicator();
@@ -3825,11 +3858,10 @@ Return ONLY the bulleted list, nothing else. Example format:
                 workflowState.currentDraft = draft;
                 workflowState.waitingForApproval = true;
 
-                const response = `Here are the target audiences I identified:
+                const response = feedback
+                    ? `Here's the revised list:\n\n${draft}\n\nType **"approve"** to save, or tell me what else to change.`
+                    : `Here are the target audiences I identified:\n\n${draft}\n\nType **"approve"** if this looks good, or tell me what to change.`;
 
-${draft}
-
-Type **"approve"** if this looks good, or tell me what to change.`;
                 addMessage('ai', response, new Date());
             } catch (error) {
                 removeTypingIndicator();
@@ -3838,10 +3870,22 @@ Type **"approve"** if this looks good, or tell me what to change.`;
             }
         }
 
-        async function draftActions(userInput) {
+        async function draftActions(userInput, feedback = null) {
             showTypingIndicator();
             try {
-                const draftPrompt = `The user wants visitors to take certain actions after visiting their link. They said: "${userInput}"
+                let draftPrompt;
+                if (feedback) {
+                    draftPrompt = `The user wants visitors to take certain actions after visiting their link.
+
+Original input: "${userInput}"
+Previous draft: "${workflowState.currentDraft}"
+User feedback: "${feedback}"
+
+Revise the desired actions list based on their feedback. Format as bullet points (•). Be specific and action-oriented.
+
+Return ONLY the revised bulleted list, nothing else.`;
+                } else {
+                    draftPrompt = `The user wants visitors to take certain actions after visiting their link. They said: "${userInput}"
 
 Based on that, list the desired actions as a clean bullet list (•). Be specific and action-oriented.
 
@@ -3849,6 +3893,7 @@ Return ONLY the bulleted list, nothing else. Example format:
 • Request an intro call
 • Sign up for product demo
 • Apply for open positions`;
+                }
 
                 const draft = await callAIForDraft(draftPrompt);
                 removeTypingIndicator();
@@ -3856,11 +3901,10 @@ Return ONLY the bulleted list, nothing else. Example format:
                 workflowState.currentDraft = draft;
                 workflowState.waitingForApproval = true;
 
-                const response = `Here are the desired actions I drafted:
+                const response = feedback
+                    ? `Here's the revised list:\n\n${draft}\n\nType **"approve"** to save, or tell me how to adjust further.`
+                    : `Here are the desired actions I drafted:\n\n${draft}\n\nType **"approve"** to save, or tell me how to adjust.`;
 
-${draft}
-
-Type **"approve"** to save, or tell me how to adjust.`;
                 addMessage('ai', response, new Date());
             } catch (error) {
                 removeTypingIndicator();
