@@ -2694,11 +2694,14 @@
 
         // Update or add activity item in the feed
         function updateActivityItem(visitorId, activity) {
-            // Check if item already exists
+            // Check if item already exists in old sidebar
             let existingItem = activityList.querySelector(`[data-visitor-id="${visitorId}"]`);
 
+            // Check if item exists in right panel
+            let rightExistingItem = rightActivityList ? rightActivityList.querySelector(`[data-visitor-id="${visitorId}"]`) : null;
+
             if (existingItem) {
-                // Update existing item
+                // Update existing item in old sidebar
                 const timeAgo = formatTimeAgo(activity.lastTimestamp);
                 const visitorName = `visitor_${visitorId.substring(0, 6)}`;
 
@@ -2734,7 +2737,7 @@
                     activityList.insertBefore(existingItem, activityList.firstChild);
                 }
             } else {
-                // Create new item
+                // Create new item for old sidebar
                 const item = createActivityItem(
                     activity.visitorId,
                     activity.lastMessage,
@@ -2761,19 +2764,101 @@
                     }, 5000);
                 }
             }
+
+            // Update right panel too
+            if (rightActivityList) {
+                if (rightExistingItem) {
+                    // Update existing item in right panel
+                    const timeAgo = formatTimeAgo(activity.lastTimestamp);
+                    const visitorName = `visitor_${visitorId.substring(0, 6)}`;
+
+                    rightExistingItem.innerHTML = `
+                        <div class="activity-item-header">
+                            <div class="activity-item-visitor">
+                                <span>👤</span>
+                                <span>${visitorName}</span>
+                            </div>
+                            <div class="activity-item-time">${timeAgo}</div>
+                        </div>
+                        <div class="activity-item-message">"${truncateText(activity.lastMessage, 60)}"</div>
+                        ${activity.lastResponse ? `<div class="activity-item-response">🔮 ${truncateText(activity.lastResponse, 60)}</div>` : ''}
+                    `;
+
+                    // Re-attach click listener
+                    rightExistingItem.onclick = () => {
+                        openConversationModal(visitorId);
+                    };
+
+                    // Add "new" class and animate
+                    if (activity.isNew) {
+                        rightExistingItem.classList.add('new');
+                        setTimeout(() => {
+                            rightExistingItem.classList.remove('new');
+                        }, 5000);
+                    }
+
+                    // Move to top if it's a new message
+                    if (activity.isNew && rightExistingItem !== rightActivityList.firstChild) {
+                        rightActivityList.removeChild(rightExistingItem);
+                        rightActivityList.insertBefore(rightExistingItem, rightActivityList.firstChild);
+                    }
+                } else {
+                    // Create new item for right panel
+                    const rightItem = createActivityItem(
+                        activity.visitorId,
+                        activity.lastMessage,
+                        activity.lastResponse,
+                        activity.lastTimestamp,
+                        activity.isNew
+                    );
+
+                    // Add to top of list
+                    if (rightActivityList.firstChild) {
+                        rightActivityList.insertBefore(rightItem, rightActivityList.firstChild);
+                    } else {
+                        rightActivityList.appendChild(rightItem);
+                    }
+
+                    // Show list, hide empty state
+                    if (rightActivityList) rightActivityList.style.display = 'flex';
+                    if (rightActivityEmpty) rightActivityEmpty.style.display = 'none';
+
+                    // Remove "new" class after 5 seconds
+                    if (activity.isNew) {
+                        setTimeout(() => {
+                            rightItem.classList.remove('new');
+                        }, 5000);
+                    }
+                }
+            }
         }
 
         // Remove activity item from the feed
         function removeActivityItem(visitorId) {
+            // Remove from old sidebar
             const item = activityList.querySelector(`[data-visitor-id="${visitorId}"]`);
             if (item) {
                 item.remove();
             }
 
-            // Check if list is empty
+            // Remove from right panel
+            if (rightActivityList) {
+                const rightItem = rightActivityList.querySelector(`[data-visitor-id="${visitorId}"]`);
+                if (rightItem) {
+                    rightItem.remove();
+                }
+            }
+
+            // Check if old sidebar list is empty
             if (activityList.children.length === 0) {
                 activityList.style.display = 'none';
                 activityEmpty.style.display = 'flex';
+            }
+
+            // Check if right panel list is empty
+            if (rightActivityList && rightActivityList.children.length === 0) {
+                rightActivityList.style.display = 'none';
+                if (rightActivityEmpty) rightActivityEmpty.style.display = 'flex';
             }
         }
 
