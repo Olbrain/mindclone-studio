@@ -1,5 +1,16 @@
-// Gemini API handler using fetch - no dependencies needed
+// Gemini API handler with Mem0 integration
 const { CONNOISSEUR_STYLE_GUIDE } = require('./_style-guide');
+const { MemoryClient } = require('mem0ai');
+
+// Initialize Mem0 client (reuse across requests)
+let memoryClient = null;
+
+function getMemoryClient() {
+  if (!memoryClient && process.env.MEM0_API_KEY) {
+    memoryClient = new MemoryClient(process.env.MEM0_API_KEY);
+  }
+  return memoryClient;
+}
 
 module.exports = async (req, res) => {
   // CORS
@@ -12,10 +23,11 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'GET') {
-    return res.status(200).json({ 
+    return res.status(200).json({
       status: 'ok',
       provider: 'gemini',
-      hasApiKey: !!process.env.GEMINI_API_KEY
+      hasApiKey: !!process.env.GEMINI_API_KEY,
+      hasMem0: !!process.env.MEM0_API_KEY
     });
   }
 
@@ -25,7 +37,7 @@ module.exports = async (req, res) => {
 
   try {
     const apiKey = process.env.GEMINI_API_KEY;
-    
+
     if (!apiKey) {
       return res.status(500).json({
         success: false,
@@ -33,7 +45,7 @@ module.exports = async (req, res) => {
       });
     }
 
-    const { messages, systemPrompt } = req.body;
+    const { messages, systemPrompt, userId } = req.body;
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({
         success: false,
@@ -41,17 +53,69 @@ module.exports = async (req, res) => {
       });
     }
 
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'userId required for memory management'
+      });
+    }
+
+    // === MEM0 INTEGRATION ===
+    let relevantMemories = [];
+    let contextWindow = messages;
+
+    const mem0 = getMemoryClient();
+    if (mem0) {
+      try {
+        // Get the last user message to search for relevant memories
+        const lastUserMessage = messages[messages.length - 1];
+
+        // Search for relevant memories
+        const memorySearchResult = await mem0.search(lastUserMessage.content, {
+          user_id: userId,
+          limit: 10
+        });
+
+        if (memorySearchResult && memorySearchResult.results) {
+          relevantMemories = memorySearchResult.results.map(m => m.memory);
+        }
+
+        // Use only last 20 messages to save context (instead of all messages)
+        contextWindow = messages.slice(-20);
+
+        console.log(`[Mem0] Found ${relevantMemories.length} relevant memories for user ${userId}`);
+      } catch (memError) {
+        console.error('[Mem0] Memory search error:', memError);
+        // Continue without memories if Mem0 fails
+      }
+    } else {
+      // If no Mem0, use last 50 messages as fallback
+      contextWindow = messages.slice(-50);
+    }
+
     // Convert conversation history to Gemini format
-    const contents = messages.map(msg => ({
+    const contents = contextWindow.map(msg => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: msg.content }]
     }));
 
-    // Prepend system prompt if provided, enhanced with style guide
+    // Build enhanced system prompt with memories
     let systemInstruction = undefined;
     if (systemPrompt) {
-      // Combine base prompt with conversational style guide
-      const enhancedPrompt = `${systemPrompt}\n\n${CONNOISSEUR_STYLE_GUIDE}`;
+      let enhancedPrompt = systemPrompt;
+
+      // Add relevant memories to system prompt
+      if (relevantMemories.length > 0) {
+        enhancedPrompt += '\n\n## RELEVANT MEMORIES:\n';
+        enhancedPrompt += 'Here are important facts and preferences you should remember:\n';
+        relevantMemories.forEach((memory, idx) => {
+          enhancedPrompt += `${idx + 1}. ${memory}\n`;
+        });
+      }
+
+      // Add style guide
+      enhancedPrompt += `\n\n${CONNOISSEUR_STYLE_GUIDE}`;
+
       systemInstruction = {
         parts: [{ text: enhancedPrompt }]
       };
@@ -83,9 +147,36 @@ module.exports = async (req, res) => {
 
     const text = data.candidates[0].content.parts[0].text;
 
+    // === STORE NEW MEMORIES ===
+    if (mem0) {
+      try {
+        // Add the conversation to memory (Mem0 will extract important facts)
+        const conversationToStore = [
+          {
+            role: 'user',
+            content: messages[messages.length - 1].content
+          },
+          {
+            role: 'assistant',
+            content: text
+          }
+        ];
+
+        await mem0.add(conversationToStore, {
+          user_id: userId
+        });
+
+        console.log(`[Mem0] Stored new memories for user ${userId}`);
+      } catch (memError) {
+        console.error('[Mem0] Memory storage error:', memError);
+        // Continue even if memory storage fails
+      }
+    }
+
     return res.status(200).json({
       success: true,
-      content: text
+      content: text,
+      memoriesUsed: relevantMemories.length
     });
 
   } catch (error) {

@@ -3370,7 +3370,8 @@
                     },
                     body: JSON.stringify({
                         messages: conversationHistory,
-                        systemPrompt: systemPrompt
+                        systemPrompt: systemPrompt,
+                        userId: auth.currentUser.uid
                     }),
                 });
 
