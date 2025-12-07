@@ -1517,6 +1517,71 @@
             color: white;
         }
 
+        /* Workflow Indicator Banner */
+        .workflow-indicator {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            animation: slideDown 0.3s ease;
+        }
+
+        .workflow-indicator.hidden {
+            display: none;
+        }
+
+        .workflow-indicator-icon {
+            font-size: 18px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .workflow-cancel-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .workflow-cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
         .copy-btn.copied {
             background: #4CAF50;
             color: white;
@@ -2131,6 +2196,13 @@
     </style>
 </head>
 <body>
+    <!-- Workflow Indicator Banner -->
+    <div id="workflowIndicator" class="workflow-indicator hidden">
+        <span class="workflow-indicator-icon">⚙️</span>
+        <span id="workflowIndicatorText">Setting up your public link...</span>
+        <button class="workflow-cancel-btn" onclick="cancelWorkflow()">Cancel</button>
+    </div>
+
     <!-- Landing Page (Centered Auth Screen) -->
     <div id="landingPage" class="landing-page hidden">
         <div class="landing-content">
@@ -2486,6 +2558,56 @@
                 await saveMessageToFirestore(currentUser.uid, type === 'ai' ? 'assistant' : type, content);
             }
         }
+
+        // Workflow Indicator Functions
+        function showWorkflowIndicator(text = 'Setting up your public link...') {
+            const indicator = document.getElementById('workflowIndicator');
+            const indicatorText = document.getElementById('workflowIndicatorText');
+            if (indicator && indicatorText) {
+                indicatorText.textContent = text;
+                indicator.classList.remove('hidden');
+            }
+        }
+
+        function hideWorkflowIndicator() {
+            const indicator = document.getElementById('workflowIndicator');
+            if (indicator) {
+                indicator.classList.add('hidden');
+            }
+        }
+
+        function updateWorkflowIndicator(text) {
+            const indicatorText = document.getElementById('workflowIndicatorText');
+            if (indicatorText) {
+                indicatorText.textContent = text;
+            }
+        }
+
+        // Cancel workflow function
+        window.cancelWorkflow = async function() {
+            if (!workflowState.active) return;
+
+            const confirmed = confirm('Are you sure you want to cancel setting up your public link? Your progress will be lost.');
+            if (!confirmed) return;
+
+            // Reset workflow state
+            workflowState.active = false;
+            workflowState.step = null;
+            workflowState.waitingForApproval = false;
+            workflowState.currentDraft = null;
+            workflowState.currentSection = null;
+            workflowState.userInput = null;
+            workflowState.data = {
+                cof: { purpose: '', targetAudiences: [], desiredActions: [] },
+                sections: {}
+            };
+
+            // Hide indicator
+            hideWorkflowIndicator();
+
+            // Show cancellation message
+            await addWorkflowMessage('ai', '❌ Workflow cancelled. Type "set up my link" whenever you\'re ready to try again.');
+        };
 
         // System prompt - enhanced with The Connoisseur persona
         const systemPrompt = "You are Mindclone, a personal AI companion - a sophisticated, cultured, and enlightened conversational partner who offers thoughtful insights while maintaining elegance and grace.";
@@ -3584,6 +3706,9 @@
             workflowState.active = true;
             workflowState.step = 'intro';
 
+            // Show workflow indicator
+            showWorkflowIndicator('🚀 Setting up your public link...');
+
             const introMessage = `I'll help you set up your public link! This is your business card to the world - a way to share authentic information about yourself or your business with investors, customers, talent, and other stakeholders.
 
 We'll start by defining your link's **Core Objective Function (CoF)** - the strategic "why" behind your link. Then we'll build a **Knowledge Base** with the specific information you want to share.
@@ -4201,6 +4326,9 @@ Type **"approve"** to save this, or tell me how to improve it.`;
                     sections: {}
                 };
 
+                // Hide workflow indicator
+                hideWorkflowIndicator();
+
                 // Show success message with correct URL
                 const username = settings.username || 'your-username';
                 const domain = window.location.hostname === 'localhost' ?
@@ -4258,13 +4386,11 @@ Is there anything else you'd like to configure?`;
             chatInput.value = '';
 
             // === WORKFLOW HANDLING ===
-            // Check if workflow is active
+            // Check if workflow is active - BLOCK ALL REGULAR AI
             if (workflowState.active) {
                 // Handle workflow response
-                const handled = await handleWorkflowResponse(message);
-                if (handled) {
-                    return; // Don't send to regular AI
-                }
+                await handleWorkflowResponse(message);
+                return; // ALWAYS block regular AI when workflow is active
             }
 
             // Check if message triggers workflow
