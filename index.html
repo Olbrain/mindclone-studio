@@ -4003,6 +4003,8 @@ Tell me about yourself or your business. What do you do? What problem do you sol
         async function draftPurpose(userInput, feedback = null) {
             showTypingIndicator();
             try {
+                console.log('[Workflow] Drafting purpose...', { userInput, feedback });
+
                 let draftPrompt;
                 if (feedback) {
                     draftPrompt = `The user is setting up their public link's Core Objective Function.
@@ -4023,6 +4025,8 @@ Return ONLY the purpose statement, nothing else.`;
                 }
 
                 const draft = await callAIForDraft(draftPrompt);
+                console.log('[Workflow] Purpose draft generated:', draft);
+
                 removeTypingIndicator();
 
                 workflowState.currentDraft = draft;
@@ -4034,15 +4038,23 @@ Return ONLY the purpose statement, nothing else.`;
 
                 await addWorkflowMessage('ai', response);
             } catch (error) {
+                console.error('[Workflow] Error drafting purpose:', error);
                 removeTypingIndicator();
-                await addWorkflowMessage('ai', `Sorry, I had trouble drafting that. Let me try again. Could you rephrase your purpose?`);
+
+                // Reset workflow state to allow retry
                 workflowState.step = 'intro';
+                workflowState.waitingForApproval = false;
+                workflowState.currentDraft = null;
+
+                await addWorkflowMessage('ai', `Sorry, I had trouble drafting that (${error.message}). Let me try again. What is the primary purpose of your public link?`);
             }
         }
 
         async function draftAudiences(userInput, feedback = null) {
             showTypingIndicator();
             try {
+                console.log('[Workflow] Drafting audiences...', { userInput, feedback });
+
                 let draftPrompt;
                 if (feedback) {
                     draftPrompt = `The user is defining who visits their public link.
@@ -4066,6 +4078,8 @@ Return ONLY the bulleted list, nothing else. Example format:
                 }
 
                 const draft = await callAIForDraft(draftPrompt);
+                console.log('[Workflow] Audiences draft generated:', draft);
+
                 removeTypingIndicator();
 
                 workflowState.currentDraft = draft;
@@ -4077,15 +4091,23 @@ Return ONLY the bulleted list, nothing else. Example format:
 
                 await addWorkflowMessage('ai', response);
             } catch (error) {
+                console.error('[Workflow] Error drafting audiences:', error);
                 removeTypingIndicator();
-                await addWorkflowMessage('ai', `Sorry, I had trouble with that. Could you list your target audiences again?`);
+
+                // Reset workflow state to allow retry
                 workflowState.step = 'target_audiences';
+                workflowState.waitingForApproval = false;
+                workflowState.currentDraft = null;
+
+                await addWorkflowMessage('ai', `Sorry, I had trouble with that (${error.message}). Let me try again. Who are the primary people visiting your link?`);
             }
         }
 
         async function draftActions(userInput, feedback = null) {
             showTypingIndicator();
             try {
+                console.log('[Workflow] Drafting actions...', { userInput, feedback });
+
                 let draftPrompt;
                 if (feedback) {
                     draftPrompt = `The user wants visitors to take certain actions after visiting their link.
@@ -4109,6 +4131,8 @@ Return ONLY the bulleted list, nothing else. Example format:
                 }
 
                 const draft = await callAIForDraft(draftPrompt);
+                console.log('[Workflow] Actions draft generated:', draft);
+
                 removeTypingIndicator();
 
                 workflowState.currentDraft = draft;
@@ -4120,15 +4144,23 @@ Return ONLY the bulleted list, nothing else. Example format:
 
                 await addWorkflowMessage('ai', response);
             } catch (error) {
+                console.error('[Workflow] Error drafting actions:', error);
                 removeTypingIndicator();
-                await addWorkflowMessage('ai', `Sorry, I had trouble with that. Could you describe the desired actions again?`);
+
+                // Reset workflow state to allow retry
                 workflowState.step = 'desired_actions';
+                workflowState.waitingForApproval = false;
+                workflowState.currentDraft = null;
+
+                await addWorkflowMessage('ai', `Sorry, I had trouble with that (${error.message}). Let me try again. What do you want visitors to do after they learn about you?`);
             }
         }
 
         async function generateSectionDraft(sectionName, userInput, feedback = null) {
             showTypingIndicator();
             try {
+                console.log('[Workflow] Drafting section:', sectionName, { userInput, feedback });
+
                 let draftPrompt;
                 if (feedback) {
                     draftPrompt = `The user is building their "${sectionName}" section for their public knowledge base.
@@ -4156,6 +4188,8 @@ Draft professional, authentic content based on what they said. Return ONLY the c
                 }
 
                 const draft = await callAIForDraft(draftPrompt);
+                console.log('[Workflow] Section draft generated:', { sectionName, draft });
+
                 removeTypingIndicator();
 
                 workflowState.currentDraft = draft;
@@ -4171,14 +4205,27 @@ ${draft}
 Type **"approve"** to save this, or tell me how to improve it.`;
                 await addWorkflowMessage('ai', response);
             } catch (error) {
+                console.error('[Workflow] Error drafting section:', sectionName, error);
                 removeTypingIndicator();
-                await addWorkflowMessage('ai', `Sorry, I had trouble drafting that. Could you tell me about your ${sectionName} again?`);
+
+                // Reset workflow state to allow retry
+                workflowState.waitingForApproval = false;
+                workflowState.currentDraft = null;
+                // Keep workflowState.step and currentSection as is for retry
+
+                await addWorkflowMessage('ai', `Sorry, I had trouble drafting that (${error.message}). Could you tell me about your ${sectionName} again?`);
             }
         }
 
-        // Call AI to generate draft content
+        // Call AI to generate draft content with timeout protection
         async function callAIForDraft(prompt) {
-            const response = await fetch('/api/chat', {
+            // Create timeout promise (30 seconds)
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Request timed out')), 30000);
+            });
+
+            // Create fetch promise
+            const fetchPromise = fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -4186,14 +4233,19 @@ Type **"approve"** to save this, or tell me how to improve it.`;
                     systemPrompt: 'You are a professional content writer helping someone build their public profile. Be concise, clear, and authentic. Follow instructions exactly.',
                     userId: auth.currentUser.uid
                 })
+            }).then(async (response) => {
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}`);
+                }
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to generate draft');
+                }
+                return data.content.trim();
             });
 
-            const data = await response.json();
-            if (!data.success) {
-                throw new Error(data.error || 'Failed to generate draft');
-            }
-
-            return data.content.trim();
+            // Race between fetch and timeout
+            return Promise.race([fetchPromise, timeoutPromise]);
         }
 
         // Show knowledge base preview modal
