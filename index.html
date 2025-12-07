@@ -290,14 +290,16 @@
 
         /* AI messages - left aligned WITH avatar */
         .message.ai {
-            flex-direction: row;
-            justify-content: flex-start;
+            flex-direction: row !important;
+            justify-content: flex-start !important;
+            align-items: flex-start;
         }
 
         /* User messages - right aligned, no avatar (WhatsApp style) */
         .message.user {
-            flex-direction: row;
-            justify-content: flex-end;
+            flex-direction: row !important;
+            justify-content: flex-end !important;
+            align-items: flex-end;
         }
 
         .message-avatar {
