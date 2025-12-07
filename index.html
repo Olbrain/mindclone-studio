@@ -2792,7 +2792,13 @@
                 }
             });
 
+            // Update old sidebar count
             activityCount.textContent = `${todayCount} today`;
+
+            // Update right panel count
+            if (rightActivityCount) {
+                rightActivityCount.textContent = `${todayCount} today`;
+            }
         }
 
         // Conversation Modal Functions
@@ -3542,9 +3548,6 @@
 
         // Update activity badge count
         function updateActivityBadge() {
-            const activityBadge = document.getElementById('activityBadge');
-            if (!activityBadge) return;
-
             // Calculate today's activity count
             const now = Date.now();
             const oneDayAgo = now - (24 * 60 * 60 * 1000);
@@ -3553,12 +3556,15 @@
                 return timestamp > oneDayAgo;
             }).length;
 
-            // Update badge
-            if (todayCount > 0) {
-                activityBadge.textContent = todayCount > 99 ? '99+' : todayCount;
-                activityBadge.classList.remove('hidden');
-            } else {
-                activityBadge.classList.add('hidden');
+            // Update right panel count
+            if (rightActivityCount) {
+                rightActivityCount.textContent = `${todayCount} today`;
+            }
+
+            // Update old sidebar count (if it exists)
+            const activityCount = document.getElementById('activityCount');
+            if (activityCount) {
+                activityCount.textContent = `${todayCount} today`;
             }
         }
     </script>
