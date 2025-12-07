@@ -1842,9 +1842,19 @@
             /* Fix chat input for Safari iOS */
             .chat-input-container {
                 padding: 15px 16px;
-                padding-bottom: max(15px, calc(15px + env(safe-area-inset-bottom) + 100px));
+                padding-bottom: max(15px, calc(15px + env(safe-area-inset-bottom) + 20px));
                 position: relative;
                 background: #0d0d0d;
+            }
+
+            /* Safari-specific padding (needs more space) */
+            body.is-safari .chat-input-container {
+                padding-bottom: max(15px, calc(15px + env(safe-area-inset-bottom) + 100px));
+            }
+
+            /* Chrome-specific padding (minimal space) */
+            body.is-chrome .chat-input-container {
+                padding-bottom: max(15px, calc(15px + env(safe-area-inset-bottom) + 20px));
             }
 
             .chat-input {
@@ -2118,6 +2128,19 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         const db = getFirestore(app);
+
+        // Detect browser and add class to body for browser-specific CSS
+        (function detectBrowser() {
+            const ua = navigator.userAgent;
+            const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua) && !/CriOS/.test(ua);
+            const isChrome = /Chrome/.test(ua) || /CriOS/.test(ua);
+
+            if (isSafari) {
+                document.body.classList.add('is-safari');
+            } else if (isChrome) {
+                document.body.classList.add('is-chrome');
+            }
+        })();
 
         // DOM Elements
         const sidebar = document.querySelector('.sidebar');
