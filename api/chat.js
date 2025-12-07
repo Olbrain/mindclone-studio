@@ -80,8 +80,8 @@ module.exports = async (req, res) => {
           relevantMemories = memorySearchResult.results.map(m => m.memory);
         }
 
-        // Use only last 20 messages to save context (instead of all messages)
-        contextWindow = messages.slice(-20);
+        // Use only last 100 messages to save context (instead of all messages)
+        contextWindow = messages.slice(-100);
 
         console.log(`[Mem0] Found ${relevantMemories.length} relevant memories for user ${userId}`);
       } catch (memError) {
