@@ -288,11 +288,12 @@
             }
         }
 
-        /* AI messages - left aligned WITH avatar */
+        /* AI messages - avatar on top, text below (shifts text left) */
         .message.ai {
-            flex-direction: row !important;
+            flex-direction: column !important;
             justify-content: flex-start !important;
             align-items: flex-start;
+            gap: 8px;
         }
 
         /* User messages - right aligned, no avatar (WhatsApp style) */
