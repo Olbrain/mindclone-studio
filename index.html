@@ -348,16 +348,9 @@
             padding: 16px 20px;
             border-bottom: 1px solid #333;
             background: #1a1a1a;
-        }
-
-        .activity-feed-title {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
             gap: 8px;
-            color: white;
-            font-size: 14px;
-            font-weight: 600;
         }
 
         .activity-feed-link {
@@ -368,10 +361,16 @@
             text-decoration: none;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 600;
         }
 
         .activity-feed-link:hover {
             color: #4CAF50;
+        }
+
+        .activity-feed-link .icon {
+            font-size: 16px;
         }
 
         .activity-feed-link .arrow {
@@ -385,16 +384,11 @@
             opacity: 1;
         }
 
-        .activity-feed-title .icon {
-            font-size: 16px;
-        }
-
         .activity-feed-count {
             font-size: 11px;
             color: #999;
-            background: #2a2a2a;
-            padding: 2px 8px;
-            border-radius: 10px;
+            font-weight: 400;
+            padding-left: 22px;
         }
 
         .activity-feed-list {
@@ -1289,13 +1283,11 @@
             <!-- Live Activity Feed (shown when logged in) -->
             <div id="activityFeed" class="activity-feed hidden">
                 <div class="activity-feed-header">
-                    <div class="activity-feed-title">
-                        <a href="#" id="activityFeedLink" class="activity-feed-link" target="_blank">
-                            <span class="icon">🔗</span> Live Link Activity
-                            <span class="arrow">→</span>
-                        </a>
-                        <span id="activityCount" class="activity-feed-count">0 today</span>
-                    </div>
+                    <a href="#" id="activityFeedLink" class="activity-feed-link" target="_blank">
+                        <span class="icon">🔗</span> Live Link Activity
+                        <span class="arrow">→</span>
+                    </a>
+                    <span id="activityCount" class="activity-feed-count">0 today</span>
                 </div>
                 <div id="activityList" class="activity-feed-list">
                     <!-- Activity items will be dynamically added here -->
