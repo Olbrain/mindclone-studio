@@ -2461,6 +2461,10 @@
         let workflowState = {
             active: false,
             step: null,
+            waitingForApproval: false,
+            currentDraft: null,
+            currentSection: null,
+            userInput: null,
             data: {
                 cof: {
                     purpose: '',
@@ -3576,166 +3580,363 @@ For example:
         // Handle workflow responses
         async function handleWorkflowResponse(message) {
             const step = workflowState.step;
+            const lowerMsg = message.toLowerCase();
 
+            // Check if user is approving/editing a draft
+            if (workflowState.waitingForApproval) {
+                if (lowerMsg === 'approve' || lowerMsg === 'approved' || lowerMsg === 'yes' || lowerMsg === 'looks good') {
+                    // Save the draft and move to next step
+                    const section = workflowState.currentSection;
+                    if (section) {
+                        workflowState.data.sections[section] = {
+                            content: workflowState.currentDraft,
+                            approved: true
+                        };
+                    }
+
+                    // Reset approval state
+                    workflowState.waitingForApproval = false;
+                    workflowState.currentDraft = null;
+                    workflowState.currentSection = null;
+
+                    // Move to next section
+                    if (step === 'section_about') {
+                        workflowState.step = 'section_product';
+                        const response = `✅ Approved! Saved to knowledge base.
+
+**Section 2: Product/Service**
+
+Tell me about what you offer. What are your key products, services, or features?`;
+                        addMessage('ai', response, new Date());
+                        return true;
+                    } else if (step === 'section_product') {
+                        workflowState.step = 'section_traction';
+                        const response = `✅ Approved! Saved to knowledge base.
+
+**Section 3: Traction/Background**
+
+Share your achievements, traction metrics, or professional background.`;
+                        addMessage('ai', response, new Date());
+                        return true;
+                    } else if (step === 'section_traction') {
+                        workflowState.step = 'section_contact';
+                        const response = `✅ Approved! Saved to knowledge base.
+
+**Section 4: Contact**
+
+How should visitors reach you? Share your contact methods.`;
+                        addMessage('ai', response, new Date());
+                        return true;
+                    } else if (step === 'section_contact') {
+                        workflowState.step = 'complete';
+                        const response = `✅ Approved! All sections completed.
+
+Let me show you a preview of your complete knowledge base.`;
+                        addMessage('ai', response, new Date());
+                        setTimeout(() => showKnowledgeBasePreview(), 1000);
+                        return true;
+                    }
+                } else if (lowerMsg.startsWith('edit') || lowerMsg.includes('change') || lowerMsg.includes('revise')) {
+                    // User wants to edit - use their feedback to regenerate
+                    const feedback = message;
+                    await generateSectionDraft(workflowState.currentSection, workflowState.userInput, feedback);
+                    return true;
+                } else {
+                    // User said something else - treat as feedback
+                    await generateSectionDraft(workflowState.currentSection, workflowState.userInput, message);
+                    return true;
+                }
+            }
+
+            // Normal workflow progression
             if (step === 'intro') {
-                // Save purpose
-                workflowState.data.cof.purpose = message;
+                // User provided purpose - draft it professionally
+                workflowState.userInput = message;
+                workflowState.step = 'purpose_draft';
+                await draftPurpose(message);
+                return true;
+            }
+
+            if (step === 'purpose_draft') {
+                // User approved purpose
+                workflowState.data.cof.purpose = workflowState.currentDraft;
+                workflowState.waitingForApproval = false;
                 workflowState.step = 'target_audiences';
 
-                const response = `Great! Your link's purpose: "${message}"
+                const response = `✅ Purpose saved!
 
-Now, **who are your primary target audiences?** (You can list multiple)
+**Target Audiences**
 
-For example:
-• Investors and VCs
-• Potential customers
-• Job candidates / talent
-• Media and journalists
-• Industry partners`;
-
+Who are the primary people visiting your link? Tell me about them.`;
                 addMessage('ai', response, new Date());
                 return true;
             }
 
             if (step === 'target_audiences') {
-                // Parse audiences (split by comma, newline, or bullet points)
-                const audiences = message
+                workflowState.userInput = message;
+                workflowState.step = 'audiences_draft';
+                await draftAudiences(message);
+                return true;
+            }
+
+            if (step === 'audiences_draft') {
+                // Parse and save audiences
+                const audiences = workflowState.currentDraft
                     .split(/[,\n•]/)
                     .map(a => a.trim())
                     .filter(a => a.length > 0);
-
                 workflowState.data.cof.targetAudiences = audiences;
+                workflowState.waitingForApproval = false;
                 workflowState.step = 'desired_actions';
 
-                const audienceList = audiences.map(a => `• ${a}`).join('\n');
-                const response = `Perfect! Your target audiences:
-${audienceList}
+                const response = `✅ Target audiences saved!
 
-Finally for the CoF, **what actions do you want visitors to take?**
+**Desired Actions**
 
-For example:
-• Request an intro call
-• Sign up for product demo
-• Apply for open positions
-• Contact for press inquiries`;
-
+What do you want visitors to do after they learn about you? What actions should they take?`;
                 addMessage('ai', response, new Date());
                 return true;
             }
 
             if (step === 'desired_actions') {
-                // Parse desired actions
-                const actions = message
+                workflowState.userInput = message;
+                workflowState.step = 'actions_draft';
+                await draftActions(message);
+                return true;
+            }
+
+            if (step === 'actions_draft') {
+                // Parse and save actions
+                const actions = workflowState.currentDraft
                     .split(/[,\n•]/)
                     .map(a => a.trim())
                     .filter(a => a.length > 0);
-
                 workflowState.data.cof.desiredActions = actions;
+                workflowState.waitingForApproval = false;
                 workflowState.step = 'sections_intro';
 
-                const actionList = actions.map(a => `• ${a}`).join('\n');
-                const response = `Excellent! Your desired actions:
-${actionList}
+                const response = `✅ Desired actions saved!
 
-✅ **Core Objective Function defined!**
+**Core Objective Function Complete!**
 
-Now let's build your **Knowledge Base** - the actual information your link will share. I recommend starting with these 5 basic sections:
+Now let's build your **Knowledge Base** with specific information. I recommend 4 essential sections:
 
-1. **About** - Who you are / what your business does
+1. **About** - Who you are / what you do
 2. **Product/Service** - What you offer
-3. **Traction/Background** - Your achievements or experience
-4. **Team** - Key people involved (optional)
-5. **Contact** - How to reach you
+3. **Traction/Background** - Your achievements
+4. **Contact** - How to reach you
 
-Would you like to fill these out now? Just type "yes" to continue, or "skip" if you want to do this later.`;
-
+Ready to start? Type "yes" to continue, or "skip" to save just the CoF for now.`;
                 addMessage('ai', response, new Date());
                 return true;
             }
 
             if (step === 'sections_intro') {
-                const lowerMsg = message.toLowerCase();
-
                 if (lowerMsg.includes('skip') || lowerMsg.includes('later')) {
-                    // Show preview with just CoF
                     showKnowledgeBasePreview();
                     return true;
                 }
 
-                // Start sections
                 workflowState.step = 'section_about';
-                const response = `Great! Let's start with the basics.
+                const response = `Great! Let's start.
 
 **Section 1: About**
 
-Tell me about yourself or your business. What do you do? What problem do you solve? (2-3 sentences)`;
-
+Tell me about yourself or your business. What do you do? What problem do you solve?`;
                 addMessage('ai', response, new Date());
                 return true;
             }
 
             if (step === 'section_about') {
-                workflowState.data.sections.about = { content: message, approved: true };
-                workflowState.step = 'section_product';
-
-                const response = `Perfect! Saved to "About" section.
-
-**Section 2: Product/Service**
-
-What do you offer? What are the key features or services? (2-3 sentences)`;
-
-                addMessage('ai', response, new Date());
+                workflowState.userInput = message;
+                workflowState.currentSection = 'about';
+                await generateSectionDraft('about', message);
                 return true;
             }
 
             if (step === 'section_product') {
-                workflowState.data.sections.product = { content: message, approved: true };
-                workflowState.step = 'section_traction';
-
-                const response = `Great! Saved to "Product/Service" section.
-
-**Section 3: Traction/Background**
-
-Share your achievements, traction metrics, or professional background. (2-3 sentences)
-
-Examples: "10K users, growing 20% monthly" or "10 years experience in AI/ML"`;
-
-                addMessage('ai', response, new Date());
+                workflowState.userInput = message;
+                workflowState.currentSection = 'product';
+                await generateSectionDraft('product', message);
                 return true;
             }
 
             if (step === 'section_traction') {
-                workflowState.data.sections.traction = { content: message, approved: true };
-                workflowState.step = 'section_contact';
-
-                const response = `Excellent! Saved to "Traction/Background" section.
-
-**Section 4: Contact**
-
-How should visitors reach you? (Email, website, social links, etc.)`;
-
-                addMessage('ai', response, new Date());
+                workflowState.userInput = message;
+                workflowState.currentSection = 'traction';
+                await generateSectionDraft('traction', message);
                 return true;
             }
 
             if (step === 'section_contact') {
-                workflowState.data.sections.contact = { content: message, approved: true };
-                workflowState.step = 'complete';
-
-                const response = `Perfect! All basic sections completed.
-
-Let me show you a preview of your knowledge base before we save it.`;
-
-                addMessage('ai', response, new Date());
-
-                // Show preview after a brief delay
-                setTimeout(() => {
-                    showKnowledgeBasePreview();
-                }, 1000);
+                workflowState.userInput = message;
+                workflowState.currentSection = 'contact';
+                await generateSectionDraft('contact', message);
                 return true;
             }
 
             return false;
+        }
+
+        // Helper functions to draft content using AI
+        async function draftPurpose(userInput) {
+            showTypingIndicator();
+            try {
+                const draftPrompt = `The user is setting up their public link's Core Objective Function. They told you about their purpose: "${userInput}"
+
+Draft a clear, concise purpose statement (1-2 sentences) based on what they said. Make it professional but authentic.
+
+Return ONLY the purpose statement, nothing else.`;
+
+                const draft = await callAIForDraft(draftPrompt);
+                removeTypingIndicator();
+
+                workflowState.currentDraft = draft;
+                workflowState.waitingForApproval = true;
+
+                const response = `Based on what you told me, here's the purpose I drafted:
+
+**"${draft}"**
+
+Does this capture it well? Type **"approve"** to save it, or tell me how to adjust it.`;
+                addMessage('ai', response, new Date());
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage('ai', `Sorry, I had trouble drafting that. Let me try again. Could you rephrase your purpose?`, new Date());
+                workflowState.step = 'intro';
+            }
+        }
+
+        async function draftAudiences(userInput) {
+            showTypingIndicator();
+            try {
+                const draftPrompt = `The user is defining who visits their public link. They said: "${userInput}"
+
+Based on that, list the target audiences as a clean list. Format as bullet points (•). Be specific and concise.
+
+Return ONLY the bulleted list, nothing else. Example format:
+• Investors and VCs
+• Potential customers
+• Job candidates`;
+
+                const draft = await callAIForDraft(draftPrompt);
+                removeTypingIndicator();
+
+                workflowState.currentDraft = draft;
+                workflowState.waitingForApproval = true;
+
+                const response = `Here are the target audiences I identified:
+
+${draft}
+
+Type **"approve"** if this looks good, or tell me what to change.`;
+                addMessage('ai', response, new Date());
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage('ai', `Sorry, I had trouble with that. Could you list your target audiences again?`, new Date());
+                workflowState.step = 'target_audiences';
+            }
+        }
+
+        async function draftActions(userInput) {
+            showTypingIndicator();
+            try {
+                const draftPrompt = `The user wants visitors to take certain actions after visiting their link. They said: "${userInput}"
+
+Based on that, list the desired actions as a clean bullet list (•). Be specific and action-oriented.
+
+Return ONLY the bulleted list, nothing else. Example format:
+• Request an intro call
+• Sign up for product demo
+• Apply for open positions`;
+
+                const draft = await callAIForDraft(draftPrompt);
+                removeTypingIndicator();
+
+                workflowState.currentDraft = draft;
+                workflowState.waitingForApproval = true;
+
+                const response = `Here are the desired actions I drafted:
+
+${draft}
+
+Type **"approve"** to save, or tell me how to adjust.`;
+                addMessage('ai', response, new Date());
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage('ai', `Sorry, I had trouble with that. Could you describe the desired actions again?`, new Date());
+                workflowState.step = 'desired_actions';
+            }
+        }
+
+        async function generateSectionDraft(sectionName, userInput, feedback = null) {
+            showTypingIndicator();
+            try {
+                let draftPrompt;
+                if (feedback) {
+                    draftPrompt = `The user is building their "${sectionName}" section for their public knowledge base.
+
+Original user input: "${userInput}"
+Previous draft: "${workflowState.currentDraft}"
+User feedback: "${feedback}"
+
+Revise the draft based on their feedback. Keep it professional, clear, and 2-3 sentences. Return ONLY the revised content.`;
+                } else {
+                    const sectionGuidance = {
+                        'about': 'Explain who they are, what they do, and what problem they solve. 2-3 sentences.',
+                        'product': 'Describe what they offer - products, services, or key features. 2-3 sentences.',
+                        'traction': 'Share achievements, metrics, growth, or professional background. 2-3 sentences.',
+                        'contact': 'List contact methods - email, website, social links. Clear and concise.'
+                    };
+
+                    draftPrompt = `The user is building their "${sectionName}" section for their public knowledge base.
+
+They told you: "${userInput}"
+
+${sectionGuidance[sectionName]}
+
+Draft professional, authentic content based on what they said. Return ONLY the content for this section.`;
+                }
+
+                const draft = await callAIForDraft(draftPrompt);
+                removeTypingIndicator();
+
+                workflowState.currentDraft = draft;
+                workflowState.waitingForApproval = true;
+
+                const sectionTitle = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
+                const response = `Here's what I drafted for your **${sectionTitle}** section:
+
+---
+${draft}
+---
+
+Type **"approve"** to save this, or tell me how to improve it.`;
+                addMessage('ai', response, new Date());
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage('ai', `Sorry, I had trouble drafting that. Could you tell me about your ${sectionName} again?`, new Date());
+            }
+        }
+
+        // Call AI to generate draft content
+        async function callAIForDraft(prompt) {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: [{ role: 'user', content: prompt }],
+                    systemPrompt: 'You are a professional content writer helping someone build their public profile. Be concise, clear, and authentic. Follow instructions exactly.',
+                    userId: auth.currentUser.uid
+                })
+            });
+
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to generate draft');
+            }
+
+            return data.content.trim();
         }
 
         // Show knowledge base preview modal
