@@ -122,7 +122,28 @@ async function loadVisitorHistory(userId, visitorId, limit = 20) {
   }
 }
 
-// Load owner's public messages
+// Load owner's knowledge base
+async function loadKnowledgeBase(userId) {
+  try {
+    const kbDoc = await db.collection('users').doc(userId)
+      .collection('linkKnowledgeBase').doc('config').get();
+
+    if (!kbDoc.exists) {
+      return null;
+    }
+
+    const data = kbDoc.data();
+    return {
+      cof: data.cof || null,
+      sections: data.sections || {}
+    };
+  } catch (error) {
+    console.error('Error loading knowledge base:', error);
+    return null;
+  }
+}
+
+// Load owner's public messages (fallback if no knowledge base)
 async function loadOwnerPublicMessages(userId, limit = 50) {
   try {
     const messagesSnapshot = await db.collection('users').doc(userId)
@@ -296,33 +317,52 @@ module.exports = async (req, res) => {
     // 1. Load visitor's conversation history (excluding the message we just saved)
     const visitorHistory = await loadVisitorHistory(userId, visitorId, 19);
 
-    // 2. Load owner's public messages for context
-    const ownerPublicMessages = await loadOwnerPublicMessages(userId, 50);
+    // 2. Load owner's knowledge base
+    const knowledgeBase = await loadKnowledgeBase(userId);
 
-    // 3. Build context: owner's knowledge + visitor's conversation
-    let contextMessages = [];
+    // 3. Build enhanced system prompt with knowledge base
+    let enhancedSystemPrompt = PUBLIC_LINK_SYSTEM_PROMPT;
 
-    // Add some owner context if available
-    if (ownerPublicMessages.length > 0) {
-      contextMessages.push({
-        role: 'user',
-        content: 'Here is some background knowledge about the person you represent:\n\n' +
-                 ownerPublicMessages.slice(-10).map(msg => `${msg.role}: ${msg.content}`).join('\n')
-      });
-      contextMessages.push({
-        role: 'assistant',
-        content: 'I understand. I will use this knowledge to answer questions while protecting privacy.'
-      });
+    if (knowledgeBase && Object.keys(knowledgeBase.sections || {}).length > 0) {
+      // Add CoF (Core Objective Function) to system prompt
+      if (knowledgeBase.cof) {
+        enhancedSystemPrompt += '\n\n## CORE OBJECTIVE FUNCTION\n';
+        if (knowledgeBase.cof.purpose) {
+          enhancedSystemPrompt += `Purpose: ${knowledgeBase.cof.purpose}\n`;
+        }
+        if (knowledgeBase.cof.targetAudiences && knowledgeBase.cof.targetAudiences.length > 0) {
+          enhancedSystemPrompt += `Target Audiences: ${knowledgeBase.cof.targetAudiences.join(', ')}\n`;
+        }
+        if (knowledgeBase.cof.desiredActions && knowledgeBase.cof.desiredActions.length > 0) {
+          enhancedSystemPrompt += `Desired Actions: ${knowledgeBase.cof.desiredActions.join(', ')}\n`;
+        }
+      }
+
+      // Add knowledge base sections
+      enhancedSystemPrompt += '\n\n## KNOWLEDGE BASE\n';
+      enhancedSystemPrompt += 'Here is the approved information you can share about the person you represent:\n\n';
+
+      for (const [sectionId, sectionData] of Object.entries(knowledgeBase.sections)) {
+        if (sectionData.content) {
+          const sectionTitle = sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
+          enhancedSystemPrompt += `### ${sectionTitle}\n${sectionData.content}\n\n`;
+        }
+      }
+
+      enhancedSystemPrompt += '\nIMPORTANT: Only share information from the knowledge base above. If asked about something not covered, politely say you don\'t have that information available.';
     }
 
+    // 4. Build conversation context
+    let contextMessages = [];
+
     // Add visitor's conversation history
-    contextMessages = [...contextMessages, ...visitorHistory];
+    contextMessages = [...visitorHistory];
 
     // Add the new user message
     contextMessages.push(lastMessage);
 
-    // Call Gemini API with privacy filtering
-    const aiResponse = await callGeminiAPI(contextMessages, PUBLIC_LINK_SYSTEM_PROMPT);
+    // Call Gemini API with enhanced system prompt
+    const aiResponse = await callGeminiAPI(contextMessages, enhancedSystemPrompt);
 
     // Save AI response
     await saveVisitorMessage(userId, visitorId, 'assistant', aiResponse);
