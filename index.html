@@ -643,8 +643,15 @@
                 height: 100vh;
             }
 
-            /* Hide sidebar completely on mobile */
+            /* Sidebar styling on mobile */
             .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: none;
+            }
+
+            /* Hide sidebar on mobile when user is signed in */
+            .sidebar.mobile-hidden {
                 display: none;
             }
 
@@ -840,6 +847,7 @@
         const db = getFirestore(app);
 
         // DOM Elements
+        const sidebar = document.querySelector('.sidebar');
         const sidebarAuth = document.getElementById('sidebarAuth');
         const sidebarProfile = document.getElementById('sidebarProfile');
         const chatInterface = document.getElementById('chatInterface');
@@ -1015,6 +1023,11 @@
             sidebarProfile.classList.add('hidden');
             chatInterface.classList.add('hidden');
 
+            // Show sidebar on mobile when signed out
+            if (sidebar) {
+                sidebar.classList.remove('mobile-hidden');
+            }
+
             // Hide mobile header when signed out
             const mobileHeader = document.getElementById('mobileHeader');
             if (mobileHeader) {
@@ -1027,6 +1040,11 @@
             sidebarAuth.classList.add('hidden');
             sidebarProfile.classList.remove('hidden');
             chatInterface.classList.remove('hidden');
+
+            // Hide sidebar on mobile when signed in
+            if (sidebar) {
+                sidebar.classList.add('mobile-hidden');
+            }
 
             // Update user profile
             userAvatar.src = user.photoURL || 'https://via.placeholder.com/50';
