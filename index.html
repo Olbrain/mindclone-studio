@@ -4143,8 +4143,8 @@ Type **"approve"** to save this, or tell me how to improve it.`;
                 // Get ID token
                 const idToken = await currentUser.getIdToken();
 
-                // Call API
-                const response = await fetch('/api/link-knowledge-base', {
+                // Step 1: Save knowledge base
+                const kbResponse = await fetch('/api/link-knowledge-base', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -4156,10 +4156,38 @@ Type **"approve"** to save this, or tell me how to improve it.`;
                     })
                 });
 
-                const data = await response.json();
+                const kbData = await kbResponse.json();
 
-                if (!data.success) {
-                    throw new Error(data.error || 'Failed to save knowledge base');
+                if (!kbData.success) {
+                    throw new Error(kbData.error || 'Failed to save knowledge base');
+                }
+
+                // Step 2: Get current settings to check username
+                const settingsResponse = await fetch('/api/link-settings', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`
+                    }
+                });
+
+                const settings = await settingsResponse.json();
+
+                // Step 3: Enable the public link
+                const enableResponse = await fetch('/api/link-settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({
+                        linkEnabled: true
+                    })
+                });
+
+                const enableData = await enableResponse.json();
+
+                if (!enableData.success) {
+                    throw new Error('Failed to enable public link');
                 }
 
                 // Close modal
@@ -4173,16 +4201,25 @@ Type **"approve"** to save this, or tell me how to improve it.`;
                     sections: {}
                 };
 
-                // Show success message
-                const successMsg = `✅ **Knowledge base saved successfully!**
+                // Show success message with correct URL
+                const username = settings.username || 'your-username';
+                const domain = window.location.hostname === 'localhost' ?
+                    'http://localhost:3000' :
+                    `https://${window.location.hostname}`;
+                const publicLink = `${domain}/${username}`;
 
-Your public link is now configured and ready to represent you. Visitors will receive authentic, consistent information based on what you just set up.
+                const successMsg = `✅ **Your public link is now live!**
+
+Knowledge base saved and link enabled successfully. Visitors will receive authentic, consistent information based on what you just set up.
+
+**Your public link:** ${publicLink}
 
 You can:
+• Share this link with investors, customers, talent, media, etc.
 • View or update your knowledge base in Settings
-• Test your link by sharing it: mindclone.link/[your-username]
 • I'll monitor visitor interactions and report back when important patterns emerge
 
+${!settings.username ? '\n⚠️ Note: You haven\'t set a username yet. Visit Settings to claim your custom username like "/yourname".\n' : ''}
 Is there anything else you'd like to configure?`;
 
                 await addWorkflowMessage('ai', successMsg);
