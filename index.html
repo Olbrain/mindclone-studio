@@ -542,8 +542,9 @@
 
         .app-container {
             display: flex;
-            height: 100vh;
+            height: calc(100vh - 64px);
             width: 100vw;
+            margin-top: 64px;
         }
 
         /* Sidebar - Hidden by default */
@@ -1770,7 +1771,8 @@
             /* Original mobile styles below */
             .app-container {
                 flex-direction: column;
-                height: 100vh;
+                height: calc(100vh - 56px);
+                margin-top: 56px;
             }
 
             /* Sidebar styling on mobile */
