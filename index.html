@@ -1841,24 +1841,61 @@
 
             /* Fix chat input for Safari iOS */
             .chat-input-container {
-                padding: 15px 16px;
-                padding-bottom: max(15px, calc(15px + env(safe-area-inset-bottom) + 20px));
-                position: relative;
-                background: #0d0d0d;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                padding: 12px 16px;
+                padding-bottom: max(12px, calc(12px + env(safe-area-inset-bottom)));
+                background: #e0e0e0;
+                border-top: 1px solid #bbb;
+                z-index: 1000;
             }
 
-            /* Safari-specific padding (needs more space) */
+            /* Remove Safari-specific padding - no longer needed with fixed position */
             body.is-safari .chat-input-container {
-                padding-bottom: max(15px, calc(15px + env(safe-area-inset-bottom) + 25px));
+                /* Intentionally empty - fixed position solves keyboard issues */
             }
 
-            /* Chrome-specific padding (minimal space) */
+            /* Remove Chrome-specific padding - no longer needed with fixed position */
             body.is-chrome .chat-input-container {
-                padding-bottom: max(15px, calc(15px + env(safe-area-inset-bottom) + 15px));
+                /* Intentionally empty - fixed position solves keyboard issues */
             }
 
             .chat-input {
                 font-size: 16px; /* Prevents iOS zoom on focus */
+                background: #e0e0e0; /* Match container */
+                color: #333; /* Dark text on light background */
+                border: 1px solid #bbb; /* Subtle border */
+                border-radius: 6px; /* Minimal rectangular rounding */
+                padding: 10px 14px; /* Override desktop padding */
+            }
+
+            .chat-input::placeholder {
+                color: #888; /* Medium gray placeholder */
+            }
+
+            .chat-input:focus {
+                border-color: #999; /* Slightly darker on focus */
+                background: #f0f0f0; /* Slightly lighter on focus */
+                outline: none;
+            }
+
+            .send-button {
+                background: #d0d0d0; /* Slightly darker gray */
+                color: #333; /* Dark arrow */
+                border: 1px solid #bbb;
+                padding: 10px 16px;
+                border-radius: 6px;
+            }
+
+            .send-button:hover {
+                background: #c0c0c0;
+            }
+
+            .send-button:active {
+                background: #b0b0b0;
             }
 
             /* Ensure chat messages don't hide behind input */
