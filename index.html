@@ -4231,26 +4231,47 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
         // Initialize knowledge base
         function initializeKnowledgeBase() {
             console.log('[KB] Initializing knowledge base...');
+            console.log('[KB] uploadKnowledgeBaseBtn:', uploadKnowledgeBaseBtn);
+            console.log('[KB] knowledgeBaseFileInput:', knowledgeBaseFileInput);
+            console.log('[KB] knowledgeBaseEnabledToggle:', knowledgeBaseEnabledToggle);
 
             // Upload button click
-            uploadKnowledgeBaseBtn?.addEventListener('click', () => {
-                knowledgeBaseFileInput.click();
-            });
+            if (uploadKnowledgeBaseBtn) {
+                uploadKnowledgeBaseBtn.addEventListener('click', () => {
+                    console.log('[KB] Upload button clicked');
+                    if (knowledgeBaseFileInput) {
+                        knowledgeBaseFileInput.click();
+                        console.log('[KB] File input triggered');
+                    } else {
+                        console.error('[KB] File input not found!');
+                    }
+                });
+            } else {
+                console.error('[KB] Upload button not found!');
+            }
 
             // File input change
-            knowledgeBaseFileInput?.addEventListener('change', async (e) => {
-                const files = e.target.files;
-                if (files && files.length > 0) {
-                    await uploadKnowledgeBaseDocuments(files);
-                    // Reset input
-                    e.target.value = '';
-                }
-            });
+            if (knowledgeBaseFileInput) {
+                knowledgeBaseFileInput.addEventListener('change', async (e) => {
+                    console.log('[KB] File input changed, files:', e.target.files);
+                    const files = e.target.files;
+                    if (files && files.length > 0) {
+                        console.log('[KB] Starting upload of', files.length, 'files');
+                        await uploadKnowledgeBaseDocuments(files);
+                        // Reset input
+                        e.target.value = '';
+                    }
+                });
+            } else {
+                console.error('[KB] File input element not found!');
+            }
 
             // Toggle change
-            knowledgeBaseEnabledToggle?.addEventListener('change', async (e) => {
-                await saveKnowledgeBaseToggle(e.target.checked);
-            });
+            if (knowledgeBaseEnabledToggle) {
+                knowledgeBaseEnabledToggle.addEventListener('change', async (e) => {
+                    await saveKnowledgeBaseToggle(e.target.checked);
+                });
+            }
 
             console.log('[KB] Knowledge base initialized');
         }
@@ -4362,23 +4383,38 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
 
         // Upload documents
         async function uploadKnowledgeBaseDocuments(files) {
-            if (!auth.currentUser) return;
+            console.log('[KB] uploadKnowledgeBaseDocuments called with', files.length, 'files');
+
+            if (!auth.currentUser) {
+                console.error('[KB] No authenticated user!');
+                showPanelAlert('Please sign in to upload documents', 'error');
+                return;
+            }
 
             try {
                 const userId = auth.currentUser.uid;
+                console.log('[KB] Uploading for user:', userId);
                 showPanelAlert('Uploading documents...', 'info');
 
                 for (const file of files) {
+                    console.log('[KB] Processing file:', file.name, 'size:', file.size, 'type:', file.type);
+
                     // Upload to Storage
                     const timestamp = Date.now();
                     const storagePath = `knowledgeBase/${userId}/${timestamp}_${file.name}`;
                     const storageRef = ref(storage, storagePath);
+                    console.log('[KB] Storage path:', storagePath);
 
+                    console.log('[KB] Starting upload to Firebase Storage...');
                     await uploadBytes(storageRef, file);
+                    console.log('[KB] Upload complete, getting download URL...');
+
                     const downloadURL = await getDownloadURL(storageRef);
+                    console.log('[KB] Download URL obtained');
 
                     // Save metadata to Firestore
                     const kbDocRef = doc(db, 'users', userId, 'knowledgeBase', `${timestamp}`);
+                    console.log('[KB] Saving metadata to Firestore...');
                     await setDoc(kbDocRef, {
                         fileName: file.name,
                         type: file.type,
@@ -4388,14 +4424,16 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
                         uploadedAt: serverTimestamp()
                     });
 
-                    console.log('[KB] Uploaded:', file.name);
+                    console.log('[KB] Successfully uploaded:', file.name);
                 }
 
                 showPanelAlert(`Successfully uploaded ${files.length} document(s)`, 'success');
+                console.log('[KB] All uploads complete, refreshing list...');
                 await loadKnowledgeBase(); // Refresh list
             } catch (error) {
                 console.error('[KB] Upload error:', error);
-                showPanelAlert('Failed to upload documents', 'error');
+                console.error('[KB] Error details:', error.message, error.code);
+                showPanelAlert(`Failed to upload: ${error.message}`, 'error');
             }
         }
 
