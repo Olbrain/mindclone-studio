@@ -570,7 +570,7 @@
             top: 0;
             right: 0;
             bottom: 0;
-            width: 280px;
+            width: 360px;
             background: #1a1a1a;
             border-left: 1px solid #333;
             display: flex;
@@ -589,7 +589,7 @@
         .right-panel-toggle {
             position: fixed;
             top: 50%;
-            right: 280px;
+            right: 360px;
             transform: translateY(-50%);
             width: 24px;
             height: 48px;
@@ -629,6 +629,569 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+        }
+
+        /* Panel Tab Navigation */
+        .panel-tabs {
+            display: flex;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            padding: 0;
+        }
+
+        .panel-tab {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 8px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .panel-tab:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .panel-tab.active {
+            color: white;
+            border-bottom-color: white;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .panel-tab .tab-icon {
+            font-size: 20px;
+        }
+
+        .panel-tab .tab-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .panel-tab .tab-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ff6b6b;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .panel-tab .tab-badge:empty {
+            display: none;
+        }
+
+        /* Panel Content Container */
+        .panel-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-tab-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .panel-tab-content.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .settings-scroll-container,
+        .analytics-scroll-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 16px;
+        }
+
+        .settings-scroll-container::-webkit-scrollbar,
+        .analytics-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .settings-scroll-container::-webkit-scrollbar-track,
+        .analytics-scroll-container::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .settings-scroll-container::-webkit-scrollbar-thumb,
+        .analytics-scroll-container::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        .settings-scroll-container::-webkit-scrollbar-thumb:hover,
+        .analytics-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* Panel Sections */
+        .panel-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .panel-section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 6px;
+        }
+
+        .panel-section-subtitle {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 16px;
+        }
+
+        /* Form Groups */
+        .panel-form-group {
+            margin-bottom: 20px;
+        }
+
+        .panel-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 6px;
+        }
+
+        .panel-hint {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        /* Input Fields */
+        .panel-input,
+        .panel-textarea,
+        .panel-select {
+            width: 100%;
+            padding: 12px;
+            background: #0d0d0d;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .panel-input:focus,
+        .panel-textarea:focus,
+        .panel-select:focus {
+            border-color: #555;
+        }
+
+        .panel-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Username Input Group */
+        .username-input-group {
+            display: flex;
+            align-items: center;
+            background: #0d0d0d;
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .username-input-group:focus-within {
+            border-color: #555;
+        }
+
+        .username-prefix {
+            padding: 12px;
+            color: #666;
+            font-size: 13px;
+            background: #1a1a1a;
+            border-right: 1px solid #333;
+            white-space: nowrap;
+        }
+
+        .username-input {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .availability-indicator {
+            padding: 0 12px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .availability-indicator.available {
+            color: #4CAF50;
+        }
+
+        .availability-indicator.taken {
+            color: #ff6b6b;
+        }
+
+        .availability-indicator.checking {
+            color: #666;
+        }
+
+        .availability-indicator.invalid {
+            color: #ff6b6b;
+        }
+
+        /* Buttons */
+        .panel-button {
+            width: 100%;
+            padding: 12px 20px;
+            background: #2a2a2a;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .panel-button:hover {
+            background: #333;
+            transform: translateY(-1px);
+        }
+
+        .panel-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .panel-button-primary {
+            background: white;
+            color: black;
+            border: none;
+        }
+
+        .panel-button-primary:hover {
+            background: #f0f0f0;
+        }
+
+        .panel-button-danger {
+            background: #ff6b6b;
+            border-color: #ff6b6b;
+        }
+
+        .panel-button-danger:hover {
+            background: #ff5252;
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .switch-to-settings-btn {
+            padding: 10px 20px;
+            background: #2a2a2a;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .switch-to-settings-btn:hover {
+            background: #333;
+        }
+
+        /* Alerts */
+        .panel-alert-container {
+            margin-bottom: 16px;
+        }
+
+        .panel-alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .panel-alert.success {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid #4CAF50;
+            color: #4CAF50;
+        }
+
+        .panel-alert.error {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        .panel-alert.warning {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid #FFC107;
+            color: #FFC107;
+        }
+
+        /* Toggle Switch (reused from settings.html) */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #2a2a2a;
+            transition: .4s;
+            border-radius: 28px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #4CAF50;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        /* Character Count */
+        .char-count {
+            text-align: right;
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* Link Preview */
+        .link-preview {
+            background: #0d0d0d;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .link-url {
+            font-size: 13px;
+            color: white;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .link-url a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        .link-url a:hover {
+            text-decoration: underline;
+        }
+
+        .copy-btn {
+            padding: 8px 16px;
+            background: #2a2a2a;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #333;
+        }
+
+        .copy-btn.copied {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+
+        /* Stats Grid (Analytics Tab) */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #0d0d0d;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Recent Visitors */
+        .recent-visitors-section {
+            margin-top: 24px;
+        }
+
+        .subsection-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .recent-visitors-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .recent-visitor-item {
+            background: #0d0d0d;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .recent-visitor-item:hover {
+            background: #1a1a1a;
+            border-color: #444;
+        }
+
+        .recent-visitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .recent-visitor-id {
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .recent-visitor-count {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .recent-visitor-time {
+            font-size: 11px;
+            color: #666;
+        }
+
+        /* Analytics Filters */
+        .analytics-filters {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #333;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .sidebar-header {
@@ -1902,6 +2465,33 @@
             }
         }
 
+        /* ==================== TABLET RESPONSIVE ==================== */
+        @media (max-width: 1024px) {
+            .right-activity-panel {
+                width: 320px;
+            }
+
+            .right-panel-toggle {
+                right: 320px;
+            }
+
+            body.right-panel-collapsed .right-panel-toggle {
+                right: 0;
+            }
+
+            .panel-tab {
+                padding: 10px 6px;
+            }
+
+            .panel-tab .tab-icon {
+                font-size: 18px;
+            }
+
+            .panel-tab .tab-label {
+                font-size: 10px;
+            }
+        }
+
         /* ==================== MOBILE RESPONSIVE ==================== */
         @media (max-width: 768px) {
             /* Hide right activity panel and toggle on mobile */
@@ -2460,25 +3050,6 @@
                 <a href="/settings" class="settings-link hidden">⚙️ Settings</a>
             </div>
 
-            <!-- Live Activity Feed (shown when logged in) -->
-            <div id="activityFeed" class="activity-feed hidden">
-                <div class="activity-feed-header">
-                    <a href="#" id="activityFeedLink" class="activity-feed-link" target="_blank">
-                        <span class="icon">🔗</span> Live Link Activity
-                        <span class="arrow">→</span>
-                    </a>
-                    <span id="activityCount" class="activity-feed-count">0 today</span>
-                </div>
-                <div id="activityList" class="activity-feed-list">
-                    <!-- Activity items will be dynamically added here -->
-                </div>
-                <!-- Empty state (shown when no activity) -->
-                <div id="activityEmpty" class="activity-feed-empty">
-                    <div class="icon">🔗</div>
-                    <div class="message">No Link Activity Yet<br>Enable your Public Link to see visitor conversations</div>
-                    <a href="/settings" class="link-to-settings">Go to Settings</a>
-                </div>
-            </div>
 
             <!-- Sidebar Footer (bottom of sidebar) -->
             <div class="sidebar-footer">
@@ -2518,10 +3089,10 @@
                         </div>
                     </div>
                     <hr class="avatar-dropdown-divider">
-                    <a href="/settings" id="dropdownSettingsLink" class="avatar-dropdown-item">
-                        <span class="avatar-dropdown-icon">⚙️</span>
-                        <span>Settings</span>
-                    </a>
+                    <button id="dropdownProfileBtn" class="avatar-dropdown-item">
+                        <span class="avatar-dropdown-icon">👤</span>
+                        <span>Profile</span>
+                    </button>
                     <button id="dropdownSignOutBtn" class="avatar-dropdown-item">
                         <span class="avatar-dropdown-icon">🚪</span>
                         <span>Sign Out</span>
@@ -2576,23 +3147,170 @@
 
         <!-- Right Activity Panel -->
         <div class="right-activity-panel">
-            <!-- Live Activity Feed -->
-            <div class="activity-feed">
-                <div class="activity-feed-header">
-                    <a href="#" id="rightActivityFeedLink" class="activity-feed-link" target="_blank">
-                        <span class="icon">🔗</span> Live Link Activity
-                        <span class="arrow">→</span>
-                    </a>
-                    <span id="rightActivityCount" class="activity-feed-count">0 today</span>
+            <!-- Tab Navigation -->
+            <div class="panel-tabs">
+                <button class="panel-tab active" data-tab="activity">
+                    <span class="tab-icon">📊</span>
+                    <span class="tab-label">Activity</span>
+                    <span class="tab-badge" id="activityBadge"></span>
+                </button>
+                <button class="panel-tab" data-tab="settings">
+                    <span class="tab-icon">⚙️</span>
+                    <span class="tab-label">Settings</span>
+                </button>
+                <button class="panel-tab" data-tab="analytics">
+                    <span class="tab-icon">📈</span>
+                    <span class="tab-label">Analytics</span>
+                </button>
+            </div>
+
+            <!-- Tab Content Container -->
+            <div class="panel-content">
+                <!-- Activity Tab -->
+                <div class="panel-tab-content active" id="activityTab">
+                    <div class="activity-feed">
+                        <div class="activity-feed-header">
+                            <a href="#" id="rightActivityFeedLink" class="activity-feed-link" target="_blank">
+                                <span class="icon">🔗</span> Live Link Activity
+                                <span class="arrow">→</span>
+                            </a>
+                            <span id="rightActivityCount" class="activity-feed-count">0 today</span>
+                        </div>
+                        <div id="rightActivityList" class="activity-feed-list">
+                            <!-- Activity items will be dynamically added here -->
+                        </div>
+                        <!-- Empty state (shown when no activity) -->
+                        <div id="rightActivityEmpty" class="activity-feed-empty">
+                            <div class="icon">🔗</div>
+                            <div class="message">No Link Activity Yet<br>Enable your Public Link to see visitor conversations</div>
+                            <button class="switch-to-settings-btn">Go to Settings</button>
+                        </div>
+                    </div>
                 </div>
-                <div id="rightActivityList" class="activity-feed-list">
-                    <!-- Activity items will be dynamically added here -->
+
+                <!-- Settings Tab -->
+                <div class="panel-tab-content" id="settingsTab">
+                    <div class="settings-scroll-container">
+                        <!-- Alert Container -->
+                        <div id="panelAlertContainer" class="panel-alert-container"></div>
+
+                        <!-- Username Section -->
+                        <div class="panel-section">
+                            <h3 class="panel-section-title">Your Username</h3>
+                            <p class="panel-section-subtitle">Choose a unique username for your public Mindclone link</p>
+
+                            <div class="panel-form-group">
+                                <label class="panel-label">Username</label>
+                                <span class="panel-hint">3-20 characters, lowercase letters, numbers, and underscores only</span>
+                                <div class="username-input-group">
+                                    <span class="username-prefix">mindclone.link/</span>
+                                    <input type="text" id="panelUsernameInput" class="username-input" placeholder="yourusername" autocomplete="off">
+                                    <span id="panelAvailabilityIndicator" class="availability-indicator"></span>
+                                </div>
+                            </div>
+
+                            <div id="panelUsernameActions" class="panel-actions">
+                                <button id="panelClaimUsernameBtn" class="panel-button" disabled>Claim Username</button>
+                                <button id="panelReleaseUsernameBtn" class="panel-button panel-button-danger hidden">Release Username</button>
+                            </div>
+                        </div>
+
+                        <!-- Link Configuration Section -->
+                        <div class="panel-section" id="panelLinkConfigSection">
+                            <h3 class="panel-section-title">Public Link Configuration</h3>
+                            <p class="panel-section-subtitle">Control how your public Mindclone appears to visitors</p>
+
+                            <div class="panel-form-group">
+                                <label class="panel-label">Enable Public Link</label>
+                                <span class="panel-hint">Allow anyone to chat with your Mindclone at your public link</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="panelLinkEnabledToggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="panel-form-group">
+                                <label class="panel-label">Display Name</label>
+                                <span class="panel-hint">How your name appears on the public link</span>
+                                <input type="text" id="panelDisplayNameInput" class="panel-input" placeholder="Your Name">
+                            </div>
+
+                            <div class="panel-form-group">
+                                <label class="panel-label">Bio</label>
+                                <span class="panel-hint">Tell visitors about yourself (max 200 characters)</span>
+                                <textarea id="panelBioInput" class="panel-textarea" placeholder="Software engineer, AI enthusiast, avid reader..." maxlength="200"></textarea>
+                                <div class="char-count">
+                                    <span id="panelBioCharCount">0</span>/200
+                                </div>
+                            </div>
+
+                            <div class="panel-form-group">
+                                <label class="panel-label">Custom Greeting (Optional)</label>
+                                <span class="panel-hint">First message visitors see when they open your link</span>
+                                <textarea id="panelGreetingInput" class="panel-textarea" placeholder="Hi! I'm [Your Name]'s Mindclone. Ask me anything!"></textarea>
+                            </div>
+
+                            <button id="panelSaveSettingsBtn" class="panel-button panel-button-primary">Save Settings</button>
+                        </div>
+
+                        <!-- Link Preview Section -->
+                        <div class="panel-section" id="panelLinkPreviewSection" style="display: none;">
+                            <h3 class="panel-section-title">Your Public Link</h3>
+                            <p class="panel-section-subtitle">Share this link with anyone to let them chat with your Mindclone</p>
+
+                            <div class="link-preview">
+                                <div class="link-url">
+                                    <a href="#" id="panelPublicLinkUrl" target="_blank"></a>
+                                </div>
+                                <button id="panelCopyLinkBtn" class="copy-btn">Copy Link</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <!-- Empty state (shown when no activity) -->
-                <div id="rightActivityEmpty" class="activity-feed-empty">
-                    <div class="icon">🔗</div>
-                    <div class="message">No Link Activity Yet<br>Enable your Public Link to see visitor conversations</div>
-                    <a href="/settings" class="link-to-settings">Go to Settings</a>
+
+                <!-- Analytics Tab -->
+                <div class="panel-tab-content" id="analyticsTab">
+                    <div class="analytics-scroll-container">
+                        <div class="panel-section">
+                            <h3 class="panel-section-title">Visitor Analytics</h3>
+                            <p class="panel-section-subtitle">See how people are engaging with your public Mindclone</p>
+
+                            <!-- Stats Grid -->
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-value" id="panelTotalVisitors">0</div>
+                                    <div class="stat-label">Total Visitors</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value" id="panelTotalMessages">0</div>
+                                    <div class="stat-label">Total Messages</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value" id="panelPublicMessages">0</div>
+                                    <div class="stat-label">Public Messages</div>
+                                </div>
+                            </div>
+
+                            <!-- Recent Visitors Section -->
+                            <div class="recent-visitors-section">
+                                <h4 class="subsection-title">Recent Visitors</h4>
+                                <div id="recentVisitorsList" class="recent-visitors-list">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+
+                            <!-- Time Period Filter -->
+                            <div class="analytics-filters">
+                                <label class="panel-label">Time Period</label>
+                                <select id="analyticsPeriodFilter" class="panel-select">
+                                    <option value="7">Last 7 Days</option>
+                                    <option value="30" selected>Last 30 Days</option>
+                                    <option value="90">Last 90 Days</option>
+                                    <option value="all">All Time</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2625,7 +3343,7 @@
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, getDocs, onSnapshot, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, getDoc, setDoc, updateDoc, deleteDoc, deleteField, query, orderBy, getDocs, onSnapshot, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Your Firebase configuration
         const firebaseConfig = {
@@ -2699,6 +3417,39 @@
         const dropdownUserName = document.getElementById('dropdownUserName');
         const dropdownUserEmail = document.getElementById('dropdownUserEmail');
         const dropdownSignOutBtn = document.getElementById('dropdownSignOutBtn');
+
+        // Panel tab elements
+        const panelTabs = document.querySelectorAll('.panel-tab');
+        const panelTabContents = document.querySelectorAll('.panel-tab-content');
+        const activityBadge = document.getElementById('activityBadge');
+
+        // Panel Settings Elements
+        const panelUsernameInput = document.getElementById('panelUsernameInput');
+        const panelAvailabilityIndicator = document.getElementById('panelAvailabilityIndicator');
+        const panelClaimUsernameBtn = document.getElementById('panelClaimUsernameBtn');
+        const panelReleaseUsernameBtn = document.getElementById('panelReleaseUsernameBtn');
+        const panelLinkEnabledToggle = document.getElementById('panelLinkEnabledToggle');
+        const panelDisplayNameInput = document.getElementById('panelDisplayNameInput');
+        const panelBioInput = document.getElementById('panelBioInput');
+        const panelBioCharCount = document.getElementById('panelBioCharCount');
+        const panelGreetingInput = document.getElementById('panelGreetingInput');
+        const panelSaveSettingsBtn = document.getElementById('panelSaveSettingsBtn');
+        const panelLinkPreviewSection = document.getElementById('panelLinkPreviewSection');
+        const panelPublicLinkUrl = document.getElementById('panelPublicLinkUrl');
+        const panelCopyLinkBtn = document.getElementById('panelCopyLinkBtn');
+        const panelAlertContainer = document.getElementById('panelAlertContainer');
+
+        // Panel Analytics Elements
+        const panelTotalVisitors = document.getElementById('panelTotalVisitors');
+        const panelTotalMessages = document.getElementById('panelTotalMessages');
+        const panelPublicMessages = document.getElementById('panelPublicMessages');
+        const recentVisitorsList = document.getElementById('recentVisitorsList');
+        const analyticsPeriodFilter = document.getElementById('analyticsPeriodFilter');
+
+        // Panel state
+        let currentPanelTab = 'activity';
+        let panelCurrentUsername = null;
+        let panelCheckUsernameTimeout = null;
 
         // Conversation history
         let conversationHistory = [];
@@ -2902,6 +3653,457 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
             if (loadingDiv) loadingDiv.remove();
         }
 
+        // ==================== PANEL TAB MANAGEMENT ====================
+
+        // Initialize panel tabs
+        function initializePanelTabs() {
+            panelTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    switchPanelTab(tabName);
+                });
+            });
+
+            // Handle "Go to Settings" button clicks
+            const switchToSettingsBtns = document.querySelectorAll('.switch-to-settings-btn');
+            switchToSettingsBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    switchPanelTab('settings');
+                });
+            });
+        }
+
+        // Switch panel tabs
+        function switchPanelTab(tabName) {
+            currentPanelTab = tabName;
+
+            // Update tab buttons
+            panelTabs.forEach(tab => {
+                if (tab.dataset.tab === tabName) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+
+            // Update tab content
+            panelTabContents.forEach(content => {
+                if (content.id === `${tabName}Tab`) {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+
+            // Save to localStorage
+            localStorage.setItem('panelActiveTab', tabName);
+
+            // Load data for the tab
+            if (tabName === 'settings') {
+                loadPanelSettings();
+            } else if (tabName === 'analytics') {
+                loadPanelAnalytics();
+            }
+
+            // Ensure right panel is open when switching tabs
+            if (document.body.classList.contains('right-panel-collapsed')) {
+                document.body.classList.remove('right-panel-collapsed');
+            }
+        }
+
+        // Restore last active tab on page load
+        function restorePanelTab() {
+            const savedTab = localStorage.getItem('panelActiveTab');
+            if (savedTab && ['activity', 'settings', 'analytics'].includes(savedTab)) {
+                switchPanelTab(savedTab);
+            }
+        }
+
+        // Handle URL hash for deep linking
+        function handlePanelDeepLink() {
+            const hash = window.location.hash.substring(1);
+            if (['activity', 'settings', 'analytics'].includes(hash)) {
+                switchPanelTab(hash);
+                history.replaceState(null, null, window.location.pathname);
+            }
+        }
+
+        // ==================== PANEL ALERTS ====================
+
+        // Show alert in panel
+        function showPanelAlert(message, type = 'info') {
+            const alert = document.createElement('div');
+            alert.className = `panel-alert ${type}`;
+            alert.textContent = message;
+            panelAlertContainer.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // ==================== PANEL SETTINGS TAB ====================
+
+        // Initialize panel settings listeners
+        function initializePanelSettings() {
+            // Bio character count
+            panelBioInput.addEventListener('input', () => {
+                panelBioCharCount.textContent = panelBioInput.value.length;
+            });
+
+            // Username availability checking
+            panelUsernameInput.addEventListener('input', (e) => {
+                const username = e.target.value.trim().toLowerCase();
+
+                clearTimeout(panelCheckUsernameTimeout);
+
+                if (!username) {
+                    panelAvailabilityIndicator.textContent = '';
+                    panelAvailabilityIndicator.className = 'availability-indicator';
+                    panelClaimUsernameBtn.disabled = true;
+                    return;
+                }
+
+                panelAvailabilityIndicator.textContent = 'Checking...';
+                panelAvailabilityIndicator.className = 'availability-indicator checking';
+                panelClaimUsernameBtn.disabled = true;
+
+                panelCheckUsernameTimeout = setTimeout(async () => {
+                    try {
+                        // Client-side validation
+                        if (username.length < 3) {
+                            panelAvailabilityIndicator.textContent = '✗ Too short';
+                            panelAvailabilityIndicator.className = 'availability-indicator invalid';
+                            return;
+                        }
+                        if (username.length > 20) {
+                            panelAvailabilityIndicator.textContent = '✗ Too long';
+                            panelAvailabilityIndicator.className = 'availability-indicator invalid';
+                            return;
+                        }
+                        if (!/^[a-z][a-z0-9_]*$/.test(username)) {
+                            panelAvailabilityIndicator.textContent = '✗ Invalid format';
+                            panelAvailabilityIndicator.className = 'availability-indicator invalid';
+                            return;
+                        }
+
+                        // Check availability via Firestore
+                        const usernameDocRef = doc(db, 'usernames', username);
+                        const usernameDoc = await getDoc(usernameDocRef);
+
+                        if (usernameDoc.exists()) {
+                            panelAvailabilityIndicator.textContent = '✗ Taken';
+                            panelAvailabilityIndicator.className = 'availability-indicator taken';
+                            panelClaimUsernameBtn.disabled = true;
+                        } else {
+                            panelAvailabilityIndicator.textContent = '✓ Available';
+                            panelAvailabilityIndicator.className = 'availability-indicator available';
+                            panelClaimUsernameBtn.disabled = false;
+                        }
+                    } catch (error) {
+                        console.error('Error checking username:', error);
+                        panelAvailabilityIndicator.textContent = 'Error';
+                        panelAvailabilityIndicator.className = 'availability-indicator invalid';
+                    }
+                }, 500);
+            });
+
+            // Claim username
+            panelClaimUsernameBtn.addEventListener('click', async () => {
+                const username = panelUsernameInput.value.trim().toLowerCase();
+                if (!username || !auth.currentUser) return;
+
+                panelClaimUsernameBtn.disabled = true;
+                panelClaimUsernameBtn.innerHTML = '<span class="loading-spinner"></span> Claiming...';
+
+                try {
+                    // Check availability
+                    const usernameDocRef = doc(db, 'usernames', username);
+                    const usernameDoc = await getDoc(usernameDocRef);
+                    if (usernameDoc.exists()) {
+                        throw new Error('Username is already taken');
+                    }
+
+                    // Claim username
+                    await setDoc(doc(db, 'usernames', username), {
+                        userId: auth.currentUser.uid,
+                        claimedAt: serverTimestamp()
+                    });
+
+                    // Update user document
+                    await setDoc(doc(db, 'users', auth.currentUser.uid), {
+                        username: username,
+                        linkEnabled: true,
+                        displayName: auth.currentUser.displayName || auth.currentUser.email?.split('@')[0] || username,
+                        photoURL: auth.currentUser.photoURL || null,
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+
+                    panelCurrentUsername = username;
+                    showPanelAlert('Username claimed successfully!', 'success');
+                    updatePanelUIForClaimedUsername(username);
+
+                    // Reload link status and activity feed
+                    await loadLinkStatus();
+                    await loadActivityFeed();
+                } catch (error) {
+                    console.error('Error claiming username:', error);
+                    showPanelAlert(error.message || 'Failed to claim username', 'error');
+                    panelClaimUsernameBtn.disabled = false;
+                    panelClaimUsernameBtn.textContent = 'Claim Username';
+                }
+            });
+
+            // Release username
+            panelReleaseUsernameBtn.addEventListener('click', async () => {
+                if (!confirm('Are you sure? Your public link will stop working.')) {
+                    return;
+                }
+
+                panelReleaseUsernameBtn.disabled = true;
+                panelReleaseUsernameBtn.innerHTML = '<span class="loading-spinner"></span> Releasing...';
+
+                try {
+                    const userDocRef = doc(db, 'users', auth.currentUser.uid);
+                    const userDoc = await getDoc(userDocRef);
+                    const username = userDoc.data()?.username;
+
+                    if (!username) {
+                        throw new Error('No username to release');
+                    }
+
+                    // Remove username claim
+                    await deleteDoc(doc(db, 'usernames', username));
+
+                    // Update user document
+                    await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+                        username: deleteField(),
+                        linkEnabled: false,
+                        updatedAt: serverTimestamp()
+                    });
+
+                    panelCurrentUsername = null;
+                    showPanelAlert('Username released', 'success');
+                    updatePanelUIForNoUsername();
+
+                    // Reload link status
+                    await loadLinkStatus();
+                } catch (error) {
+                    console.error('Error releasing username:', error);
+                    showPanelAlert(error.message || 'Failed to release username', 'error');
+                    panelReleaseUsernameBtn.disabled = false;
+                    panelReleaseUsernameBtn.textContent = 'Release Username';
+                }
+            });
+
+            // Save settings
+            panelSaveSettingsBtn.addEventListener('click', async () => {
+                if (!auth.currentUser || !panelCurrentUsername) {
+                    showPanelAlert('Please claim a username first', 'warning');
+                    return;
+                }
+
+                panelSaveSettingsBtn.disabled = true;
+                panelSaveSettingsBtn.innerHTML = '<span class="loading-spinner"></span> Saving...';
+
+                try {
+                    const userDocRef = doc(db, 'users', auth.currentUser.uid);
+
+                    await setDoc(userDocRef, {
+                        linkEnabled: panelLinkEnabledToggle.checked,
+                        displayName: panelDisplayNameInput.value.trim() || auth.currentUser.displayName || panelCurrentUsername,
+                        bio: panelBioInput.value.trim(),
+                        customGreeting: panelGreetingInput.value.trim(),
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+
+                    showPanelAlert('Settings saved successfully!', 'success');
+
+                    if (panelLinkEnabledToggle.checked) {
+                        showPanelLinkPreview(panelCurrentUsername);
+                    } else {
+                        panelLinkPreviewSection.style.display = 'none';
+                    }
+
+                    // Reload link status
+                    await loadLinkStatus();
+                } catch (error) {
+                    console.error('Error saving settings:', error);
+                    showPanelAlert('Failed to save settings', 'error');
+                } finally {
+                    panelSaveSettingsBtn.disabled = false;
+                    panelSaveSettingsBtn.textContent = 'Save Settings';
+                }
+            });
+
+            // Copy link
+            panelCopyLinkBtn.addEventListener('click', async () => {
+                const url = panelPublicLinkUrl.href;
+                try {
+                    await navigator.clipboard.writeText(url);
+                    panelCopyLinkBtn.textContent = 'Copied!';
+                    panelCopyLinkBtn.classList.add('copied');
+                    setTimeout(() => {
+                        panelCopyLinkBtn.textContent = 'Copy Link';
+                        panelCopyLinkBtn.classList.remove('copied');
+                    }, 2000);
+                } catch (error) {
+                    console.error('Failed to copy:', error);
+                    showPanelAlert('Failed to copy link', 'error');
+                }
+            });
+        }
+
+        // Update UI for claimed username
+        function updatePanelUIForClaimedUsername(username) {
+            panelUsernameInput.value = username;
+            panelUsernameInput.disabled = true;
+            panelAvailabilityIndicator.textContent = '✓ Claimed';
+            panelAvailabilityIndicator.className = 'availability-indicator available';
+            panelClaimUsernameBtn.classList.add('hidden');
+            panelReleaseUsernameBtn.classList.remove('hidden');
+            panelReleaseUsernameBtn.disabled = false;
+            panelReleaseUsernameBtn.textContent = 'Release Username';
+        }
+
+        // Update UI for no username
+        function updatePanelUIForNoUsername() {
+            panelUsernameInput.value = '';
+            panelUsernameInput.disabled = false;
+            panelAvailabilityIndicator.textContent = '';
+            panelAvailabilityIndicator.className = 'availability-indicator';
+            panelClaimUsernameBtn.classList.remove('hidden');
+            panelClaimUsernameBtn.disabled = true;
+            panelClaimUsernameBtn.textContent = 'Claim Username';
+            panelReleaseUsernameBtn.classList.add('hidden');
+            panelLinkPreviewSection.style.display = 'none';
+        }
+
+        // Show link preview
+        function showPanelLinkPreview(username) {
+            const url = `https://mindclone.link/${username}`;
+            panelPublicLinkUrl.href = url;
+            panelPublicLinkUrl.textContent = url;
+            panelLinkPreviewSection.style.display = 'block';
+        }
+
+        // Load settings into panel
+        async function loadPanelSettings() {
+            if (!auth.currentUser) return;
+
+            try {
+                const userDocRef = doc(db, 'users', auth.currentUser.uid);
+                const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+
+                    if (userData.username) {
+                        panelCurrentUsername = userData.username;
+                        updatePanelUIForClaimedUsername(userData.username);
+                    } else {
+                        updatePanelUIForNoUsername();
+                    }
+
+                    panelLinkEnabledToggle.checked = userData.linkEnabled || false;
+                    panelDisplayNameInput.value = userData.displayName || auth.currentUser.displayName || '';
+                    panelBioInput.value = userData.bio || '';
+                    panelBioCharCount.textContent = panelBioInput.value.length;
+                    panelGreetingInput.value = userData.customGreeting || '';
+
+                    if (userData.linkEnabled && userData.username) {
+                        showPanelLinkPreview(userData.username);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading panel settings:', error);
+                showPanelAlert('Failed to load settings', 'error');
+            }
+        }
+
+        // ==================== PANEL ANALYTICS TAB ====================
+
+        // Initialize analytics
+        function initializePanelAnalytics() {
+            analyticsPeriodFilter.addEventListener('change', () => {
+                loadPanelAnalytics();
+            });
+        }
+
+        // Load analytics data
+        async function loadPanelAnalytics() {
+            if (!auth.currentUser) return;
+
+            try {
+                const idToken = await auth.currentUser.getIdToken();
+                const period = analyticsPeriodFilter.value;
+
+                // Fetch analytics
+                const url = period === 'all'
+                    ? '/api/analytics'
+                    : `/api/analytics?period=${period}`;
+
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${idToken}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Update stats
+                    panelTotalVisitors.textContent = data.totalVisitors || 0;
+                    panelTotalMessages.textContent = data.totalMessages || 0;
+                    panelPublicMessages.textContent = data.publicMessages || 0;
+
+                    // Render recent visitors
+                    if (data.recentVisitors && data.recentVisitors.length > 0) {
+                        recentVisitorsList.innerHTML = '';
+                        data.recentVisitors.forEach(visitor => {
+                            const item = createRecentVisitorItem(visitor);
+                            recentVisitorsList.appendChild(item);
+                        });
+                    } else {
+                        recentVisitorsList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No visitor data yet</div>';
+                    }
+                } else {
+                    console.error('Failed to load analytics');
+                    showPanelAlert('Failed to load analytics', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                showPanelAlert('Failed to load analytics', 'error');
+            }
+        }
+
+        // Create recent visitor item
+        function createRecentVisitorItem(visitor) {
+            const item = document.createElement('div');
+            item.className = 'recent-visitor-item';
+            item.dataset.visitorId = visitor.visitorId;
+
+            const lastVisitTime = visitor.lastVisit?.seconds
+                ? new Date(visitor.lastVisit.seconds * 1000)
+                : new Date();
+            const timeAgo = formatTimeAgo(lastVisitTime);
+            const visitorName = `visitor_${visitor.visitorId.substring(0, 6)}`;
+
+            item.innerHTML = `
+                <div class="recent-visitor-header">
+                    <span class="recent-visitor-id">👤 ${visitorName}</span>
+                    <span class="recent-visitor-count">${visitor.messageCount || 0} messages</span>
+                </div>
+                <div class="recent-visitor-time">Last visit: ${timeAgo}</div>
+            `;
+
+            // Click to open conversation modal
+            item.addEventListener('click', () => {
+                openConversationModal(visitor.visitorId);
+            });
+
+            return item;
+        }
+
         // Auth State Observer
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -2970,9 +4172,10 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
         signOutBtn?.addEventListener('click', handleSignOut);
         dropdownSignOutBtn?.addEventListener('click', handleSignOut);
 
-        // Close dropdown when Settings is clicked
-        const dropdownSettingsLink = document.getElementById('dropdownSettingsLink');
-        dropdownSettingsLink?.addEventListener('click', () => {
+        // Handle Profile button click
+        const dropdownProfileBtn = document.getElementById('dropdownProfileBtn');
+        dropdownProfileBtn?.addEventListener('click', () => {
+            showPanelAlert('Profile settings coming soon!', 'info');
             avatarDropdown.classList.add('hidden');
         });
 
@@ -2982,8 +4185,8 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
             mobileMenuBtn.addEventListener('click', () => {
                 const action = confirm('Options:\n\nOK = Settings\nCancel = Sign Out');
                 if (action) {
-                    // Go to settings
-                    window.location.href = '/settings';
+                    // Open settings tab
+                    switchPanelTab('settings');
                 } else {
                     // Sign out
                     signOut(auth).then(() => {
@@ -3110,38 +4313,23 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
                     const data = await response.json();
                     activityData = data.activities || [];
 
-                    // Update count
+                    // Update count (right panel only)
                     const todayCount = activityData.filter(a => {
                         const time = a.lastTimestamp?.seconds ? a.lastTimestamp.seconds * 1000 : Date.now();
                         return (Date.now() - time) < 86400000; // 24 hours
                     }).length;
-                    activityCount.textContent = `${todayCount} today`;
                     if (rightActivityCount) rightActivityCount.textContent = `${todayCount} today`;
 
-                    // Clear current list
-                    activityList.innerHTML = '';
+                    // Clear current list (right panel only)
                     if (rightActivityList) rightActivityList.innerHTML = '';
 
                     if (activityData.length > 0) {
-                        // Show list, hide empty state
-                        activityList.style.display = 'flex';
-                        activityEmpty.style.display = 'none';
+                        // Show list, hide empty state (right panel only)
                         if (rightActivityList) rightActivityList.style.display = 'flex';
                         if (rightActivityEmpty) rightActivityEmpty.style.display = 'none';
 
-                        // Render each activity item
+                        // Render each activity item (right panel only)
                         activityData.forEach(activity => {
-                            // Create item for old sidebar
-                            const item = createActivityItem(
-                                activity.visitorId,
-                                activity.lastMessage,
-                                activity.lastResponse,
-                                activity.lastTimestamp,
-                                activity.isNew
-                            );
-                            activityList.appendChild(item);
-
-                            // Create item for right panel
                             if (rightActivityList) {
                                 const rightItem = createActivityItem(
                                     activity.visitorId,
@@ -3154,23 +4342,21 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
                             }
                         });
                     } else {
-                        // Show empty state
-                        activityList.style.display = 'none';
-                        activityEmpty.style.display = 'flex';
+                        // Show empty state (right panel only)
                         if (rightActivityList) rightActivityList.style.display = 'none';
                         if (rightActivityEmpty) rightActivityEmpty.style.display = 'flex';
                     }
                 } else {
                     console.error('Failed to load activity feed');
-                    // Show empty state on error
-                    activityList.style.display = 'none';
-                    activityEmpty.style.display = 'flex';
+                    // Show empty state on error (right panel only)
+                    if (rightActivityList) rightActivityList.style.display = 'none';
+                    if (rightActivityEmpty) rightActivityEmpty.style.display = 'flex';
                 }
             } catch (error) {
                 console.error('Error loading activity feed:', error);
-                // Show empty state on error
-                activityList.style.display = 'none';
-                activityEmpty.style.display = 'flex';
+                // Show empty state on error (right panel only)
+                if (rightActivityList) rightActivityList.style.display = 'none';
+                if (rightActivityEmpty) rightActivityEmpty.style.display = 'flex';
             }
         }
 
@@ -3288,18 +4474,18 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
 
         // Update or add activity item in the feed
         function updateActivityItem(visitorId, activity) {
-            // Check if item already exists in old sidebar
-            let existingItem = activityList.querySelector(`[data-visitor-id="${visitorId}"]`);
+            // Only update right panel
+            if (!rightActivityList) return;
 
             // Check if item exists in right panel
-            let rightExistingItem = rightActivityList ? rightActivityList.querySelector(`[data-visitor-id="${visitorId}"]`) : null;
+            let rightExistingItem = rightActivityList.querySelector(`[data-visitor-id="${visitorId}"]`);
 
-            if (existingItem) {
-                // Update existing item in old sidebar
+            if (rightExistingItem) {
+                // Update existing item in right panel
                 const timeAgo = formatTimeAgo(activity.lastTimestamp);
                 const visitorName = `visitor_${visitorId.substring(0, 6)}`;
 
-                existingItem.innerHTML = `
+                rightExistingItem.innerHTML = `
                     <div class="activity-item-header">
                         <div class="activity-item-visitor">
                             <span>👤</span>
@@ -3311,28 +4497,27 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
                     ${activity.lastResponse ? `<div class="activity-item-response">🔮 ${truncateText(activity.lastResponse, 60)}</div>` : ''}
                 `;
 
-                // Re-attach click listener (lost after innerHTML update)
-                existingItem.onclick = () => {
+                // Re-attach click listener
+                rightExistingItem.onclick = () => {
                     openConversationModal(visitorId);
                 };
 
                 // Add "new" class and animate
                 if (activity.isNew) {
-                    existingItem.classList.add('new');
-                    // Remove "new" class after 5 seconds
+                    rightExistingItem.classList.add('new');
                     setTimeout(() => {
-                        existingItem.classList.remove('new');
+                        rightExistingItem.classList.remove('new');
                     }, 5000);
                 }
 
                 // Move to top if it's a new message
-                if (activity.isNew && existingItem !== activityList.firstChild) {
-                    activityList.removeChild(existingItem);
-                    activityList.insertBefore(existingItem, activityList.firstChild);
+                if (activity.isNew && rightExistingItem !== rightActivityList.firstChild) {
+                    rightActivityList.removeChild(rightExistingItem);
+                    rightActivityList.insertBefore(rightExistingItem, rightActivityList.firstChild);
                 }
             } else {
-                // Create new item for old sidebar
-                const item = createActivityItem(
+                // Create new item for right panel
+                const rightItem = createActivityItem(
                     activity.visitorId,
                     activity.lastMessage,
                     activity.lastResponse,
@@ -3341,116 +4526,37 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
                 );
 
                 // Add to top of list
-                if (activityList.firstChild) {
-                    activityList.insertBefore(item, activityList.firstChild);
+                if (rightActivityList.firstChild) {
+                    rightActivityList.insertBefore(rightItem, rightActivityList.firstChild);
                 } else {
-                    activityList.appendChild(item);
+                    rightActivityList.appendChild(rightItem);
                 }
 
                 // Show list, hide empty state
-                activityList.style.display = 'flex';
-                activityEmpty.style.display = 'none';
+                rightActivityList.style.display = 'flex';
+                if (rightActivityEmpty) rightActivityEmpty.style.display = 'none';
 
                 // Remove "new" class after 5 seconds
                 if (activity.isNew) {
                     setTimeout(() => {
-                        item.classList.remove('new');
+                        rightItem.classList.remove('new');
                     }, 5000);
-                }
-            }
-
-            // Update right panel too
-            if (rightActivityList) {
-                if (rightExistingItem) {
-                    // Update existing item in right panel
-                    const timeAgo = formatTimeAgo(activity.lastTimestamp);
-                    const visitorName = `visitor_${visitorId.substring(0, 6)}`;
-
-                    rightExistingItem.innerHTML = `
-                        <div class="activity-item-header">
-                            <div class="activity-item-visitor">
-                                <span>👤</span>
-                                <span>${visitorName}</span>
-                            </div>
-                            <div class="activity-item-time">${timeAgo}</div>
-                        </div>
-                        <div class="activity-item-message">"${truncateText(activity.lastMessage, 60)}"</div>
-                        ${activity.lastResponse ? `<div class="activity-item-response">🔮 ${truncateText(activity.lastResponse, 60)}</div>` : ''}
-                    `;
-
-                    // Re-attach click listener
-                    rightExistingItem.onclick = () => {
-                        openConversationModal(visitorId);
-                    };
-
-                    // Add "new" class and animate
-                    if (activity.isNew) {
-                        rightExistingItem.classList.add('new');
-                        setTimeout(() => {
-                            rightExistingItem.classList.remove('new');
-                        }, 5000);
-                    }
-
-                    // Move to top if it's a new message
-                    if (activity.isNew && rightExistingItem !== rightActivityList.firstChild) {
-                        rightActivityList.removeChild(rightExistingItem);
-                        rightActivityList.insertBefore(rightExistingItem, rightActivityList.firstChild);
-                    }
-                } else {
-                    // Create new item for right panel
-                    const rightItem = createActivityItem(
-                        activity.visitorId,
-                        activity.lastMessage,
-                        activity.lastResponse,
-                        activity.lastTimestamp,
-                        activity.isNew
-                    );
-
-                    // Add to top of list
-                    if (rightActivityList.firstChild) {
-                        rightActivityList.insertBefore(rightItem, rightActivityList.firstChild);
-                    } else {
-                        rightActivityList.appendChild(rightItem);
-                    }
-
-                    // Show list, hide empty state
-                    if (rightActivityList) rightActivityList.style.display = 'flex';
-                    if (rightActivityEmpty) rightActivityEmpty.style.display = 'none';
-
-                    // Remove "new" class after 5 seconds
-                    if (activity.isNew) {
-                        setTimeout(() => {
-                            rightItem.classList.remove('new');
-                        }, 5000);
-                    }
                 }
             }
         }
 
         // Remove activity item from the feed
         function removeActivityItem(visitorId) {
-            // Remove from old sidebar
-            const item = activityList.querySelector(`[data-visitor-id="${visitorId}"]`);
-            if (item) {
-                item.remove();
-            }
+            // Only remove from right panel
+            if (!rightActivityList) return;
 
-            // Remove from right panel
-            if (rightActivityList) {
-                const rightItem = rightActivityList.querySelector(`[data-visitor-id="${visitorId}"]`);
-                if (rightItem) {
-                    rightItem.remove();
-                }
-            }
-
-            // Check if old sidebar list is empty
-            if (activityList.children.length === 0) {
-                activityList.style.display = 'none';
-                activityEmpty.style.display = 'flex';
+            const rightItem = rightActivityList.querySelector(`[data-visitor-id="${visitorId}"]`);
+            if (rightItem) {
+                rightItem.remove();
             }
 
             // Check if right panel list is empty
-            if (rightActivityList && rightActivityList.children.length === 0) {
+            if (rightActivityList.children.length === 0) {
                 rightActivityList.style.display = 'none';
                 if (rightActivityEmpty) rightActivityEmpty.style.display = 'flex';
             }
@@ -3694,6 +4800,14 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
 
             // Update activity badge
             updateActivityBadge();
+
+            // Initialize panel tabs
+            initializePanelTabs();
+            initializePanelSettings();
+            initializePanelAnalytics();
+
+            // Restore last active tab
+            restorePanelTab();
 
             // Clear existing UI
             chatMessages.innerHTML = '';
@@ -5349,7 +6463,15 @@ Is there anything else you'd like to configure?`;
             if (activityCount) {
                 activityCount.textContent = `${todayCount} today`;
             }
+
+            // Update tab badge
+            if (activityBadge) {
+                activityBadge.textContent = todayCount > 0 ? todayCount : '';
+            }
         }
+
+        // Handle URL hash for deep linking on page load
+        window.addEventListener('load', handlePanelDeepLink);
     </script>
 </body>
 </html>
