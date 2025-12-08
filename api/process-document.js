@@ -1,6 +1,18 @@
 // Document processor for PDFs and Excel files
-const pdfParse = require('pdf-parse');
-const XLSX = require('xlsx');
+let pdfParse;
+try {
+  pdfParse = require('pdf-parse');
+} catch (e) {
+  console.error('[ProcessDoc] Failed to load pdf-parse:', e.message);
+}
+
+let XLSX;
+try {
+  XLSX = require('xlsx');
+} catch (e) {
+  console.error('[ProcessDoc] Failed to load xlsx:', e.message);
+}
+
 const { initializeFirebaseAdmin, admin } = require('./_firebase-admin');
 
 // Initialize Firebase
@@ -43,9 +55,26 @@ module.exports = async (req, res) => {
 
     // Process based on file type
     if (fileType === 'application/pdf' || fileUrl.endsWith('.pdf')) {
+      // Check if pdf-parse is available
+      if (!pdfParse) {
+        return res.status(500).json({
+          error: 'PDF parsing library not available',
+          details: 'pdf-parse module failed to load'
+        });
+      }
+
       // Extract text from PDF
       console.log('[ProcessDoc] Parsing PDF...');
-      const pdfData = await pdfParse(buffer);
+      let pdfData;
+      try {
+        pdfData = await pdfParse(buffer);
+      } catch (pdfError) {
+        console.error('[ProcessDoc] PDF parse error:', pdfError);
+        return res.status(500).json({
+          error: 'Failed to parse PDF',
+          details: pdfError.message
+        });
+      }
 
       extractedContent = {
         type: 'pdf',
@@ -72,9 +101,26 @@ module.exports = async (req, res) => {
       fileUrl.endsWith('.xls') ||
       fileUrl.endsWith('.csv')
     ) {
+      // Check if xlsx is available
+      if (!XLSX) {
+        return res.status(500).json({
+          error: 'Excel parsing library not available',
+          details: 'xlsx module failed to load'
+        });
+      }
+
       // Parse Excel/CSV
       console.log('[ProcessDoc] Parsing Excel/CSV...');
-      const workbook = XLSX.read(buffer, { type: 'buffer' });
+      let workbook;
+      try {
+        workbook = XLSX.read(buffer, { type: 'buffer' });
+      } catch (xlsxError) {
+        console.error('[ProcessDoc] Excel parse error:', xlsxError);
+        return res.status(500).json({
+          error: 'Failed to parse Excel file',
+          details: xlsxError.message
+        });
+      }
 
       const sheets = {};
       const keyMetrics = {};
