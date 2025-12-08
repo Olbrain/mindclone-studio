@@ -3412,12 +3412,12 @@
                                 <div class="knowledge-base-empty">
                                     <div class="empty-icon">📄</div>
                                     <div class="empty-text">No documents uploaded yet</div>
-                                    <div class="empty-hint">Upload PDFs, images, or Excel files to share knowledge with visitors</div>
+                                    <div class="empty-hint">Upload PDFs, PowerPoints, Word docs, images, or Excel files</div>
                                 </div>
                             </div>
 
                             <!-- Upload Button -->
-                            <input type="file" id="knowledgeBaseFileInput" style="display: none;" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.csv" multiple>
+                            <input type="file" id="knowledgeBaseFileInput" style="display: none;" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.csv,.pptx,.ppt,.doc,.docx,.txt" multiple>
                             <button id="uploadKnowledgeBaseBtn" class="panel-button panel-button-primary">
                                 <span class="button-icon">📤</span>
                                 <span>Upload Documents</span>
@@ -4448,6 +4448,9 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
             if (mimeType.includes('image')) return '🖼️';
             if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📊';
             if (mimeType.includes('csv')) return '📋';
+            if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return '📽️';
+            if (mimeType.includes('document') || mimeType.includes('word') || mimeType.includes('msword')) return '📝';
+            if (mimeType.includes('text')) return '📃';
             return '📄';
         }
 
