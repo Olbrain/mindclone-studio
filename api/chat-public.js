@@ -293,18 +293,13 @@ async function callGeminiAPI(messages, systemPrompt, pitchDeckInfo = null, knowl
       parts: [{ text: msg.content }]
     }));
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-002:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
 
     // Build request body
     const requestBody = {
       contents: contents,
       systemInstruction: {
         parts: [{ text: systemPrompt }]
-      },
-      generationConfig: {
-        temperature: 0.7,
-        topP: 0.9,
-        topK: 40
       }
     };
 
@@ -334,12 +329,6 @@ async function callGeminiAPI(messages, systemPrompt, pitchDeckInfo = null, knowl
     if (hasTools) {
       console.log('[ChatPublic] Adding tools to API request');
       requestBody.tools = tools;
-      // Configure tool calling mode to AUTO
-      requestBody.tool_config = {
-        function_calling_config: {
-          mode: "AUTO"
-        }
-      };
     } else {
       console.log('[ChatPublic] No tools available - no PDF or Excel documents found');
     }
@@ -355,7 +344,13 @@ async function callGeminiAPI(messages, systemPrompt, pitchDeckInfo = null, knowl
     let data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error?.message || 'Gemini API request failed');
+      console.error('[ChatPublic] Gemini API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: data.error,
+        fullResponse: data
+      });
+      throw new Error(data.error?.message || `Gemini API request failed: ${response.status}`);
     }
 
     // Check if model wants to call a tool
