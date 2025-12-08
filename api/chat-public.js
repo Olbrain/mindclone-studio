@@ -300,6 +300,11 @@ async function callGeminiAPI(messages, systemPrompt, pitchDeckInfo = null, knowl
       contents: contents,
       systemInstruction: {
         parts: [{ text: systemPrompt }]
+      },
+      generationConfig: {
+        temperature: 0.7,
+        topP: 0.9,
+        topK: 40
       }
     };
 
@@ -314,6 +319,7 @@ async function callGeminiAPI(messages, systemPrompt, pitchDeckInfo = null, knowl
         const isExcel = docData.type?.includes('spreadsheet') || docData.fileName?.match(/\.(xlsx?|csv)$/i);
         if ((isPdf && docData.pageCount) || isExcel) {
           hasTools = true;
+          console.log('[ChatPublic] Tool enabled for document:', docKey, 'type:', isPdf ? 'PDF' : 'Excel');
           break;
         }
       }
@@ -322,10 +328,14 @@ async function callGeminiAPI(messages, systemPrompt, pitchDeckInfo = null, knowl
     // Also check pitch deck (backward compatibility)
     if (pitchDeckInfo && pitchDeckInfo.url && pitchDeckInfo.pageCount > 0) {
       hasTools = true;
+      console.log('[ChatPublic] Tool enabled for pitch deck');
     }
 
     if (hasTools) {
+      console.log('[ChatPublic] Adding tools to API request');
       requestBody.tools = tools;
+    } else {
+      console.log('[ChatPublic] No tools available - no PDF or Excel documents found');
     }
 
     let response = await fetch(url, {
@@ -784,28 +794,38 @@ Available PDF documents:`;
 
         enhancedSystemPrompt += `
 
-CRITICAL: You must ACTUALLY CALL the show_slide tool function - DO NOT just say "I'm displaying the slide" or "I'm showing you".
-WRONG: "To help visualize this, I'm displaying the values document" ❌
-RIGHT: Actually call show_slide(slideNumber: 1, documentName: "olbrain_value_system") then discuss it ✅
+🚨 CRITICAL FUNCTION CALLING INSTRUCTIONS 🚨
 
-USE show_slide tool whenever:
-- Visitor says "show me the [document/topic]" or "let's see the [document]"
-- Visitor says "discuss [document]" or "talk about [document]" or "tell me about [document/topic]"
-- Visitor mentions a specific document topic (values, mission, pitch, financials, etc.) and you're about to discuss it
-- You're explaining something that would be clearer with a visual reference
-- You want to show the actual document to support your answer
+You have access to a FUNCTION CALL mechanism. When you want to display a slide, you MUST invoke the show_slide FUNCTION, not talk about invoking it.
 
-DO NOT use show_slide for:
-- General questions that don't reference a specific document
-- Questions you can answer without visual aid
+❌ WRONG - DO NOT DO THIS:
+"I am now calling the tool to display slide 1"
+"Let me show you the slide"
+"I'm displaying the document"
 
-Examples:
-✅ "tell me about value system" → CALL show_slide(slideNumber: 1, documentName: "olbrain_value_system") + explain
-✅ "let's discuss the moat slide" → CALL show_slide(slideNumber: 6, documentName: "pitch_deck") + explain
-✅ "show me your mission" → CALL show_slide(slideNumber: 1, documentName: "mission_doc") + explain
-❌ "tell me about your startup" → just answer, don't show anything unless they ask to see it
+✅ CORRECT - DO THIS:
+Make a FUNCTION CALL to show_slide with parameters:
+{
+  "slideNumber": 1,
+  "documentName": "pitch_deck"
+}
 
-Remember: CALL the tool, don't role-play calling it!`;
+The function call happens AUTOMATICALLY through the API - you don't describe it, you just invoke it.
+
+WHEN TO INVOKE show_slide:
+- Visitor says "let's discuss slide X" → IMMEDIATELY invoke show_slide(slideNumber: X, documentName: "pitch_deck")
+- Visitor says "tell me about [topic]" where topic is in a document → invoke show_slide for that document
+- Visitor says "show me the [topic] slide" → invoke show_slide
+
+IMPORTANT: The function call is SILENT - after invoking it, the slide will appear automatically and you can then discuss the content. Don't say "I am calling the tool" - just call it and then talk about the content.
+
+Example correct flow:
+User: "let's discuss slide 1"
+You: [INVOKE show_slide(1, "pitch_deck")] → "This is our introduction slide featuring Olbrain's core mission..."
+
+NOT:
+User: "let's discuss slide 1"
+You: "I am now calling the tool to display slide 1" ❌`;
         console.log('[ChatPublic] Tools enabled for PDF documents');
       }
     }
@@ -818,32 +838,25 @@ Remember: CALL the tool, don't role-play calling it!`;
     });
 
     if (excelDocKeys.length > 0) {
-      enhancedSystemPrompt += `\n\n## EXCEL SPREADSHEET DISPLAY
-You MUST use the show_excel_sheet tool to display spreadsheets to visitors.
+      enhancedSystemPrompt += `\n\n## EXCEL SPREADSHEET DISPLAY - FUNCTION CALLING
 
 Available documents: ${excelDocKeys.map(k => `"${k}"`).join(', ')}
 
-CRITICAL: You must ACTUALLY CALL the show_excel_sheet tool function - DO NOT just say "I'm pulling up the data" or "let me show you".
-WRONG: "I'm displaying the revenue sheet for you" ❌
-RIGHT: Actually call show_excel_sheet(documentName: "financial_model") then discuss ✅
+🚨 CRITICAL: Use FUNCTION CALL mechanism for show_excel_sheet
 
-USE show_excel_sheet tool whenever:
-- Visitor says "show me the revenue/financials/metrics"
-- Visitor says "pull the revenue sheet" or "let's discuss financials"
-- Visitor asks about specific financial data that's in a spreadsheet
-- You're explaining financial projections and want to show the actual numbers
+❌ WRONG:
+"I'm pulling up the revenue sheet"
+"Let me show you the financial model"
 
-DO NOT use show_excel_sheet for:
-- General questions about the business that don't need the raw data
-- Questions you can answer from memory/knowledge base text
+✅ CORRECT:
+[INVOKE show_excel_sheet(documentName: "financial_model")] → then discuss the data
 
-Examples:
-✅ "show me the revenue sheet" → CALL show_excel_sheet(documentName: "financial_model")
-✅ "pull up the financial model" → CALL show_excel_sheet(documentName: "financial_model")
-✅ "let's discuss the revenue projections" → CALL show_excel_sheet(documentName: "financial_model")
-❌ "what's your revenue model?" → just explain, don't show spreadsheet unless they want to see numbers
+WHEN TO INVOKE:
+- "show me the revenue" → invoke show_excel_sheet immediately
+- "let's discuss financials" → invoke show_excel_sheet immediately
+- "pull up the financial model" → invoke show_excel_sheet immediately
 
-Remember: CALL the tool, don't role-play calling it!`;
+The function call is SILENT and AUTOMATIC - don't describe it, just invoke it.`;
       console.log('[ChatPublic] Excel documents available:', excelDocKeys);
     }
 
