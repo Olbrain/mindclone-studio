@@ -575,6 +575,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, deleteField, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -589,6 +590,7 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
         // DOM elements
         const usernameInput = document.getElementById('usernameInput');
@@ -666,10 +668,11 @@
                         return;
                     }
 
-                    // Check availability via Firestore
-                    const usernameDoc = await firebase.firestore().collection('usernames').doc(username).get();
+                    // Check availability via Firestore (modular API)
+                    const usernameDocRef = doc(db, 'usernames', username);
+                    const usernameDoc = await getDoc(usernameDocRef);
 
-                    if (usernameDoc.exists) {
+                    if (usernameDoc.exists()) {
                         availabilityIndicator.textContent = '✗ Already taken';
                         availabilityIndicator.className = 'availability-indicator taken';
                         claimUsernameBtn.disabled = true;
@@ -696,25 +699,24 @@
             claimUsernameBtn.innerHTML = '<span class="loading-spinner"></span> Claiming...';
 
             try {
-                const db = firebase.firestore();
-
-                // Check if username is still available
-                const usernameDoc = await db.collection('usernames').doc(username).get();
-                if (usernameDoc.exists) {
+                // Check if username is still available (modular API)
+                const usernameDocRef = doc(db, 'usernames', username);
+                const usernameDoc = await getDoc(usernameDocRef);
+                if (usernameDoc.exists()) {
                     throw new Error('Username is already taken');
                 }
 
-                // Claim the username
-                await db.collection('usernames').doc(username).set({
+                // Claim the username (modular API)
+                await setDoc(doc(db, 'usernames', username), {
                     userId: currentUser.uid,
-                    claimedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    claimedAt: serverTimestamp()
                 });
 
-                // Update user document
-                await db.collection('users').doc(currentUser.uid).set({
+                // Update user document (modular API)
+                await setDoc(doc(db, 'users', currentUser.uid), {
                     username: username,
                     linkEnabled: true,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    updatedAt: serverTimestamp()
                 }, { merge: true });
 
                 currentUsername = username;
@@ -738,24 +740,23 @@
             releaseUsernameBtn.innerHTML = '<span class="loading-spinner"></span> Releasing...';
 
             try {
-                const db = firebase.firestore();
-
-                // Get current username
-                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                // Get current username (modular API)
+                const userDocRef = doc(db, 'users', currentUser.uid);
+                const userDoc = await getDoc(userDocRef);
                 const username = userDoc.data()?.username;
 
                 if (!username) {
                     throw new Error('No username to release');
                 }
 
-                // Remove username claim
-                await db.collection('usernames').doc(username).delete();
+                // Remove username claim (modular API)
+                await deleteDoc(doc(db, 'usernames', username));
 
-                // Update user document
-                await db.collection('users').doc(currentUser.uid).update({
-                    username: firebase.firestore.FieldValue.delete(),
+                // Update user document (modular API)
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    username: deleteField(),
                     linkEnabled: false,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    updatedAt: serverTimestamp()
                 });
 
                 currentUsername = null;
