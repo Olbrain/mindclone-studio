@@ -122,25 +122,31 @@ module.exports = async (req, res) => {
         });
       }
 
-      const sheets = {};
       const keyMetrics = {};
+      const sheetSummaries = {};
 
       for (const sheetName of workbook.SheetNames) {
         const sheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-        sheets[sheetName] = jsonData;
 
         // Try to extract key financial metrics
         const metrics = extractFinancialMetrics(jsonData, sheetName);
         if (Object.keys(metrics).length > 0) {
           keyMetrics[sheetName] = metrics;
         }
+
+        // Create a text summary of the sheet (first 50 rows, max 500 chars per cell)
+        // Store as text to avoid Firestore nested array limitations
+        const summaryRows = jsonData.slice(0, 50).map(row =>
+          row.map(cell => String(cell || '').substring(0, 500)).join('\t')
+        ).join('\n');
+        sheetSummaries[sheetName] = summaryRows.substring(0, 50000); // Limit total size
       }
 
       extractedContent = {
         type: 'excel',
         sheetNames: workbook.SheetNames,
-        sheets: sheets,
+        sheetSummaries: sheetSummaries, // Text format instead of nested arrays
         keyMetrics: keyMetrics,
         extractedAt: new Date().toISOString()
       };

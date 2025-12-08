@@ -420,9 +420,19 @@ module.exports = async (req, res) => {
         if (docs.financial_model.sheetNames) {
           enhancedSystemPrompt += `(Financial model contains sheets: ${docs.financial_model.sheetNames.join(', ')})\n`;
         }
+
+        // Add raw sheet data summaries for additional context
+        if (docs.financial_model.sheetSummaries) {
+          enhancedSystemPrompt += '\n### Raw Data (Tab-separated):\n';
+          for (const [sheetName, summary] of Object.entries(docs.financial_model.sheetSummaries)) {
+            // Limit to first 3000 chars per sheet to avoid too long prompts
+            const truncated = summary.substring(0, 3000);
+            enhancedSystemPrompt += `\n**${sheetName}:**\n\`\`\`\n${truncated}\n\`\`\`\n`;
+          }
+        }
       }
 
-      enhancedSystemPrompt += '\nWhen answering questions about the business, pitch, or financials, reference the specific data above. Quote numbers accurately.';
+      enhancedSystemPrompt += '\nWhen answering questions about the business, pitch, or financials, reference the specific data above. Quote numbers accurately. You have FULL ACCESS to the uploaded documents.';
     }
 
     // 4. Build conversation context
