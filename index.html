@@ -3657,9 +3657,17 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
 
         // Initialize panel tabs
         function initializePanelTabs() {
+            console.log('[Panel] Initializing tabs...', panelTabs.length, 'tabs found');
+
+            if (panelTabs.length === 0) {
+                console.error('[Panel] No panel tabs found!');
+                return;
+            }
+
             panelTabs.forEach(tab => {
                 tab.addEventListener('click', () => {
                     const tabName = tab.dataset.tab;
+                    console.log('[Panel] Tab clicked:', tabName);
                     switchPanelTab(tabName);
                 });
             });
@@ -3672,6 +3680,8 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
                     switchPanelTab('settings');
                 });
             });
+
+            console.log('[Panel] Tabs initialized successfully');
         }
 
         // Switch panel tabs
@@ -3747,6 +3757,13 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
 
         // Initialize panel settings listeners
         function initializePanelSettings() {
+            console.log('[Panel] Initializing settings...');
+
+            if (!panelBioInput || !panelUsernameInput) {
+                console.error('[Panel] Settings elements not found!');
+                return;
+            }
+
             // Bio character count
             panelBioInput.addEventListener('input', () => {
                 panelBioCharCount.textContent = panelBioInput.value.length;
@@ -4026,9 +4043,18 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
 
         // Initialize analytics
         function initializePanelAnalytics() {
+            console.log('[Panel] Initializing analytics...');
+
+            if (!analyticsPeriodFilter) {
+                console.error('[Panel] Analytics elements not found!');
+                return;
+            }
+
             analyticsPeriodFilter.addEventListener('change', () => {
                 loadPanelAnalytics();
             });
+
+            console.log('[Panel] Analytics initialized successfully');
         }
 
         // Load analytics data
@@ -4811,13 +4837,16 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
 
             // Clear existing UI
             chatMessages.innerHTML = '';
+            console.log('[Chat] Cleared chat messages');
 
             // Show loading indicator
             showLoadingIndicator();
 
             try {
                 // Load conversation history from Firestore
+                console.log('[Chat] Loading conversation history for user:', user.uid);
                 const messages = await loadConversationHistory(user.uid);
+                console.log('[Chat] Loaded', messages.length, 'messages');
 
                 if (messages.length > 0) {
                     // Populate conversationHistory array
@@ -4830,16 +4859,19 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
                     messages.forEach(msg => {
                         addMessage(msg.role === 'assistant' ? 'ai' : msg.role, msg.content, msg.timestamp);
                     });
+                    console.log('[Chat] Displayed', messages.length, 'messages in UI');
                 } else {
                     // No history - show empty state
+                    console.log('[Chat] No messages found, showing empty state');
                     showEmptyState();
                 }
             } catch (error) {
-                console.error('Error loading conversation:', error);
+                console.error('[Chat] Error loading conversation:', error);
                 // Show empty state on error
                 showEmptyState();
             } finally {
                 removeLoadingIndicator();
+                console.log('[Chat] Finished loading conversation');
             }
         }
 
