@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@vercel/blob": "^0.25.1",
     "firebase-admin": "^13.0.2",
-    "mem0ai": "^2.1.38"
+    "mem0ai": "^2.1.38",
+    "pdf-lib": "^1.17.1",
+    "xlsx": "^0.18.5"
   }
 }

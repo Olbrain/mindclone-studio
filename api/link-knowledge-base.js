@@ -46,6 +46,8 @@ module.exports = async (req, res) => {
         success: true,
         cof: data.cof || null,
         knowledgeBase: data.sections || {},
+        pitch_deck: data.pitch_deck || null,
+        financial_model: data.financial_model || null,
         lastUpdated: data.lastUpdated,
         isEmpty: false
       });
@@ -53,7 +55,7 @@ module.exports = async (req, res) => {
 
     // POST - Create or update knowledge base
     if (req.method === 'POST') {
-      const { cof, sections } = req.body;
+      const { cof, sections, pitch_deck, financial_model } = req.body;
 
       // Validate CoF structure
       if (cof && typeof cof !== 'object') {
@@ -82,6 +84,16 @@ module.exports = async (req, res) => {
         updateData.sections = sections;
       }
 
+      // Support for pitch deck data
+      if (pitch_deck) {
+        updateData.pitch_deck = pitch_deck;
+      }
+
+      // Support for financial model data
+      if (financial_model) {
+        updateData.financial_model = financial_model;
+      }
+
       await db.collection('users').doc(userId)
         .collection('linkKnowledgeBase').doc('config')
         .set(updateData, { merge: true });
@@ -94,21 +106,29 @@ module.exports = async (req, res) => {
 
     // PUT - Update specific section
     if (req.method === 'PUT') {
-      const { sectionId, content } = req.body;
+      const { sectionId, content, media, data, documents } = req.body;
 
-      if (!sectionId || !content) {
-        return res.status(400).json({ error: 'sectionId and content required' });
+      if (!sectionId) {
+        return res.status(400).json({ error: 'sectionId required' });
       }
+
+      // Build section update object
+      const sectionUpdate = {
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+        approved: true
+      };
+
+      // Add fields if provided
+      if (content !== undefined) sectionUpdate.content = content;
+      if (media !== undefined) sectionUpdate.media = media;
+      if (data !== undefined) sectionUpdate.data = data;
+      if (documents !== undefined) sectionUpdate.documents = documents;
 
       const updatePath = `sections.${sectionId}`;
       await db.collection('users').doc(userId)
         .collection('linkKnowledgeBase').doc('config')
         .update({
-          [updatePath]: {
-            content: content,
-            lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
-            approved: true
-          },
+          [updatePath]: sectionUpdate,
           lastUpdated: admin.firestore.FieldValue.serverTimestamp()
         });
 
