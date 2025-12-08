@@ -1436,6 +1436,83 @@
             transform: none;
         }
 
+        .attach-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .attach-button:hover {
+            background: #2a2a2a;
+            border-color: #555;
+            transform: scale(1.05);
+        }
+
+        .file-preview {
+            position: absolute;
+            bottom: 72px;
+            left: 20px;
+            right: 20px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 12px;
+            display: none;
+        }
+
+        .file-preview.visible {
+            display: block;
+        }
+
+        .file-preview-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+
+        .file-preview-icon {
+            font-size: 24px;
+        }
+
+        .file-preview-info {
+            flex: 1;
+        }
+
+        .file-preview-name {
+            font-size: 14px;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .file-preview-size {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .file-preview-remove {
+            background: none;
+            border: none;
+            color: #ff4444;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 4px 8px;
+        }
+
+        .file-preview-remove:hover {
+            color: #ff6666;
+        }
+
         .hidden {
             display: none !important;
         }
@@ -2391,7 +2468,26 @@
             <!-- Chat Interface (shown when logged in) -->
             <div id="chatInterface" class="chat-container hidden">
                 <div id="chatMessages" class="chat-messages"></div>
+                <div class="file-preview" id="filePreview">
+                    <div class="file-preview-item">
+                        <span class="file-preview-icon" id="fileIcon">📄</span>
+                        <div class="file-preview-info">
+                            <div class="file-preview-name" id="fileName"></div>
+                            <div class="file-preview-size" id="fileSize"></div>
+                        </div>
+                        <button class="file-preview-remove" id="removeFile">✕</button>
+                    </div>
+                </div>
                 <div class="chat-input-container">
+                    <input
+                        type="file"
+                        id="fileInput"
+                        style="display: none;"
+                        accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.csv"
+                    >
+                    <button id="attachButton" class="attach-button" title="Attach file">
+                        📎
+                    </button>
                     <input
                         type="text"
                         id="chatInput"
@@ -2502,6 +2598,13 @@
         const chatMessages = document.getElementById('chatMessages');
         const chatInput = document.getElementById('chatInput');
         const sendButton = document.getElementById('sendButton');
+        const attachButton = document.getElementById('attachButton');
+        const fileInput = document.getElementById('fileInput');
+        const filePreview = document.getElementById('filePreview');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const fileIcon = document.getElementById('fileIcon');
+        const removeFile = document.getElementById('removeFile');
         const activityFeed = document.getElementById('activityFeed');
         const activityList = document.getElementById('activityList');
         const activityEmpty = document.getElementById('activityEmpty');
@@ -2528,6 +2631,7 @@
         let conversationHistory = [];
         let activityData = [];
         let activityListener = null; // Real-time listener unsubscribe function
+        let selectedFile = null; // Track selected file for upload
 
         // Knowledge Base Workflow State with persistence
         let workflowState = loadWorkflowState() || {
@@ -4566,7 +4670,7 @@ Is there anything else you'd like to configure?`;
         // Send Message
         async function sendMessage() {
             const message = chatInput.value.trim();
-            if (!message) return;
+            if (!message && !selectedFile) return;
 
             // Get current user
             const currentUser = auth.currentUser;
@@ -4578,9 +4682,44 @@ Is there anything else you'd like to configure?`;
             // Remove empty state if present
             removeEmptyState();
 
+            // Handle file upload if present
+            let fileUrl = null;
+            let fileMetadata = null;
+            if (selectedFile) {
+                try {
+                    // Show uploading status
+                    addMessage('system', `Uploading ${selectedFile.name}...`, new Date());
+
+                    fileUrl = await uploadFile(selectedFile);
+                    fileMetadata = {
+                        name: selectedFile.name,
+                        type: selectedFile.type,
+                        size: selectedFile.size,
+                        url: fileUrl
+                    };
+
+                    // Clear file preview and selection
+                    selectedFile = null;
+                    fileInput.value = '';
+                    filePreview.classList.remove('visible');
+
+                    console.log('File uploaded successfully:', fileUrl);
+                } catch (error) {
+                    console.error('File upload failed:', error);
+                    addMessage('system', 'Failed to upload file. Please try again.', new Date());
+                    return;
+                }
+            }
+
+            // Prepare message with file attachment if present
+            let finalMessage = message;
+            if (fileUrl) {
+                finalMessage = `${message}\n\n[Attached file: ${fileMetadata.name}]\nFile URL: ${fileUrl}`;
+            }
+
             // Add user message to UI
             const userTimestamp = new Date();
-            addMessage('user', message, userTimestamp);
+            addMessage('user', message + (fileMetadata ? ` 📎 ${fileMetadata.name}` : ''), userTimestamp);
             chatInput.value = '';
 
             // === WORKFLOW HANDLING ===
@@ -4613,11 +4752,11 @@ Is there anything else you'd like to configure?`;
             // Add to conversation history
             conversationHistory.push({
                 role: 'user',
-                content: message
+                content: finalMessage
             });
 
             // Save user message to Firestore (non-blocking)
-            saveMessageToFirestore(currentUser.uid, 'user', message);
+            saveMessageToFirestore(currentUser.uid, 'user', finalMessage);
 
             // Show typing indicator
             showTypingIndicator();
@@ -4727,6 +4866,86 @@ Is there anything else you'd like to configure?`;
                 chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         });
+
+        // File upload handlers
+        attachButton.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                showFilePreview(file);
+            }
+        });
+
+        removeFile.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            filePreview.classList.remove('visible');
+        });
+
+        function showFilePreview(file) {
+            const fileSizeKB = (file.size / 1024).toFixed(2);
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            const sizeText = file.size < 1024 * 1024
+                ? `${fileSizeKB} KB`
+                : `${fileSizeMB} MB`;
+
+            // Set icon based on file type
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            let icon = '📄';
+            if (['pdf'].includes(fileExt)) icon = '📑';
+            else if (['png', 'jpg', 'jpeg', 'gif'].includes(fileExt)) icon = '🖼️';
+            else if (['xlsx', 'xls', 'csv'].includes(fileExt)) icon = '📊';
+
+            fileIcon.textContent = icon;
+            fileName.textContent = file.name;
+            fileSize.textContent = sizeText;
+            filePreview.classList.add('visible');
+        }
+
+        async function uploadFile(file) {
+            try {
+                // Convert file to base64
+                const reader = new FileReader();
+                return new Promise((resolve, reject) => {
+                    reader.onload = async () => {
+                        try {
+                            const base64File = reader.result.split(',')[1]; // Remove data:type;base64, prefix
+                            const response = await fetch('/api/upload-document', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-User-ID': auth.currentUser.uid
+                                },
+                                body: JSON.stringify({
+                                    file: base64File,
+                                    filename: file.name,
+                                    contentType: file.type,
+                                    userId: auth.currentUser.uid
+                                })
+                            });
+
+                            if (!response.ok) {
+                                throw new Error('Upload failed');
+                            }
+
+                            const data = await response.json();
+                            resolve(data.url);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            } catch (error) {
+                console.error('File upload error:', error);
+                throw error;
+            }
+        }
 
         // ============================================
         // NEW: Landing Page & Header Event Handlers
