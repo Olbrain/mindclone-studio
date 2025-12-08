@@ -712,10 +712,12 @@
                     claimedAt: serverTimestamp()
                 });
 
-                // Update user document (modular API)
+                // Update user document with auth data (modular API)
                 await setDoc(doc(db, 'users', currentUser.uid), {
                     username: username,
                     linkEnabled: true,
+                    displayName: currentUser.displayName || currentUser.email?.split('@')[0] || username,
+                    photoURL: currentUser.photoURL || null,
                     updatedAt: serverTimestamp()
                 }, { merge: true });
 
@@ -875,6 +877,19 @@
 
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
+
+                    // Auto-populate missing displayName and photoURL from Firebase Auth
+                    if (userData.username && (!userData.displayName || !userData.photoURL)) {
+                        try {
+                            await setDoc(userDocRef, {
+                                displayName: userData.displayName || currentUser.displayName || currentUser.email?.split('@')[0] || userData.username,
+                                photoURL: userData.photoURL || currentUser.photoURL || null
+                            }, { merge: true });
+                            console.log('Auto-populated missing profile fields from Firebase Auth');
+                        } catch (error) {
+                            console.error('Error auto-populating profile:', error);
+                        }
+                    }
 
                     if (userData.username) {
                         currentUsername = userData.username;
