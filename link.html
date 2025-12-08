@@ -594,7 +594,25 @@
     <!-- Markdown library -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    <script>
+    <script type="module">
+        // Firebase imports
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, doc, getDoc, collection } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDl9MfnCYnM8VJ7tohU7AUzGECPwc2WT3k",
+            authDomain: "mindclone-studio.firebaseapp.com",
+            projectId: "mindclone-studio",
+            storageBucket: "mindclone-studio.firebasestorage.app",
+            messagingSenderId: "1034636195166",
+            appId: "1:1034636195166:web:5a6f123f9eb7ee314d0bcf",
+            measurementId: "G-P6NR53M1YD"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         // Get username from URL path or query parameter
         const urlParams = new URLSearchParams(window.location.search);
         let username = urlParams.get('username'); // Try query parameter first (for direct link.html access)
@@ -668,26 +686,47 @@
             });
         }
 
-        // Load profile from API
+        // Load profile from Firestore (bypass broken API)
         async function loadProfile() {
             try {
-                const response = await fetch(`/api/profile?username=${encodeURIComponent(username)}`);
+                const normalizedUsername = username.trim().toLowerCase();
 
-                if (response.status === 404) {
+                // Look up username in usernames collection
+                const usernameDoc = await getDoc(doc(db, 'usernames', normalizedUsername));
+
+                if (!usernameDoc.exists()) {
                     showError('Username Not Found', 'This Mindclone link doesn\'t exist.');
                     return;
                 }
 
-                if (response.status === 403) {
+                const userId = usernameDoc.data().userId;
+
+                // Get user document
+                const userDoc = await getDoc(doc(db, 'users', userId));
+
+                if (!userDoc.exists()) {
+                    showError('Username Not Found', 'This Mindclone link doesn\'t exist.');
+                    return;
+                }
+
+                const userData = userDoc.data();
+
+                // Check if link is enabled
+                if (!userData.linkEnabled) {
                     showError('Link Disabled', 'This Mindclone link has been disabled by its owner.');
                     return;
                 }
 
-                if (!response.ok) {
-                    throw new Error('Failed to load profile');
-                }
+                // Build profile object
+                profile = {
+                    username: normalizedUsername,
+                    displayName: userData.displayName || 'Mindclone User',
+                    bio: userData.bio || '',
+                    customGreeting: userData.customGreeting || 'Hello! Ask me anything.',
+                    photoURL: userData.photoURL || null,
+                    linkEnabled: true
+                };
 
-                profile = await response.json();
                 showProfile();
                 await loadConversation();
             } catch (error) {
