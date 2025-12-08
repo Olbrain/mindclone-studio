@@ -3906,21 +3906,27 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
 
         // Switch panel tabs
         function switchPanelTab(tabName) {
+            console.log('[Panel] Switching to tab:', tabName);
             currentPanelTab = tabName;
 
             // Update tab buttons
             panelTabs.forEach(tab => {
                 if (tab.dataset.tab === tabName) {
                     tab.classList.add('active');
+                    console.log('[Panel] Activated tab button:', tabName);
                 } else {
                     tab.classList.remove('active');
                 }
             });
 
             // Update tab content
+            console.log('[Panel] Looking for tab content:', `${tabName}Tab`);
+            console.log('[Panel] Available tab contents:', Array.from(panelTabContents).map(c => c.id));
+
             panelTabContents.forEach(content => {
                 if (content.id === `${tabName}Tab`) {
                     content.classList.add('active');
+                    console.log('[Panel] Activated tab content:', content.id, 'Classes:', content.className);
                 } else {
                     content.classList.remove('active');
                 }
@@ -4227,9 +4233,14 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
 
         // Load settings into panel
         async function loadPanelSettings() {
-            if (!auth.currentUser) return;
+            console.log('[Panel] loadPanelSettings called');
+            if (!auth.currentUser) {
+                console.log('[Panel] No current user, skipping settings load');
+                return;
+            }
 
             try {
+                console.log('[Panel] Loading settings for user:', auth.currentUser.uid);
                 const userDocRef = doc(db, 'users', auth.currentUser.uid);
                 const userDoc = await getDoc(userDocRef);
 
@@ -4261,6 +4272,8 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
                     console.error('[KB] Error loading knowledge base:', kbError);
                     // Don't show error to user, just log it
                 }
+
+                console.log('[Panel] Settings loaded successfully');
             } catch (error) {
                 console.error('Error loading panel settings:', error);
                 showPanelAlert('Failed to load settings', 'error');
