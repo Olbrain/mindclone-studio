@@ -329,12 +329,6 @@ async function callGeminiAPI(messages, systemPrompt, pitchDeckInfo = null, knowl
     if (hasTools) {
       console.log('[ChatPublic] Adding tools to API request');
       requestBody.tools = tools;
-      // Tell Gemini to prefer using tools when relevant
-      requestBody.toolConfig = {
-        functionCallingConfig: {
-          mode: "AUTO"
-        }
-      };
     } else {
       console.log('[ChatPublic] No tools available - no PDF or Excel documents found');
     }
