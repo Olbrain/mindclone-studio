@@ -210,112 +210,116 @@
         /* Profile Header */
         .profile-header {
             background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
-            padding: 25px;
+            padding: 20px;
             border-bottom: 1px solid #333;
             text-align: center;
             transition: all 0.3s ease;
-            position: relative;
+            flex-shrink: 0;
+        }
+
+        .profile-info {
+            display: block;
         }
 
         .profile-avatar {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
-            margin: 0 auto 15px;
+            margin: 0 auto 12px;
             border: 3px solid #4CAF50;
             transition: all 0.3s ease;
+            display: block;
         }
 
         .profile-name {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             color: white;
             transition: all 0.3s ease;
         }
 
         .profile-username {
-            font-size: 14px;
+            font-size: 13px;
             color: #888;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             transition: all 0.3s ease;
         }
 
         .profile-bio {
-            font-size: 14px;
+            font-size: 13px;
             color: #ccc;
-            line-height: 1.6;
-            margin-bottom: 15px;
+            line-height: 1.5;
+            margin-bottom: 10px;
             transition: all 0.3s ease;
         }
 
         .profile-greeting {
-            font-size: 14px;
+            font-size: 13px;
             color: #4CAF50;
             font-style: italic;
-            padding: 10px 15px;
+            padding: 8px 12px;
             background: rgba(76, 175, 80, 0.1);
             border-radius: 8px;
             display: inline-block;
             transition: all 0.3s ease;
         }
 
-        /* Compact Header State */
+        /* Compact Header State - Sticky bar at top */
         .profile-header.compact {
-            padding: 12px 20px;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: #0d0d0d;
-            border-bottom: 1px solid #333;
+            padding: 10px 16px !important;
+            text-align: left !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 100 !important;
+            background: #0d0d0d !important;
+            border-bottom: 1px solid #333 !important;
         }
 
         .profile-header.compact .profile-avatar {
-            width: 36px;
-            height: 36px;
-            margin: 0;
-            border-width: 2px;
+            width: 32px !important;
+            height: 32px !important;
+            margin: 0 !important;
+            border-width: 2px !important;
         }
 
         .profile-header.compact .profile-info {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            flex: 1 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
         }
 
         .profile-header.compact .profile-name {
-            font-size: 16px;
-            margin: 0;
-            display: inline;
+            font-size: 15px !important;
+            margin: 0 !important;
         }
 
         .profile-header.compact .profile-username {
-            font-size: 13px;
-            margin: 0;
-            display: inline;
-            opacity: 0.7;
+            font-size: 12px !important;
+            margin: 0 !important;
+            opacity: 0.7 !important;
         }
 
         .profile-header.compact .profile-bio,
         .profile-header.compact .profile-greeting {
-            display: none;
+            display: none !important;
         }
 
         .profile-expand-btn {
             background: transparent;
             border: 1px solid #333;
             color: #888;
-            padding: 6px 10px;
+            padding: 5px 10px;
             border-radius: 6px;
-            font-size: 12px;
+            font-size: 11px;
             cursor: pointer;
             transition: all 0.2s;
             white-space: nowrap;
+            display: none;
         }
 
         .profile-expand-btn:hover {
@@ -325,15 +329,7 @@
         }
 
         .profile-header.compact .profile-expand-btn {
-            display: block;
-        }
-
-        .profile-header:not(.compact) .profile-expand-btn {
-            display: none;
-        }
-
-        .profile-header:not(.compact) .profile-info {
-            display: contents; /* Makes children behave as direct children of parent */
+            display: block !important;
         }
 
         /* Chat Container */
@@ -795,7 +791,7 @@
             }
 
             .profile-header {
-                padding: 20px;
+                padding: 16px;
             }
 
             .profile-avatar {
@@ -804,29 +800,29 @@
             }
 
             .profile-name {
-                font-size: 20px;
+                font-size: 18px;
             }
 
             .profile-header.compact {
-                padding: 10px 15px;
+                padding: 8px 12px !important;
             }
 
             .profile-header.compact .profile-avatar {
-                width: 32px;
-                height: 32px;
+                width: 28px !important;
+                height: 28px !important;
             }
 
             .profile-header.compact .profile-name {
-                font-size: 15px;
+                font-size: 14px !important;
             }
 
             .profile-header.compact .profile-username {
-                font-size: 12px;
+                font-size: 11px !important;
             }
 
             .profile-expand-btn {
-                font-size: 11px;
-                padding: 5px 8px;
+                font-size: 10px !important;
+                padding: 4px 8px !important;
             }
 
             .message-content {
@@ -1191,8 +1187,10 @@
 
         // Collapse header to compact mode
         function collapseHeader() {
+            console.log('[Header] Collapsing header to compact mode');
             profileHeader.classList.add('compact');
             localStorage.setItem(`header_compact_${username}`, 'true');
+            console.log('[Header] Compact class added:', profileHeader.classList.contains('compact'));
         }
 
         // Expand header to full mode
