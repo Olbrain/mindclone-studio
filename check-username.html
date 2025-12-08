@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Username Check</title>
+</head>
+<body>
+    <h1>Username Registration Check</h1>
+    <button onclick="checkUsername()">Check if 'alok' is registered</button>
+    <button onclick="checkLink()">Check link status</button>
+    <button onclick="registerUsername()">Register 'alok' username</button>
+    <pre id="output"></pre>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyARpf7PGV81K5t1HdD31IkT2WqsOTOFRiw",
+            authDomain: "mindclone-studio.firebaseapp.com",
+            projectId: "mindclone-studio",
+            storageBucket: "mindclone-studio.firebasestorage.app",
+            messagingSenderId: "422365396809",
+            appId: "1:422365396809:web:eb2d815ffd5bb8b8cf27ad"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.checkUsername = async function() {
+            const output = document.getElementById('output');
+            try {
+                const usernameDoc = await getDoc(doc(db, 'usernames', 'alok'));
+                if (usernameDoc.exists()) {
+                    output.textContent = 'Username "alok" EXISTS!\n' + JSON.stringify(usernameDoc.data(), null, 2);
+                } else {
+                    output.textContent = 'Username "alok" NOT FOUND - needs to be registered';
+                }
+            } catch (error) {
+                output.textContent = 'ERROR: ' + error.message;
+            }
+        };
+
+        window.checkLink = async function() {
+            const output = document.getElementById('output');
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    output.textContent = 'Please sign in first';
+                    return;
+                }
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                output.textContent = 'User data:\n' + JSON.stringify(userDoc.data(), null, 2);
+            } catch (error) {
+                output.textContent = 'ERROR: ' + error.message;
+            }
+        };
+
+        window.registerUsername = async function() {
+            const output = document.getElementById('output');
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    output.textContent = 'Please sign in first at https://mindclone-studio.vercel.app';
+                    return;
+                }
+
+                // Register username
+                await setDoc(doc(db, 'usernames', 'alok'), {
+                    userId: user.uid,
+                    createdAt: new Date()
+                });
+
+                // Enable link
+                await setDoc(doc(db, 'users', user.uid), {
+                    linkEnabled: true,
+                    username: 'alok'
+                }, { merge: true });
+
+                output.textContent = 'SUCCESS! Username "alok" registered and link enabled';
+            } catch (error) {
+                output.textContent = 'ERROR: ' + error.message;
+            }
+        };
+    </script>
+</body>
+</html>
