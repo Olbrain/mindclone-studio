@@ -63,13 +63,17 @@ const tools = [
     function_declarations: [
       {
         name: "show_slide",
-        description: "Display a specific slide from the pitch deck to the visitor. Use this when the visitor asks to SEE or SHOW a slide, or when you want to visually demonstrate something from your pitch deck. The slide will appear in a display panel next to the chat.",
+        description: "Display a specific slide/page from a PDF document to the visitor. Use this when the visitor asks to SEE or SHOW a slide/page, or when you want to visually demonstrate something from a PDF document (pitch deck, value system doc, etc.). The slide will appear in a display panel next to the chat.",
         parameters: {
           type: "object",
           properties: {
             slideNumber: {
               type: "number",
-              description: "The slide number to display (1-indexed). Use 1 for the first slide, 2 for the second, etc."
+              description: "The slide/page number to display (1-indexed). Use 1 for the first page, 2 for the second, etc."
+            },
+            documentName: {
+              type: "string",
+              description: "The name/identifier of the PDF document (e.g., 'pitch_deck', 'olbrain_value_system'). If not specified, defaults to 'pitch_deck'."
             },
             reason: {
               type: "string",
@@ -299,8 +303,28 @@ async function callGeminiAPI(messages, systemPrompt, pitchDeckInfo = null, knowl
       }
     };
 
-    // Only add tools if we have a pitch deck
+    // Only add tools if we have any PDF documents or Excel documents
+    let hasTools = false;
+
+    // Check for PDF documents
+    if (knowledgeBaseDocuments) {
+      for (const [docKey, docData] of Object.entries(knowledgeBaseDocuments)) {
+        if (!docData) continue;
+        const isPdf = docData.type === 'application/pdf' || docData.fileName?.toLowerCase().endsWith('.pdf');
+        const isExcel = docData.type?.includes('spreadsheet') || docData.fileName?.match(/\.(xlsx?|csv)$/i);
+        if ((isPdf && docData.pageCount) || isExcel) {
+          hasTools = true;
+          break;
+        }
+      }
+    }
+
+    // Also check pitch deck (backward compatibility)
     if (pitchDeckInfo && pitchDeckInfo.url && pitchDeckInfo.pageCount > 0) {
+      hasTools = true;
+    }
+
+    if (hasTools) {
       requestBody.tools = tools;
     }
 
@@ -327,59 +351,85 @@ async function callGeminiAPI(messages, systemPrompt, pitchDeckInfo = null, knowl
       console.log('[ChatPublic] Tool call:', functionCall.name, functionCall.args);
 
       // Handle show_slide tool
-      if (functionCall.name === 'show_slide' && pitchDeckInfo) {
+      if (functionCall.name === 'show_slide') {
         const slideNumber = functionCall.args?.slideNumber || 1;
+        const documentName = functionCall.args?.documentName || 'pitch_deck';
         const reason = functionCall.args?.reason || '';
 
-        // Validate slide number
-        const validSlideNumber = Math.max(1, Math.min(slideNumber, pitchDeckInfo.pageCount));
+        console.log('[ChatPublic] show_slide called for document:', documentName, 'slide:', slideNumber);
 
-        // Create display action for frontend
-        displayAction = {
-          type: 'slide',
-          pdfUrl: pitchDeckInfo.url,
-          slideNumber: validSlideNumber,
-          totalSlides: pitchDeckInfo.pageCount,
-          reason: reason
-        };
+        // Look up the PDF document
+        let pdfDoc = null;
+        let pdfUrl = null;
+        let pageCount = 0;
 
-        // Add the function call and response to contents
-        contents.push({
-          role: 'model',
-          parts: [{ functionCall: functionCall }]
-        });
-
-        contents.push({
-          role: 'user',
-          parts: [{
-            functionResponse: {
-              name: functionCall.name,
-              response: {
-                success: true,
-                message: `Showing slide ${validSlideNumber} of ${pitchDeckInfo.pageCount}`,
-                slideNumber: validSlideNumber
-              }
-            }
-          }]
-        });
-
-        // Call API again to get the text response
-        requestBody.contents = contents;
-        response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody)
-        });
-
-        data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error?.message || 'Gemini API request failed after tool call');
+        if (documentName === 'pitch_deck' && pitchDeckInfo) {
+          pdfUrl = pitchDeckInfo.url;
+          pageCount = pitchDeckInfo.pageCount;
+        } else if (knowledgeBaseDocuments && knowledgeBaseDocuments[documentName]) {
+          pdfDoc = knowledgeBaseDocuments[documentName];
+          // Check if it's a PDF
+          if (pdfDoc.type === 'application/pdf' || pdfDoc.fileName?.toLowerCase().endsWith('.pdf')) {
+            pdfUrl = pdfDoc.url || pdfDoc.fileUrl;
+            pageCount = pdfDoc.pageCount || 1;
+          }
         }
 
-        candidate = data.candidates?.[0];
+        if (pdfUrl && pageCount > 0) {
+          // Validate slide number
+          const validSlideNumber = Math.max(1, Math.min(slideNumber, pageCount));
+
+          // Create display action for frontend
+          displayAction = {
+            type: 'slide',
+            pdfUrl: pdfUrl,
+            slideNumber: validSlideNumber,
+            totalSlides: pageCount,
+            reason: reason,
+            documentName: documentName
+          };
+
+          // Add the function call and response to contents
+          contents.push({
+            role: 'model',
+            parts: [{ functionCall: functionCall }]
+          });
+
+          contents.push({
+            role: 'user',
+            parts: [{
+              functionResponse: {
+                name: functionCall.name,
+                response: {
+                  success: true,
+                  message: `Showing slide ${validSlideNumber} of ${pageCount} from ${pdfDoc?.fileName || documentName}`,
+                  slideNumber: validSlideNumber,
+                  documentName: documentName
+                }
+              }
+            }]
+          });
+
+          // Call API again to get the text response
+          requestBody.contents = contents;
+          response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody)
+          });
+
+          data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error?.message || 'Gemini API request failed after tool call');
+          }
+
+          candidate = data.candidates?.[0];
+        } else {
+          console.error('[ChatPublic] PDF document not found or invalid:', documentName);
+        }
       }
 
       // Handle show_excel_sheet tool
@@ -692,50 +742,72 @@ module.exports = async (req, res) => {
     // Add the new user message
     contextMessages.push(lastMessage);
 
-    // Extract pitch deck info for tool calling
+    // Extract all PDF documents for tool calling
     let pitchDeckInfo = null;
-    if (knowledgeBase?.documents?.pitch_deck) {
-      const pd = knowledgeBase.documents.pitch_deck;
-      const pdfUrl = pd.url || pd.fileUrl; // Support both field names
-      console.log('[ChatPublic] Pitch deck found:', { url: pdfUrl, pageCount: pd.pageCount });
-      if (pdfUrl && pd.pageCount) {
-        pitchDeckInfo = {
-          url: pdfUrl,
-          pageCount: pd.pageCount
-        };
-        // Add tool usage instruction to system prompt
-        enhancedSystemPrompt += `\n\n## VISUAL DISPLAY CAPABILITY
-You MUST use the show_slide tool to display slides from your pitch deck.
-Your pitch deck has ${pd.pageCount} slides.
+    const pdfDocuments = {};
+
+    if (knowledgeBase?.documents) {
+      for (const [docKey, docData] of Object.entries(knowledgeBase.documents)) {
+        if (!docData) continue;
+
+        // Check if it's a PDF
+        const isPdf = docData.type === 'application/pdf' || docData.fileName?.toLowerCase().endsWith('.pdf');
+        if (isPdf && (docData.url || docData.fileUrl) && docData.pageCount) {
+          pdfDocuments[docKey] = {
+            url: docData.url || docData.fileUrl,
+            pageCount: docData.pageCount,
+            fileName: docData.fileName || docKey
+          };
+
+          // Store pitch deck info separately for backward compatibility
+          if (docKey === 'pitch_deck') {
+            pitchDeckInfo = {
+              url: docData.url || docData.fileUrl,
+              pageCount: docData.pageCount
+            };
+          }
+        }
+      }
+
+      console.log('[ChatPublic] PDF documents found:', Object.keys(pdfDocuments));
+
+      // Add tool usage instruction if we have any PDF documents
+      if (Object.keys(pdfDocuments).length > 0) {
+        enhancedSystemPrompt += `\n\n## VISUAL DISPLAY CAPABILITY - PDF DOCUMENTS
+You MUST use the show_slide tool to display slides/pages from PDF documents.
+
+Available PDF documents:`;
+
+        for (const [docKey, info] of Object.entries(pdfDocuments)) {
+          enhancedSystemPrompt += `\n- "${docKey}" (${info.fileName}, ${info.pageCount} pages)`;
+        }
+
+        enhancedSystemPrompt += `
 
 CRITICAL: You must ACTUALLY CALL the show_slide tool function - DO NOT just say "I'm displaying the slide" or "I'm showing you".
-WRONG: "To help visualize this, I'm displaying the moat slide" ❌
-RIGHT: Actually call show_slide(slideNumber: 6) then discuss it ✅
+WRONG: "To help visualize this, I'm displaying the values document" ❌
+RIGHT: Actually call show_slide(slideNumber: 1, documentName: "olbrain_value_system") then discuss it ✅
 
 USE show_slide tool whenever:
-- Visitor says "show me the [topic] slide" or "let's see the [topic] slide"
-- Visitor says "discuss [topic] slide" or "talk about [topic] slide" or "tell me about [topic] slide"
-- Visitor mentions a specific slide topic (team, moat, financials, product, etc.) and you're about to discuss it
+- Visitor says "show me the [document/topic]" or "let's see the [document]"
+- Visitor says "discuss [document]" or "talk about [document]" or "tell me about [document/topic]"
+- Visitor mentions a specific document topic (values, mission, pitch, financials, etc.) and you're about to discuss it
 - You're explaining something that would be clearer with a visual reference
+- You want to show the actual document to support your answer
 
 DO NOT use show_slide for:
-- General questions about the pitch deck as a whole
-- Questions that don't reference a specific slide
+- General questions that don't reference a specific document
+- Questions you can answer without visual aid
 
 Examples:
-✅ "let's discuss the moat slide" → CALL show_slide(slideNumber: 6) + explain
-✅ "tell me about your team" → CALL show_slide(slideNumber: X) + explain
-✅ "what's your revenue model?" → CALL show_slide(slideNumber: X) + explain
-❌ "how many slides do you have?" → just answer, don't show anything
-❌ "tell me about your startup" → just answer, don't show anything
+✅ "tell me about value system" → CALL show_slide(slideNumber: 1, documentName: "olbrain_value_system") + explain
+✅ "let's discuss the moat slide" → CALL show_slide(slideNumber: 6, documentName: "pitch_deck") + explain
+✅ "show me your mission" → CALL show_slide(slideNumber: 1, documentName: "mission_doc") + explain
+❌ "tell me about your startup" → just answer, don't show anything unless they ask to see it
 
 Remember: CALL the tool, don't role-play calling it!`;
-        console.log('[ChatPublic] Tools enabled for pitch deck');
-      } else {
-        console.log('[ChatPublic] Pitch deck missing URL or pageCount');
+        console.log('[ChatPublic] Tools enabled for PDF documents');
       }
-    } else {
-      console.log('[ChatPublic] No pitch deck in knowledge base');
     }
 
     // Check for Excel documents and add tool usage instruction
