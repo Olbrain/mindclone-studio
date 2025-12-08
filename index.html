@@ -4409,6 +4409,32 @@ Type **"approve"** to save this, or tell me how to improve it.`;
 
                 const settings = await settingsResponse.json();
 
+                // Step 2.5: Claim username if not already set
+                let username = settings.username;
+                if (!username) {
+                    console.log('[Workflow] No username found, claiming "alok"');
+                    const claimResponse = await fetch('/api/username?action=claim', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: 'alok',
+                            idToken: idToken
+                        })
+                    });
+
+                    const claimData = await claimResponse.json();
+                    if (!claimData.success) {
+                        console.error('[Workflow] Failed to claim username:', claimData);
+                        // Don't throw - user might have username set but settings didn't load
+                        // They can fix it in settings later
+                    } else {
+                        console.log('[Workflow] Successfully claimed username:', claimData.username);
+                        username = claimData.username;
+                    }
+                }
+
                 // Step 3: Enable the public link
                 const enableResponse = await fetch('/api/link-settings', {
                     method: 'POST',
@@ -4445,7 +4471,7 @@ Type **"approve"** to save this, or tell me how to improve it.`;
             clearWorkflowState();
 
                 // Show success message with correct URL
-                const username = settings.username || 'your-username';
+                // Use the username variable from above (either from settings or newly claimed)
                 const domain = window.location.hostname === 'localhost' ?
                     'http://localhost:3000' :
                     `https://${window.location.hostname}`;
