@@ -68,6 +68,24 @@ const tools = [
           properties: {},
           required: []
         }
+      },
+      {
+        name: "get_link_conversations",
+        description: "Get recent visitor conversations from the user's public link. Use this when the user asks about what visitors are discussing, popular topics, what people are asking about, conversation history, or wants to analyze their link engagement. Returns the actual messages exchanged between visitors and the mindclone.",
+        parameters: {
+          type: "object",
+          properties: {
+            limit: {
+              type: "number",
+              description: "Maximum number of visitors to fetch (default 20, max 50)"
+            },
+            includeFullConversations: {
+              type: "boolean",
+              description: "If true, fetch full conversation history for each visitor. If false (default), only fetch the last few messages per visitor."
+            }
+          },
+          required: []
+        }
       }
     ]
   }
@@ -198,6 +216,91 @@ async function handleGetKnowledgeBase(userId) {
   }
 }
 
+// Get link conversations for analysis
+async function handleGetLinkConversations(userId, params = {}) {
+  try {
+    const limit = Math.min(params.limit || 20, 50);
+    const includeFullConversations = params.includeFullConversations || false;
+
+    // Get recent visitors sorted by last visit
+    const visitorsSnapshot = await db.collection('users').doc(userId)
+      .collection('visitors')
+      .orderBy('lastVisit', 'desc')
+      .limit(limit)
+      .get();
+
+    if (visitorsSnapshot.empty) {
+      return {
+        success: true,
+        totalVisitors: 0,
+        conversations: [],
+        summary: "No visitor conversations yet. Share your public link to start receiving visitors!"
+      };
+    }
+
+    const conversations = [];
+    let totalMessages = 0;
+    const allUserMessages = []; // Collect all user messages for topic analysis
+
+    // Process each visitor
+    for (const visitorDoc of visitorsSnapshot.docs) {
+      const visitorData = visitorDoc.data();
+      const visitorId = visitorDoc.id;
+
+      // Get messages from this visitor
+      const messagesLimit = includeFullConversations ? 100 : 10;
+      const messagesSnapshot = await db.collection('users').doc(userId)
+        .collection('visitors').doc(visitorId)
+        .collection('messages')
+        .orderBy('timestamp', 'desc')
+        .limit(messagesLimit)
+        .get();
+
+      if (!messagesSnapshot.empty) {
+        const messages = messagesSnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            role: data.role,
+            content: data.content,
+            timestamp: data.timestamp?.toDate?.()?.toISOString() || null
+          };
+        }).reverse(); // Chronological order
+
+        // Collect user messages for topic analysis
+        messages.forEach(msg => {
+          if (msg.role === 'user') {
+            allUserMessages.push(msg.content);
+          }
+        });
+
+        totalMessages += messages.length;
+
+        conversations.push({
+          visitorId: visitorId.substring(0, 8) + '...', // Anonymize
+          messageCount: messagesSnapshot.size,
+          lastVisit: visitorData.lastVisit?.toDate?.()?.toISOString() || null,
+          messages: messages
+        });
+      }
+    }
+
+    // Create a summary for the AI to analyze
+    const response = {
+      success: true,
+      totalVisitors: visitorsSnapshot.size,
+      totalMessages: totalMessages,
+      conversations: conversations,
+      allUserQuestions: allUserMessages.slice(0, 100), // Last 100 user messages for topic analysis
+      hint: "Analyze the 'allUserQuestions' array to identify common topics and themes. Look for patterns in what visitors are asking about."
+    };
+
+    return response;
+  } catch (error) {
+    console.error('[Tool] Error getting link conversations:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 // Helper function to format file size
 function formatFileSize(bytes) {
   if (!bytes) return '0 B';
@@ -218,6 +321,8 @@ async function executeTool(toolName, toolArgs, userId) {
       return await handleUpdateLinkSettings(userId, toolArgs);
     case 'get_knowledge_base':
       return await handleGetKnowledgeBase(userId);
+    case 'get_link_conversations':
+      return await handleGetLinkConversations(userId, toolArgs);
     default:
       return { success: false, error: `Unknown tool: ${toolName}` };
   }
@@ -328,14 +433,17 @@ module.exports = async (req, res) => {
       }
 
       // Add tool usage instructions
-      enhancedPrompt += `\n\n## SETTINGS & KNOWLEDGE BASE ACCESS:
-You have access to the user's link settings and knowledge base. You can:
+      enhancedPrompt += `\n\n## SETTINGS, KNOWLEDGE BASE & CONVERSATION ACCESS:
+You have access to the user's link settings, knowledge base, and visitor conversations. You can:
 1. **View settings** - Check the user's public link configuration (username, link status, display name, bio, greeting, knowledge base status)
 2. **Update settings** - Change any link setting the user requests (enable/disable link, change bio, etc.)
 3. **View knowledge base** - See what documents the user has uploaded
+4. **Analyze conversations** - Fetch and analyze visitor conversations from the public link to identify popular topics, common questions, and engagement patterns
 
 When the user asks about their link, settings, or knowledge base, use the appropriate tool.
 When they want to change settings, use update_link_settings with only the fields they want to change.
+When they ask about visitor conversations, popular topics, what people are asking about, or engagement analysis, use get_link_conversations.
+After fetching conversations, analyze the 'allUserQuestions' array to identify themes, patterns, and popular topics. Present insights in a helpful, organized way.
 After making changes, confirm what was updated and offer to help with anything else.`;
 
       // Add style guide
