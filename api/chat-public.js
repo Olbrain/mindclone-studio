@@ -327,6 +327,15 @@ module.exports = async (req, res) => {
     // 2. Load owner's knowledge base
     const knowledgeBase = await loadKnowledgeBase(userId);
 
+    // Debug logging
+    console.log('[ChatPublic] Knowledge base loaded:', {
+      hasSections: Object.keys(knowledgeBase?.sections || {}).length,
+      hasDocuments: Object.keys(knowledgeBase?.documents || {}).length,
+      hasPitchDeck: !!knowledgeBase?.documents?.pitch_deck,
+      hasFinancialModel: !!knowledgeBase?.documents?.financial_model,
+      financialMetrics: knowledgeBase?.documents?.financial_model?.keyMetrics ? Object.keys(knowledgeBase.documents.financial_model.keyMetrics) : []
+    });
+
     // 3. Build enhanced system prompt with knowledge base
     let enhancedSystemPrompt = PUBLIC_LINK_SYSTEM_PROMPT;
 
