@@ -4758,31 +4758,51 @@ Is there anything else you'd like to configure?`;
             // Remove empty state if present
             removeEmptyState();
 
+            // Capture file info before clearing
+            const fileToUpload = selectedFile;
+            const fileDisplayName = selectedFile ? selectedFile.name : null;
+
+            // Immediately clear input and file preview for better UX
+            chatInput.value = '';
+            if (selectedFile) {
+                selectedFile = null;
+                fileInput.value = '';
+                filePreview.classList.remove('visible');
+            }
+
+            // Show user message immediately (with uploading indicator if file present)
+            const userTimestamp = new Date();
+            const uploadingIndicator = fileDisplayName ? ` 📎 ${fileDisplayName} ⏳` : '';
+            addMessage('user', message + uploadingIndicator, userTimestamp);
+
             // Handle file upload if present
             let fileUrl = null;
             let fileMetadata = null;
-            if (selectedFile) {
+            if (fileToUpload) {
                 try {
-                    // Show uploading status
-                    addMessage('system', `Uploading ${selectedFile.name}...`, new Date());
-
-                    fileUrl = await uploadFile(selectedFile);
+                    fileUrl = await uploadFile(fileToUpload);
                     fileMetadata = {
-                        name: selectedFile.name,
-                        type: selectedFile.type,
-                        size: selectedFile.size,
+                        name: fileToUpload.name,
+                        type: fileToUpload.type,
+                        size: fileToUpload.size,
                         url: fileUrl
                     };
 
-                    // Clear file preview and selection
-                    selectedFile = null;
-                    fileInput.value = '';
-                    filePreview.classList.remove('visible');
+                    // Update the user message to show upload complete (replace ⏳ with ✓)
+                    const lastUserMessage = chatMessages.querySelector('.message.user:last-of-type .message-content');
+                    if (lastUserMessage) {
+                        lastUserMessage.innerHTML = lastUserMessage.innerHTML.replace(' ⏳', ' ✓');
+                    }
 
                     console.log('File uploaded successfully:', fileUrl);
                 } catch (error) {
                     console.error('File upload failed:', error);
-                    addMessage('system', 'Failed to upload file. Please try again.', new Date());
+                    // Update message to show error
+                    const lastUserMessage = chatMessages.querySelector('.message.user:last-of-type .message-content');
+                    if (lastUserMessage) {
+                        lastUserMessage.innerHTML = lastUserMessage.innerHTML.replace(' ⏳', ' ❌ (upload failed)');
+                    }
+                    addMessage('assistant', 'Sorry, the file upload failed. Please try again.', new Date());
                     return;
                 }
             }
@@ -4792,11 +4812,6 @@ Is there anything else you'd like to configure?`;
             if (fileUrl) {
                 finalMessage = `${message}\n\n[Attached file: ${fileMetadata.name}]\nFile URL: ${fileUrl}`;
             }
-
-            // Add user message to UI
-            const userTimestamp = new Date();
-            addMessage('user', message + (fileMetadata ? ` 📎 ${fileMetadata.name}` : ''), userTimestamp);
-            chatInput.value = '';
 
             // === WORKFLOW HANDLING ===
             // Log workflow state for debugging
