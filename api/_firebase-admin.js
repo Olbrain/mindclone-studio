@@ -17,9 +17,7 @@ function initializeFirebaseAdmin() {
       // Decode base64 and parse JSON
       let serviceAccount;
       try {
-        let decoded = Buffer.from(serviceAccountKey, 'base64').toString('utf-8');
-        // Clean up any control characters or extra whitespace that might cause parsing issues
-        decoded = decoded.replace(/[\r\n]+/g, '\\n').trim();
+        const decoded = Buffer.from(serviceAccountKey, 'base64').toString('utf-8');
         serviceAccount = JSON.parse(decoded);
         console.log('[Firebase Init] Successfully decoded and parsed service account');
         console.log('[Firebase Init] Project ID:', serviceAccount.project_id);
