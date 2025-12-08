@@ -646,7 +646,7 @@
 
             checkUsernameTimeout = setTimeout(async () => {
                 try {
-                    const response = await fetch('/api/username/check', {
+                    const response = await fetch('/api/username?action=check', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ username })
@@ -682,7 +682,7 @@
 
             try {
                 const idToken = await currentUser.getIdToken();
-                const response = await fetch('/api/username/claim', {
+                const response = await fetch('/api/username?action=claim', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, idToken })
@@ -718,7 +718,7 @@
 
             try {
                 const idToken = await currentUser.getIdToken();
-                const response = await fetch('/api/username/release', {
+                const response = await fetch('/api/username?action=release', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ idToken })
