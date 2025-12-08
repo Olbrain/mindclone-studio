@@ -213,6 +213,8 @@
             padding: 25px;
             border-bottom: 1px solid #333;
             text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
         }
 
         .profile-avatar {
@@ -221,6 +223,7 @@
             border-radius: 50%;
             margin: 0 auto 15px;
             border: 3px solid #4CAF50;
+            transition: all 0.3s ease;
         }
 
         .profile-name {
@@ -228,12 +231,14 @@
             font-weight: 700;
             margin-bottom: 8px;
             color: white;
+            transition: all 0.3s ease;
         }
 
         .profile-username {
             font-size: 14px;
             color: #888;
             margin-bottom: 12px;
+            transition: all 0.3s ease;
         }
 
         .profile-bio {
@@ -241,6 +246,7 @@
             color: #ccc;
             line-height: 1.6;
             margin-bottom: 15px;
+            transition: all 0.3s ease;
         }
 
         .profile-greeting {
@@ -251,6 +257,83 @@
             background: rgba(76, 175, 80, 0.1);
             border-radius: 8px;
             display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        /* Compact Header State */
+        .profile-header.compact {
+            padding: 12px 20px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #0d0d0d;
+            border-bottom: 1px solid #333;
+        }
+
+        .profile-header.compact .profile-avatar {
+            width: 36px;
+            height: 36px;
+            margin: 0;
+            border-width: 2px;
+        }
+
+        .profile-header.compact .profile-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .profile-header.compact .profile-name {
+            font-size: 16px;
+            margin: 0;
+            display: inline;
+        }
+
+        .profile-header.compact .profile-username {
+            font-size: 13px;
+            margin: 0;
+            display: inline;
+            opacity: 0.7;
+        }
+
+        .profile-header.compact .profile-bio,
+        .profile-header.compact .profile-greeting {
+            display: none;
+        }
+
+        .profile-expand-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: #888;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .profile-expand-btn:hover {
+            background: #1a1a1a;
+            color: white;
+            border-color: #444;
+        }
+
+        .profile-header.compact .profile-expand-btn {
+            display: block;
+        }
+
+        .profile-header:not(.compact) .profile-expand-btn {
+            display: none;
+        }
+
+        .profile-header:not(.compact) .profile-info {
+            display: contents; /* Makes children behave as direct children of parent */
         }
 
         /* Chat Container */
@@ -724,6 +807,28 @@
                 font-size: 20px;
             }
 
+            .profile-header.compact {
+                padding: 10px 15px;
+            }
+
+            .profile-header.compact .profile-avatar {
+                width: 32px;
+                height: 32px;
+            }
+
+            .profile-header.compact .profile-name {
+                font-size: 15px;
+            }
+
+            .profile-header.compact .profile-username {
+                font-size: 12px;
+            }
+
+            .profile-expand-btn {
+                font-size: 11px;
+                padding: 5px 8px;
+            }
+
             .message-content {
                 max-width: 85%;
             }
@@ -765,8 +870,11 @@
             <!-- Profile Header -->
             <div id="profileHeader" class="profile-header" style="display: none;">
                 <img id="profileAvatar" class="profile-avatar" alt="Profile">
-                <div id="profileName" class="profile-name"></div>
-                <div id="profileUsername" class="profile-username"></div>
+                <div class="profile-info">
+                    <div id="profileName" class="profile-name"></div>
+                    <div id="profileUsername" class="profile-username"></div>
+                </div>
+                <button id="profileExpandBtn" class="profile-expand-btn">View Profile</button>
                 <div id="profileBio" class="profile-bio"></div>
                 <div id="profileGreeting" class="profile-greeting"></div>
             </div>
@@ -888,6 +996,7 @@
         const profileUsername = document.getElementById('profileUsername');
         const profileBio = document.getElementById('profileBio');
         const profileGreeting = document.getElementById('profileGreeting');
+        const profileExpandBtn = document.getElementById('profileExpandBtn');
         const chatContainer = document.getElementById('chatContainer');
         const inputContainer = document.getElementById('inputContainer');
         const messageInput = document.getElementById('messageInput');
@@ -1019,6 +1128,15 @@
                 profileBio.style.display = 'none';
             }
 
+            // Check if header should be compact (from localStorage or after first message)
+            const headerCompact = localStorage.getItem(`header_compact_${username}`);
+            if (headerCompact === 'true') {
+                collapseHeader();
+            }
+
+            // Profile expand/collapse button
+            profileExpandBtn.addEventListener('click', toggleHeaderState);
+
             // Auto-resize textarea
             messageInput.addEventListener('input', autoResizeTextarea);
 
@@ -1071,6 +1189,27 @@
             messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
         }
 
+        // Collapse header to compact mode
+        function collapseHeader() {
+            profileHeader.classList.add('compact');
+            localStorage.setItem(`header_compact_${username}`, 'true');
+        }
+
+        // Expand header to full mode
+        function expandHeader() {
+            profileHeader.classList.remove('compact');
+            localStorage.setItem(`header_compact_${username}`, 'false');
+        }
+
+        // Toggle header state
+        function toggleHeaderState() {
+            if (profileHeader.classList.contains('compact')) {
+                expandHeader();
+            } else {
+                collapseHeader();
+            }
+        }
+
         // Send message
         async function sendMessage() {
             const content = messageInput.value.trim();
@@ -1097,6 +1236,11 @@
 
             // Add to conversation history
             conversationHistory.push({ role: 'user', content });
+
+            // Auto-collapse header after first user message
+            if (conversationHistory.length === 1 && !profileHeader.classList.contains('compact')) {
+                setTimeout(() => collapseHeader(), 300);
+            }
 
             // Show typing indicator
             typingIndicator.classList.add('active');
