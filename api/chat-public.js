@@ -135,7 +135,9 @@ async function loadKnowledgeBase(userId) {
     const data = kbDoc.data();
     return {
       cof: data.cof || null,
-      sections: data.sections || {}
+      sections: data.sections || {},
+      pitch_deck: data.pitch_deck || null,
+      financial_model: data.financial_model || null
     };
   } catch (error) {
     console.error('Error loading knowledge base:', error);
@@ -367,11 +369,27 @@ module.exports = async (req, res) => {
     // Save AI response
     await saveVisitorMessage(userId, visitorId, 'assistant', aiResponse);
 
-    // Return response
+    // Extract media to display (from sections with auto-display media)
+    const mediaToDisplay = [];
+    if (knowledgeBase && knowledgeBase.sections) {
+      for (const [sectionId, sectionData] of Object.entries(knowledgeBase.sections)) {
+        if (sectionData.media && sectionData.media.display === 'auto') {
+          mediaToDisplay.push({
+            type: sectionData.media.type,
+            url: sectionData.media.url,
+            caption: sectionData.media.caption || sectionId,
+            section: sectionId
+          });
+        }
+      }
+    }
+
+    // Return response with media metadata
     return res.status(200).json({
       success: true,
       content: aiResponse,
-      visitorId: visitorId
+      visitorId: visitorId,
+      media: mediaToDisplay.length > 0 ? mediaToDisplay : null
     });
 
   } catch (error) {

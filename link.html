@@ -202,6 +202,29 @@
             text-decoration: underline;
         }
 
+        /* Inline Media */
+        .inline-media {
+            margin-top: 12px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #0d0d0d;
+            border: 1px solid #333;
+        }
+
+        .inline-media img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .media-caption {
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #888;
+            background: #0d0d0d;
+            margin: 0;
+        }
+
         /* Copy button for code blocks */
         .code-block-wrapper {
             position: relative;
@@ -800,8 +823,8 @@
                     throw new Error(data.error || 'Failed to send message');
                 }
 
-                // Add AI response
-                addMessage('ai', data.content);
+                // Add AI response with media if available
+                addMessage('ai', data.content, new Date(), data.media);
                 conversationHistory.push({ role: 'assistant', content: data.content });
 
             } catch (error) {
@@ -822,7 +845,7 @@
         }
 
         // Add message to UI
-        function addMessage(type, content, timestamp = new Date()) {
+        function addMessage(type, content, timestamp = new Date(), media = null) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
 
@@ -840,6 +863,21 @@
                 // Add copy buttons to code blocks
                 const codeBlocks = contentDiv.querySelectorAll('pre code');
                 codeBlocks.forEach(addCopyButton);
+
+                // Add media if available
+                if (media && Array.isArray(media) && media.length > 0) {
+                    media.forEach(item => {
+                        if (item.type === 'image' && item.url) {
+                            const mediaDiv = document.createElement('div');
+                            mediaDiv.className = 'inline-media';
+                            mediaDiv.innerHTML = `
+                                <img src="${item.url}" alt="${item.caption || 'Image'}" />
+                                <p class="media-caption">${item.caption || 'Image'}</p>
+                            `;
+                            contentDiv.appendChild(mediaDiv);
+                        }
+                    });
+                }
             } else {
                 contentDiv.textContent = content;
             }
