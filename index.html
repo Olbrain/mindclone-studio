@@ -2975,10 +2975,6 @@
                         </div>
                     </div>
                     <hr class="dropdown-divider">
-                    <button id="headerProfileBtn" class="header-dropdown-item">
-                        <span class="dropdown-icon">👤</span>
-                        <span>Profile</span>
-                    </button>
                     <button id="headerSignOutBtn" class="header-dropdown-item">
                         <span class="dropdown-icon">🚪</span>
                         <span>Sign Out</span>
@@ -3089,10 +3085,6 @@
                         </div>
                     </div>
                     <hr class="avatar-dropdown-divider">
-                    <button id="dropdownProfileBtn" class="avatar-dropdown-item">
-                        <span class="avatar-dropdown-icon">👤</span>
-                        <span>Profile</span>
-                    </button>
                     <button id="dropdownSignOutBtn" class="avatar-dropdown-item">
                         <span class="avatar-dropdown-icon">🚪</span>
                         <span>Sign Out</span>
@@ -4197,14 +4189,6 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
         // Attach to both buttons
         signOutBtn?.addEventListener('click', handleSignOut);
         dropdownSignOutBtn?.addEventListener('click', handleSignOut);
-
-        // Handle Profile button click
-        const dropdownProfileBtn = document.getElementById('dropdownProfileBtn');
-        dropdownProfileBtn?.addEventListener('click', () => {
-            showPanelAlert('Profile settings coming soon!', 'info');
-            switchPanelTab('settings'); // Open settings tab as temporary alternative
-            avatarDropdown.classList.add('hidden');
-        });
 
         // Mobile Menu Button
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -6365,19 +6349,6 @@ Is there anything else you'd like to configure?`;
                 }
             }
         });
-
-        // Header profile button
-        const headerProfileBtn = document.getElementById('headerProfileBtn');
-        if (headerProfileBtn) {
-            headerProfileBtn.addEventListener('click', () => {
-                showPanelAlert('Profile settings coming soon!', 'info');
-                switchPanelTab('settings'); // Open settings tab as temporary alternative
-                const headerDropdown = document.getElementById('headerDropdown');
-                if (headerDropdown) {
-                    headerDropdown.classList.add('hidden');
-                }
-            });
-        }
 
         // Header sign-out button
         const headerSignOutBtn = document.getElementById('headerSignOutBtn');
