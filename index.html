@@ -5,6 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Mindclone - Your Personal AI Companion</title>
     <style>
+        :root {
+            /* Structure Colors */
+            --color-bg-primary: #010040;
+            --color-bg-secondary: #010660;
+            --color-bg-tertiary: #3F157A;
+            --color-bg-elevated: #5D146F;
+
+            /* Accent Colors */
+            --color-accent-primary: #727EF5;
+            --color-accent-secondary: #AA31AC;
+            --color-accent-tertiary: #6E32A2;
+
+            /* Text Colors */
+            --color-text-primary: #ffffff;
+            --color-text-secondary: #e0e0e0;
+            --color-text-tertiary: #a8a8ff;
+            --color-text-muted: #8888cc;
+
+            /* Borders */
+            --color-border-default: #6E32A2;
+            --color-border-subtle: #3F157A;
+            --color-border-hover: #727EF5;
+
+            /* Status Colors */
+            --color-success: #727EF5;
+            --color-success-light: #9BA8F7;
+            --color-error: #ff6b6b;
+            --color-warning: #FFC107;
+            --color-info: #727EF5;
+
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, #727EF5, #AA31AC);
+            --gradient-subtle: linear-gradient(135deg, #010660, #3F157A);
+            --gradient-card: linear-gradient(135deg, #3F157A 0%, #5D146F 100%);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,7 +49,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #0d0d0d;
+            background: var(--color-bg-primary);
             margin: 0;
             padding: 0;
             height: 100vh;
@@ -27,7 +63,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: radial-gradient(ellipse at top, #1a1a2e 0%, #0d0d0d 50%, #000000 100%);
+            background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 50%, var(--color-bg-tertiary) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -43,7 +79,7 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(138, 43, 226, 0.08) 0%, transparent 50%);
+            background: radial-gradient(circle, rgba(114, 126, 245, 0.12) 0%, rgba(170, 49, 172, 0.08) 50%, transparent 70%);
             animation: gradientShift 20s ease infinite;
         }
 
@@ -78,8 +114,8 @@
 
         .logo-glow {
             font-size: 120px;
-            filter: drop-shadow(0 0 40px rgba(138, 43, 226, 0.6))
-                    drop-shadow(0 0 80px rgba(138, 43, 226, 0.4));
+            filter: drop-shadow(0 0 40px rgba(170, 49, 172, 0.4))
+                    drop-shadow(0 0 80px rgba(114, 126, 245, 0.3));
             animation: logoFloat 4s ease-in-out infinite;
         }
 
@@ -116,8 +152,8 @@
             align-items: center;
             justify-content: center;
             gap: 16px;
-            background: white;
-            color: black;
+            background: var(--gradient-primary);
+            color: white;
             padding: 20px 48px;
             border: none;
             border-radius: 50px;
@@ -125,14 +161,14 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.1),
-                        0 0 80px rgba(138, 43, 226, 0.3);
+            box-shadow: 0 10px 40px rgba(114, 126, 245, 0.3),
+                        0 0 80px rgba(170, 49, 172, 0.2);
         }
 
         .landing-sign-in-btn:hover {
             transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 20px 60px rgba(255, 255, 255, 0.15),
-                        0 0 100px rgba(138, 43, 226, 0.5);
+            box-shadow: 0 20px 60px rgba(114, 126, 245, 0.4),
+                        0 0 100px rgba(170, 49, 172, 0.4);
         }
 
         .landing-sign-in-btn:active {
@@ -165,8 +201,8 @@
             left: 0;
             right: 360px; /* Stop before right panel */
             height: 64px;
-            background: #0d0d0d;
-            border-bottom: 1px solid #333;
+            background: var(--color-bg-primary);
+            border-bottom: 1px solid var(--color-border-default);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -533,8 +569,9 @@
         .btn-primary {
             display: inline-block;
             padding: 12px 24px;
-            background: #4CAF50;
+            background: var(--gradient-primary);
             color: white;
+            border: none;
             text-decoration: none;
             border-radius: 8px;
             font-weight: 600;
@@ -542,7 +579,7 @@
         }
 
         .btn-primary:hover {
-            background: #45a049;
+            box-shadow: 0 0 20px rgba(114, 126, 245, 0.4);
             transform: translateY(-2px);
         }
 
@@ -571,8 +608,8 @@
             right: 0;
             bottom: 0;
             width: 360px;
-            background: #1a1a1a;
-            border-left: 1px solid #333;
+            background: var(--color-bg-secondary);
+            border-left: 1px solid var(--color-border-default);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -634,8 +671,8 @@
         /* Panel Tab Navigation */
         .panel-tabs {
             display: flex;
-            background: #1a1a1a;
-            border-bottom: 1px solid #333;
+            background: var(--color-bg-primary);
+            border-bottom: 1px solid var(--color-border-default);
             padding: 0;
         }
 
@@ -649,21 +686,21 @@
             background: transparent;
             border: none;
             border-bottom: 2px solid transparent;
-            color: #999;
+            color: var(--color-text-tertiary);
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
         }
 
         .panel-tab:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(114, 126, 245, 0.1);
             color: white;
         }
 
         .panel-tab.active {
             color: white;
-            border-bottom-color: white;
-            background: rgba(255, 255, 255, 0.03);
+            border-bottom-color: var(--color-accent-primary);
+            background: rgba(114, 126, 245, 0.05);
         }
 
         .panel-tab .tab-icon {
@@ -1965,7 +2002,8 @@
         }
 
         .conversation-message-bubble {
-            background: #2a2a2a;
+            background: var(--gradient-subtle);
+            border: 1px solid var(--color-border-default);
             padding: 12px 16px;
             border-radius: 12px;
             max-width: 80%;
@@ -1975,12 +2013,13 @@
         }
 
         .conversation-message.user .conversation-message-bubble {
-            background: white;
-            color: black;
+            background: var(--gradient-primary);
+            color: white;
         }
 
         .conversation-message.assistant .conversation-message-bubble {
-            background: #2a2a2a;
+            background: var(--gradient-subtle);
+            border: 1px solid var(--color-border-default);
             color: white;
         }
 
@@ -2053,7 +2092,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            background: #0d0d0d;
+            background: var(--color-bg-secondary);
         }
 
         .message {
@@ -2146,8 +2185,8 @@
 
         .chat-input-container {
             padding: 12px 20px;
-            background: #0d0d0d;
-            border-top: 1px solid #333;
+            background: var(--color-bg-primary);
+            border-top: 1px solid var(--color-border-default);
             display: flex;
             gap: 10px;
         }
@@ -2155,17 +2194,18 @@
         .chat-input {
             flex: 1;
             padding: 10px 16px;
-            background: #1a1a1a;
-            border: 1px solid #333;
+            background: var(--color-bg-primary);
+            border: 1px solid var(--color-border-default);
             border-radius: 25px;
             font-size: 16px;
             color: white;
             outline: none;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .chat-input:focus {
-            border-color: #555;
+            border-color: var(--color-accent-primary);
+            box-shadow: 0 0 0 3px rgba(114, 126, 245, 0.3);
         }
 
         .chat-input::placeholder {
@@ -2176,8 +2216,8 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: white;
-            color: black;
+            background: var(--gradient-primary);
+            color: white;
             border: none;
             cursor: pointer;
             display: flex;
@@ -2189,7 +2229,7 @@
         }
 
         .send-button:hover {
-            background: #f0f0f0;
+            box-shadow: 0 0 20px rgba(114, 126, 245, 0.4);
             transform: scale(1.05);
         }
 
