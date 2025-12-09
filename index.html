@@ -7225,9 +7225,9 @@ Is there anything else you'd like to configure?`;
                 localStorage.setItem('rightPanelCollapsed', isCollapsed);
             });
 
-            // Restore saved preference
+            // Restore saved preference (default to collapsed)
             const savedCollapsed = localStorage.getItem('rightPanelCollapsed');
-            if (savedCollapsed === 'true') {
+            if (savedCollapsed !== 'false') {
                 document.body.classList.add('right-panel-collapsed');
             }
         }
