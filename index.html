@@ -654,6 +654,26 @@
             transform: scale(1.05);
         }
 
+        /* Right Panel Header */
+        .right-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+            background: var(--color-bg-primary);
+            border-bottom: 1px solid var(--color-border-default);
+        }
+
+        .panel-header-icon {
+            font-size: 20px;
+        }
+
+        .panel-header-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+
         /* Panel Tab Navigation */
         .panel-tabs {
             display: flex;
@@ -3448,15 +3468,21 @@
 
         <!-- Right Activity Panel -->
         <div class="right-activity-panel">
+            <!-- Panel Header -->
+            <div class="right-panel-header">
+                <span class="panel-header-icon">🔗</span>
+                <span class="panel-header-title">Public Link</span>
+            </div>
+
             <!-- Tab Navigation -->
             <div class="panel-tabs">
                 <button class="panel-tab active" data-tab="settings">
-                    <span class="tab-icon">⚙️</span>
-                    <span class="tab-label">Link</span>
+                    <span class="tab-icon">👤</span>
+                    <span class="tab-label">Profile</span>
                 </button>
                 <button class="panel-tab" data-tab="activity">
                     <span class="tab-icon">📊</span>
-                    <span class="tab-label">Activity</span>
+                    <span class="tab-label">Live</span>
                     <span class="tab-badge" id="activityBadge"></span>
                 </button>
                 <button class="panel-tab" data-tab="analytics">
