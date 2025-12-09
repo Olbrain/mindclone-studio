@@ -3647,6 +3647,12 @@
     <!-- Markdown Library -->
     <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
 
+    <!-- PDF.js for slide rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <!-- SheetJS for Excel rendering -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
     <!-- Firebase SDK -->
     <script type="module">
         // Import Firebase modules
@@ -3683,6 +3689,13 @@
                 document.body.classList.add('is-safari');
             } else if (isChrome) {
                 document.body.classList.add('is-chrome');
+            }
+        })();
+
+        // Configure PDF.js worker
+        (function configurePdfJs() {
+            if (window.pdfjsLib) {
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
             }
         })();
 
