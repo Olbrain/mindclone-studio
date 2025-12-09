@@ -676,17 +676,6 @@
             margin-left: 64px;
         }
 
-        /* Hide account sidebar on mobile to save horizontal space */
-        @media (max-width: 768px) {
-            .account-sidebar {
-                display: none;
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-        }
-
         /* Sidebar - Hidden by default */
         .sidebar {
             width: 220px;
@@ -3004,6 +2993,11 @@
 
         /* ==================== MOBILE RESPONSIVE ==================== */
         @media (max-width: 768px) {
+            /* Hide account sidebar on mobile to save horizontal space */
+            .account-sidebar {
+                display: none !important;
+            }
+
             /* Hide right activity panel and toggle on mobile */
             .right-activity-panel,
             .right-panel-toggle {
@@ -3018,6 +3012,7 @@
             /* Main content fills screen on mobile */
             .main-content {
                 max-width: 100vw !important;
+                margin-left: 0 !important;
                 margin-right: 0 !important;
             }
 
