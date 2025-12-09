@@ -564,24 +564,9 @@
             order: 2;
         }
 
-        /* Settings Panel Overlay */
+        /* Settings Panel Overlay - hidden, panel is non-blocking */
         .settings-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            z-index: 199;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.25s ease, visibility 0.25s ease;
-        }
-
-        body:not(.right-panel-collapsed) .settings-overlay {
-            opacity: 1;
-            visibility: visible;
+            display: none;
         }
 
         /* Right Settings Panel - Slide-over */
@@ -3377,8 +3362,25 @@
         <div class="right-activity-panel" id="settingsPanel">
             <!-- Panel Header -->
             <div class="settings-panel-header">
-                <span class="settings-panel-title">Settings</span>
+                <span class="settings-panel-title">Link</span>
                 <button class="settings-panel-close" id="settingsPanelClose">×</button>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="panel-tabs">
+                <button class="panel-tab active" data-tab="activity">
+                    <span class="tab-icon">📊</span>
+                    <span class="tab-label">Activity</span>
+                    <span class="tab-badge" id="activityBadge"></span>
+                </button>
+                <button class="panel-tab" data-tab="settings">
+                    <span class="tab-icon">⚙️</span>
+                    <span class="tab-label">Settings</span>
+                </button>
+                <button class="panel-tab" data-tab="analytics">
+                    <span class="tab-icon">📈</span>
+                    <span class="tab-label">Analytics</span>
+                </button>
             </div>
 
             <!-- Tab Content Container -->
@@ -7184,11 +7186,12 @@ Is there anything else you'd like to configure?`;
             }
         });
 
-        // Activity button - open modal
+        // Activity button - open right panel with activity tab
         const activityBtn = document.getElementById('activityBtn');
         if (activityBtn) {
             activityBtn.addEventListener('click', () => {
-                openActivityModal();
+                document.body.classList.remove('right-panel-collapsed');
+                switchPanelTab('activity');
             });
         }
 
@@ -7250,11 +7253,12 @@ Is there anything else you'd like to configure?`;
         // Header Activity & Settings Buttons
         // ============================================
 
-        // Settings button - opens settings panel
+        // Settings button - opens right panel with settings tab
         const settingsBtn = document.getElementById('settingsBtn');
         if (settingsBtn) {
             settingsBtn.addEventListener('click', () => {
                 document.body.classList.remove('right-panel-collapsed');
+                switchPanelTab('settings');
             });
         }
 
