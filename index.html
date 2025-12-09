@@ -551,6 +551,131 @@
             margin-top: 0;
         }
 
+        /* Account Sidebar */
+        .account-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 64px;
+            background: var(--color-bg-primary);
+            border-right: 1px solid var(--color-border-default);
+            display: flex;
+            flex-direction: column;
+            z-index: 90;
+        }
+
+        .account-sidebar-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .account-avatar-container {
+            margin-top: auto;
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .account-sidebar-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .account-sidebar-avatar:hover {
+            border-color: var(--color-accent-primary);
+            transform: scale(1.1);
+        }
+
+        .account-menu {
+            position: fixed;
+            left: 72px;
+            bottom: 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            min-width: 280px;
+            padding: 16px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 1000;
+        }
+
+        .account-avatar-container:hover ~ .account-menu,
+        .account-menu:hover {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .account-profile {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .account-menu-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #333;
+        }
+
+        .account-menu-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .account-menu-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .account-menu-email {
+            font-size: 13px;
+            color: #999;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .account-menu-button {
+            width: 100%;
+            padding: 12px;
+            background: #dc2626;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .account-menu-button:hover {
+            background: #b91c1c;
+        }
+
+        /* Adjust main content to account for account sidebar */
+        .main-content {
+            margin-left: 64px;
+        }
+
         /* Sidebar - Hidden by default */
         .sidebar {
             width: 220px;
@@ -3353,6 +3478,28 @@
     </div>
 
     <div class="app-container">
+        <!-- Account Sidebar -->
+        <div class="account-sidebar hidden" id="accountSidebar">
+            <div class="account-sidebar-content">
+                <div class="account-avatar-container">
+                    <img id="accountSidebarAvatar" class="account-sidebar-avatar" src="" alt="User Avatar">
+                </div>
+                <div class="account-menu" id="accountMenu">
+                    <div class="account-profile">
+                        <img id="accountMenuAvatar" class="account-menu-avatar" src="" alt="User Avatar">
+                        <div class="account-menu-info">
+                            <div id="accountMenuName" class="account-menu-name"></div>
+                            <div id="accountMenuEmail" class="account-menu-email"></div>
+                        </div>
+                    </div>
+                    <button id="accountSignOutBtn" class="account-menu-button">
+                        <span class="button-icon">🚪</span>
+                        <span>Sign Out</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Mobile Header (WhatsApp style - only visible on mobile) -->
         <div id="mobileHeader" class="mobile-header hidden">
             <div class="mobile-header-left">
@@ -3623,22 +3770,6 @@
                             <button id="uploadKnowledgeBaseBtn" class="panel-button panel-button-primary">
                                 <span class="button-icon">📤</span>
                                 <span>Upload Documents</span>
-                            </button>
-                        </div>
-
-                        <!-- Account Section -->
-                        <div class="panel-section">
-                            <h3 class="panel-section-title">Account</h3>
-                            <div class="user-profile-card">
-                                <img id="settingsUserAvatar" class="user-profile-avatar" src="" alt="User Avatar">
-                                <div class="user-profile-info">
-                                    <div id="settingsUserName" class="user-profile-name"></div>
-                                    <div id="settingsUserEmail" class="user-profile-email"></div>
-                                </div>
-                            </div>
-                            <button id="settingsSignOutBtn" class="panel-button panel-button-danger">
-                                <span class="button-icon">🚪</span>
-                                <span>Sign Out</span>
                             </button>
                         </div>
                     </div>
@@ -5682,6 +5813,12 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
                 appHeader.classList.add('hidden');
             }
 
+            // Hide account sidebar
+            const accountSidebar = document.getElementById('accountSidebar');
+            if (accountSidebar) {
+                accountSidebar.classList.add('hidden');
+            }
+
             // Hide chat interface
             chatInterface.classList.add('hidden');
 
@@ -5743,13 +5880,17 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
             if (headerDropdownName) headerDropdownName.textContent = user.displayName || 'User';
             if (headerDropdownEmail) headerDropdownEmail.textContent = user.email;
 
-            // Update settings profile card
-            const settingsUserAvatar = document.getElementById('settingsUserAvatar');
-            const settingsUserName = document.getElementById('settingsUserName');
-            const settingsUserEmail = document.getElementById('settingsUserEmail');
-            if (settingsUserAvatar) settingsUserAvatar.src = user.photoURL || 'https://via.placeholder.com/48';
-            if (settingsUserName) settingsUserName.textContent = user.displayName || 'User';
-            if (settingsUserEmail) settingsUserEmail.textContent = user.email;
+            // Update account sidebar
+            const accountSidebar = document.getElementById('accountSidebar');
+            const accountSidebarAvatar = document.getElementById('accountSidebarAvatar');
+            const accountMenuAvatar = document.getElementById('accountMenuAvatar');
+            const accountMenuName = document.getElementById('accountMenuName');
+            const accountMenuEmail = document.getElementById('accountMenuEmail');
+            if (accountSidebar) accountSidebar.classList.remove('hidden');
+            if (accountSidebarAvatar) accountSidebarAvatar.src = user.photoURL || 'https://via.placeholder.com/40';
+            if (accountMenuAvatar) accountMenuAvatar.src = user.photoURL || 'https://via.placeholder.com/48';
+            if (accountMenuName) accountMenuName.textContent = user.displayName || 'User';
+            if (accountMenuEmail) accountMenuEmail.textContent = user.email;
 
             // Update legacy user profile elements (for backward compatibility)
             userAvatar.src = user.photoURL || 'https://via.placeholder.com/50';
@@ -7337,15 +7478,20 @@ Is there anything else you'd like to configure?`;
             });
         }
 
-        // Settings tab sign-out button
-        const settingsSignOutBtn = document.getElementById('settingsSignOutBtn');
-        if (settingsSignOutBtn) {
-            settingsSignOutBtn.addEventListener('click', async () => {
+        // Account sidebar sign-out button
+        const accountSignOutBtn = document.getElementById('accountSignOutBtn');
+        if (accountSignOutBtn) {
+            accountSignOutBtn.addEventListener('click', async () => {
                 try {
                     await signOut(auth);
                     // Clear conversation history
                     conversationHistory = [];
                     chatMessages.innerHTML = '';
+                    // Hide account sidebar
+                    const accountSidebar = document.getElementById('accountSidebar');
+                    if (accountSidebar) {
+                        accountSidebar.classList.add('hidden');
+                    }
                 } catch (error) {
                     console.error('Sign-out error:', error);
                 }
