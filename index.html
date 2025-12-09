@@ -176,13 +176,13 @@
             top: 0;
             left: 0;
             right: 360px; /* Stop before right panel */
-            height: 64px;
+            height: 36px;
             background: var(--color-bg-primary);
             border-bottom: 1px solid var(--color-border-default);
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
+            justify-content: flex-end;
+            padding: 0 8px;
             z-index: 100;
             backdrop-filter: blur(10px);
             transition: right 0.3s ease;
@@ -194,9 +194,7 @@
         }
 
         .app-header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            display: none;
         }
 
         .header-logo {
@@ -214,7 +212,7 @@
         .app-header-right {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 0;
         }
 
         .header-icon-btn {
@@ -252,10 +250,10 @@
         }
 
         .header-avatar {
-            width: 40px;
-            height: 40px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            border: 2px solid #333;
+            border: 1px solid #333;
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -561,9 +559,9 @@
 
         .app-container {
             display: flex;
-            height: calc(100vh - 64px);
+            height: calc(100vh - 36px);
             width: 100vw;
-            margin-top: 64px;
+            margin-top: 36px;
         }
 
         /* Sidebar - Hidden by default */
@@ -2791,8 +2789,8 @@
 
             /* Header mobile */
             .app-header {
-                padding: 0 16px;
-                height: 56px;
+                padding: 0 8px;
+                height: 36px;
             }
 
             .main-content.with-header {
