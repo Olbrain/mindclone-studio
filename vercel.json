@@ -4,6 +4,12 @@
       "maxDuration": 60
     }
   },
+  "crons": [
+    {
+      "path": "/api/cron/news-curator",
+      "schedule": "0 * * * *"
+    }
+  ],
   "routes": [
     {
       "src": "^/api/chat$",
