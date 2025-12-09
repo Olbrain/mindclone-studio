@@ -637,9 +637,11 @@
             overflow: hidden;
         }
 
-        /* Hide tabs - show settings directly */
+        /* Tab navigation bar */
         .panel-tabs {
-            display: none;
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-surface);
         }
 
         .panel-tab {
@@ -652,21 +654,21 @@
             background: transparent;
             border: none;
             border-bottom: 2px solid transparent;
-            color: var(--color-text-tertiary);
+            color: var(--text-secondary);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             position: relative;
         }
 
         .panel-tab:hover {
-            background: rgba(124, 102, 220, 0.08);
-            color: var(--color-text-primary);
+            background: var(--accent-muted);
+            color: var(--text);
         }
 
         .panel-tab.active {
-            color: var(--color-text-primary);
-            border-bottom-color: var(--color-accent-primary);
-            background: rgba(124, 102, 220, 0.04);
+            color: var(--text);
+            border-bottom-color: var(--accent);
+            background: var(--accent-muted);
         }
 
         .panel-tab .tab-icon {
