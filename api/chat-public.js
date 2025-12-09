@@ -80,7 +80,12 @@ const tools = [
               description: "Brief explanation of why you're showing this slide"
             }
           },
-          required: ["slideNumber"]
+          required: ["slideNumber"],
+          example: {
+            slideNumber: 6,
+            documentName: "pitch_deck",
+            reason: "User asked to see the Ask slide"
+          }
         }
       },
       {
@@ -329,6 +334,12 @@ async function callGeminiAPI(messages, systemPrompt, pitchDeckInfo = null, knowl
     if (hasTools) {
       console.log('[ChatPublic] Adding tools to API request');
       requestBody.tools = tools;
+      // Configure tool usage to encourage function calling
+      requestBody.tool_config = {
+        function_calling_config: {
+          mode: "AUTO" // AUTO mode allows model to decide, but we've made the prompts very explicit
+        }
+      };
     } else {
       console.log('[ChatPublic] No tools available - no PDF or Excel documents found');
     }
