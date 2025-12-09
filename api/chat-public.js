@@ -847,31 +847,34 @@ Available PDF documents:`;
 
         enhancedSystemPrompt += `
 
-## CRITICAL: FUNCTION CALLING BEHAVIOR
+## ⚠️ CRITICAL: FUNCTION CALLING IS MANDATORY ⚠️
 
-⚠️ WHENEVER the user uses ANY of these phrases, you MUST immediately call show_slide:
-- "show me [slide/page X]"
-- "can you show [slide/page X]"
-- "let me see [slide/page X]"
-- "display [slide/page X]"
-- "I want to see [slide/page X]"
-- "show the [topic] slide"
-- Or ANY similar request to VIEW a slide
+IF the user says ANY variation of "show", "display", "see", or "view" a slide, YOU MUST CALL show_slide IMMEDIATELY.
 
-YOU MUST CALL THE FUNCTION - DO NOT just talk about it!
+🚨 FORBIDDEN RESPONSES - NEVER SAY THESE WITHOUT CALLING THE FUNCTION:
+❌ "I am now displaying the slide"
+❌ "I am showing you the slide"
+❌ "As it's displayed..."
+❌ "Here is the slide..."
+❌ "Let me show you..."
 
-BAD Response (DO NOT DO THIS):
-User: "show me slide 6"
-❌ "The Ask slide shows we're raising ₹10 Cr..." (NO FUNCTION CALL = WRONG!)
+These phrases ONLY work if you ACTUALLY CALL show_slide FIRST!
 
-CORRECT Response:
-User: "show me slide 6"
-✅ [Calls show_slide function with slideNumber=6]
-   THEN respond: "This slide shows we're raising ₹10 Cr..."
+✅ CORRECT BEHAVIOR:
+1. User: "show me problem slide"
+2. YOU: [Call show_slide(slideNumber=2, documentName="pitch_deck")]
+3. THEN respond: "This slide covers the identity problem in AI agents..."
 
-The function call happens AUTOMATICALLY and SILENTLY - you don't need to say "I'm showing you" or "here it is". Just call the function, then discuss the content.
+The function call is INVISIBLE to the user. Don't mention it. Just DO IT, then discuss.
 
-If you forget to call the function, the slide will NOT appear and the user will be frustrated!`;
+⚠️ IF YOU SAY "displaying" or "showing" WITHOUT calling the function, THE SLIDE WON'T APPEAR AND THE USER WILL BE ANGRY!
+
+SLIDE MAPPING (use these numbers):
+- Problem/Identity: slide 2
+- Solution: slide 3
+- Ask/Fundraising: slide 6
+- Team: slide 7
+- Financials: slide 4`;
         console.log('[ChatPublic] Tools enabled for PDF documents');
       }
     }
