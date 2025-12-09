@@ -3585,6 +3585,15 @@
                                 <span>Upload Documents</span>
                             </button>
                         </div>
+
+                        <!-- Account Section -->
+                        <div class="panel-section">
+                            <h3 class="panel-section-title">Account</h3>
+                            <button id="settingsSignOutBtn" class="panel-button panel-button-danger">
+                                <span class="button-icon">🚪</span>
+                                <span>Sign Out</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -7267,6 +7276,21 @@ Is there anything else you'd like to configure?`;
                     if (headerDropdown) {
                         headerDropdown.classList.add('hidden');
                     }
+                } catch (error) {
+                    console.error('Sign-out error:', error);
+                }
+            });
+        }
+
+        // Settings tab sign-out button
+        const settingsSignOutBtn = document.getElementById('settingsSignOutBtn');
+        if (settingsSignOutBtn) {
+            settingsSignOutBtn.addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                    // Clear conversation history
+                    conversationHistory = [];
+                    chatMessages.innerHTML = '';
                 } catch (error) {
                     console.error('Sign-out error:', error);
                 }
