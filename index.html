@@ -1058,12 +1058,14 @@
             outline: none;
         }
 
+        .username-status {
+            margin-top: 8px;
+            min-height: 20px;
+        }
+
         .availability-indicator {
-            padding: 0 12px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
-            white-space: nowrap;
-            flex-shrink: 0;
         }
 
         .availability-indicator.available {
@@ -1160,6 +1162,7 @@
         .panel-actions {
             display: flex;
             gap: 10px;
+            margin-top: 12px;
         }
 
         .switch-to-settings-btn {
@@ -3678,14 +3681,19 @@
                                 <div class="username-input-group">
                                     <span class="username-prefix">mindclone.link/</span>
                                     <input type="text" id="panelUsernameInput" class="username-input" placeholder="yourusername" autocomplete="off">
+                                </div>
+                                <div id="panelUsernameStatus" class="username-status">
                                     <span id="panelAvailabilityIndicator" class="availability-indicator"></span>
-                                    <button id="panelDeleteUsernameIcon" class="username-delete-icon" title="Release username">🗑️</button>
                                 </div>
                             </div>
 
                             <div id="panelUsernameActions" class="panel-actions">
                                 <button id="panelClaimUsernameBtn" class="panel-button" disabled>Claim Username</button>
                                 <button id="panelReleaseUsernameBtn" class="panel-button panel-button-danger hidden">Release Username</button>
+                                <button id="panelDeleteUsernameIcon" class="panel-button panel-button-danger hidden">
+                                    <span class="button-icon">🗑️</span>
+                                    <span>Delete</span>
+                                </button>
                             </div>
                         </div>
 
@@ -4610,8 +4618,8 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
             panelAvailabilityIndicator.textContent = '✓ Claimed';
             panelAvailabilityIndicator.className = 'availability-indicator available';
             panelClaimUsernameBtn.classList.add('hidden');
-            panelReleaseUsernameBtn.classList.add('hidden'); // Keep release button hidden
-            panelDeleteUsernameIcon.classList.add('visible'); // Show delete icon
+            panelReleaseUsernameBtn.classList.add('hidden');
+            panelDeleteUsernameIcon.classList.remove('hidden'); // Show delete button
         }
 
         // Update UI for no username
@@ -4624,7 +4632,7 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
             panelClaimUsernameBtn.disabled = true;
             panelClaimUsernameBtn.textContent = 'Claim Username';
             panelReleaseUsernameBtn.classList.add('hidden');
-            panelDeleteUsernameIcon.classList.remove('visible'); // Hide delete icon
+            panelDeleteUsernameIcon.classList.add('hidden'); // Hide delete button
             panelLinkPreviewSection.style.display = 'none';
         }
 
