@@ -63,7 +63,7 @@ const tools = [
     function_declarations: [
       {
         name: "show_slide",
-        description: "Display a specific slide/page from a PDF document to the visitor. Use this when the visitor asks to SEE or SHOW a slide/page, or when you want to visually demonstrate something from a PDF document (pitch deck, value system doc, etc.). The slide will appear in a display panel next to the chat.",
+        description: "⚠️ CRITICAL: Display a specific slide/page from a PDF document to the visitor. You MUST call this function whenever the user asks to 'show', 'see', 'display', or 'view' a slide/page. DO NOT just describe the slide - CALL THIS FUNCTION to actually display it visually in the panel next to the chat.",
         parameters: {
           type: "object",
           properties: {
@@ -836,16 +836,31 @@ Available PDF documents:`;
 
         enhancedSystemPrompt += `
 
-## FUNCTION CALLING BEHAVIOR
+## CRITICAL: FUNCTION CALLING BEHAVIOR
 
-When the user asks to see or discuss a slide, you MUST use the show_slide function. Do NOT say "I am showing the slide" or "Let me display" - just USE THE FUNCTION and then discuss the content.
+⚠️ WHENEVER the user uses ANY of these phrases, you MUST immediately call show_slide:
+- "show me [slide/page X]"
+- "can you show [slide/page X]"
+- "let me see [slide/page X]"
+- "display [slide/page X]"
+- "I want to see [slide/page X]"
+- "show the [topic] slide"
+- Or ANY similar request to VIEW a slide
 
-Example:
-User: "let's discuss slide 3"
-Action: Call show_slide with slideNumber=3, documentName="pitch_deck"
-Response: "This slide covers our problem statement..." (discuss the actual content)
+YOU MUST CALL THE FUNCTION - DO NOT just talk about it!
 
-NEVER say "I am now presenting" or "I will show you" - the function call handles the display automatically.`;
+BAD Response (DO NOT DO THIS):
+User: "show me slide 6"
+❌ "The Ask slide shows we're raising ₹10 Cr..." (NO FUNCTION CALL = WRONG!)
+
+CORRECT Response:
+User: "show me slide 6"
+✅ [Calls show_slide function with slideNumber=6]
+   THEN respond: "This slide shows we're raising ₹10 Cr..."
+
+The function call happens AUTOMATICALLY and SILENTLY - you don't need to say "I'm showing you" or "here it is". Just call the function, then discuss the content.
+
+If you forget to call the function, the slide will NOT appear and the user will be frustrated!`;
         console.log('[ChatPublic] Tools enabled for PDF documents');
       }
     }
