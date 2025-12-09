@@ -4944,7 +4944,7 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
         });
 
         // Google Sign In
-        googleSignInBtn.addEventListener('click', async () => {
+        googleSignInBtn?.addEventListener('click', async () => {
             try {
                 googleSignInBtn.disabled = true;
                 googleSignInBtn.innerHTML = '<div class="loading"></div> Signing in...';
