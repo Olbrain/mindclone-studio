@@ -7,39 +7,39 @@
 
     <style>
         :root {
-            /* Structure Colors */
-            --color-bg-primary: #010040;
-            --color-bg-secondary: #010660;
-            --color-bg-tertiary: #3F157A;
-            --color-bg-elevated: #5D146F;
+            /* Structure Colors - Warm, Eye-Soothing Luxury Palette */
+            --color-bg-primary: #0D0D12;      /* Warm near-black background */
+            --color-bg-secondary: #1A1A22;    /* Charcoal panels */
+            --color-bg-tertiary: #252530;     /* Soft elevation for cards */
+            --color-bg-elevated: #2F2F3D;     /* Slightly elevated elements */
 
-            /* Accent Colors */
-            --color-accent-primary: #727EF5;
-            --color-accent-secondary: #AA31AC;
-            --color-accent-tertiary: #6E32A2;
+            /* Accent Colors - Muted, Sophisticated */
+            --color-accent-primary: #7C66DC;   /* Muted royal purple (main accent) */
+            --color-accent-secondary: #9B87F5; /* Lighter muted lavender */
+            --color-accent-tertiary: #6355B8;  /* Deeper purple for variety */
 
-            /* Text Colors */
-            --color-text-primary: #ffffff;
-            --color-text-secondary: #e0e0e0;
-            --color-text-tertiary: #a8a8ff;
-            --color-text-muted: #8888cc;
+            /* Text Colors - Soft Cream, Not Harsh White */
+            --color-text-primary: #E5E3E8;     /* Soft cream (main text) */
+            --color-text-secondary: #C2BFD0;   /* Medium gray-cream */
+            --color-text-tertiary: #9B97A8;    /* Muted gray-purple (metadata) */
+            --color-text-muted: #6E6B7D;       /* Very muted for disabled */
 
-            /* Borders */
-            --color-border-default: #6E32A2;
-            --color-border-subtle: #3F157A;
-            --color-border-hover: #727EF5;
+            /* Borders - Barely Visible */
+            --color-border-default: #2A2A35;   /* Subtle border */
+            --color-border-subtle: #222229;    /* Nearly invisible */
+            --color-border-hover: #3D3D4A;     /* Slightly visible on hover */
 
-            /* Status Colors */
-            --color-success: #727EF5;
-            --color-success-light: #9BA8F7;
-            --color-error: #ff6b6b;
-            --color-warning: #FFC107;
-            --color-info: #727EF5;
+            /* Status Colors - Muted for Luxury Feel */
+            --color-success: #7C66DC;          /* Use accent color for success */
+            --color-success-light: #9B87F5;    /* Lighter variant */
+            --color-error: #E57373;            /* Soft coral red (not harsh) */
+            --color-warning: #FFB74D;          /* Soft amber */
+            --color-info: #7C66DC;             /* Use primary accent */
 
-            /* Gradients */
-            --gradient-primary: linear-gradient(135deg, #727EF5, #AA31AC);
-            --gradient-subtle: linear-gradient(135deg, #010660, #3F157A);
-            --gradient-card: linear-gradient(135deg, #3F157A 0%, #5D146F 100%);
+            /* Gradients - Subtle, Sophisticated */
+            --gradient-primary: linear-gradient(135deg, #7C66DC 0%, #9B87F5 100%);
+            --gradient-subtle: linear-gradient(135deg, #1A1A22 0%, #252530 100%);
+            --gradient-card: linear-gradient(135deg, #252530 0%, #2F2F3D 100%);
         }
 
         * {
@@ -687,7 +687,7 @@
         .message-input:focus {
             outline: none;
             border-color: var(--color-accent-primary);
-            box-shadow: 0 0 0 3px rgba(114, 126, 245, 0.3);
+            box-shadow: 0 0 0 3px rgba(124, 102, 220, 0.2);
         }
 
         .message-input::placeholder {
@@ -696,7 +696,7 @@
 
         .send-button {
             background: var(--gradient-primary);
-            color: white;
+            color: var(--color-text-primary);
             border: none;
             padding: 12px 24px;
             border-radius: 8px;
@@ -707,7 +707,7 @@
         }
 
         .send-button:hover:not(:disabled) {
-            box-shadow: 0 0 20px rgba(114, 126, 245, 0.4);
+            box-shadow: 0 0 20px rgba(124, 102, 220, 0.25);
             transform: translateY(-1px);
         }
 

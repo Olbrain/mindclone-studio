@@ -6,39 +6,39 @@
     <title>Mindclone - Your Personal AI Companion</title>
     <style>
         :root {
-            /* Structure Colors */
-            --color-bg-primary: #010040;
-            --color-bg-secondary: #010660;
-            --color-bg-tertiary: #3F157A;
-            --color-bg-elevated: #5D146F;
+            /* Structure Colors - Warm, Eye-Soothing Luxury Palette */
+            --color-bg-primary: #0D0D12;      /* Warm near-black background */
+            --color-bg-secondary: #1A1A22;    /* Charcoal panels */
+            --color-bg-tertiary: #252530;     /* Soft elevation for cards */
+            --color-bg-elevated: #2F2F3D;     /* Slightly elevated elements */
 
-            /* Accent Colors */
-            --color-accent-primary: #727EF5;
-            --color-accent-secondary: #AA31AC;
-            --color-accent-tertiary: #6E32A2;
+            /* Accent Colors - Muted, Sophisticated */
+            --color-accent-primary: #7C66DC;   /* Muted royal purple (main accent) */
+            --color-accent-secondary: #9B87F5; /* Lighter muted lavender */
+            --color-accent-tertiary: #6355B8;  /* Deeper purple for variety */
 
-            /* Text Colors */
-            --color-text-primary: #ffffff;
-            --color-text-secondary: #e0e0e0;
-            --color-text-tertiary: #a8a8ff;
-            --color-text-muted: #8888cc;
+            /* Text Colors - Soft Cream, Not Harsh White */
+            --color-text-primary: #E5E3E8;     /* Soft cream (main text) */
+            --color-text-secondary: #C2BFD0;   /* Medium gray-cream */
+            --color-text-tertiary: #9B97A8;    /* Muted gray-purple (metadata) */
+            --color-text-muted: #6E6B7D;       /* Very muted for disabled */
 
-            /* Borders */
-            --color-border-default: #6E32A2;
-            --color-border-subtle: #3F157A;
-            --color-border-hover: #727EF5;
+            /* Borders - Barely Visible */
+            --color-border-default: #2A2A35;   /* Subtle border */
+            --color-border-subtle: #222229;    /* Nearly invisible */
+            --color-border-hover: #3D3D4A;     /* Slightly visible on hover */
 
-            /* Status Colors */
-            --color-success: #727EF5;
-            --color-success-light: #9BA8F7;
-            --color-error: #ff6b6b;
-            --color-warning: #FFC107;
-            --color-info: #727EF5;
+            /* Status Colors - Muted for Luxury Feel */
+            --color-success: #7C66DC;          /* Use accent color for success */
+            --color-success-light: #9B87F5;    /* Lighter variant */
+            --color-error: #E57373;            /* Soft coral red (not harsh) */
+            --color-warning: #FFB74D;          /* Soft amber */
+            --color-info: #7C66DC;             /* Use primary accent */
 
-            /* Gradients */
-            --gradient-primary: linear-gradient(135deg, #727EF5, #AA31AC);
-            --gradient-subtle: linear-gradient(135deg, #010660, #3F157A);
-            --gradient-card: linear-gradient(135deg, #3F157A 0%, #5D146F 100%);
+            /* Gradients - Subtle, Sophisticated */
+            --gradient-primary: linear-gradient(135deg, #7C66DC 0%, #9B87F5 100%);
+            --gradient-subtle: linear-gradient(135deg, #1A1A22 0%, #252530 100%);
+            --gradient-card: linear-gradient(135deg, #252530 0%, #2F2F3D 100%);
         }
 
         * {
@@ -71,7 +71,7 @@
             overflow: hidden;
         }
 
-        /* Animated gradient background effect */
+        /* Animated gradient background effect - Subtle luxury glow */
         .landing-page::before {
             content: '';
             position: absolute;
@@ -79,7 +79,7 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(114, 126, 245, 0.12) 0%, rgba(170, 49, 172, 0.08) 50%, transparent 70%);
+            background: radial-gradient(circle, rgba(124, 102, 220, 0.06) 0%, rgba(155, 135, 245, 0.04) 50%, transparent 70%);
             animation: gradientShift 20s ease infinite;
         }
 
@@ -114,8 +114,8 @@
 
         .logo-glow {
             font-size: 120px;
-            filter: drop-shadow(0 0 40px rgba(170, 49, 172, 0.4))
-                    drop-shadow(0 0 80px rgba(114, 126, 245, 0.3));
+            filter: drop-shadow(0 0 30px rgba(124, 102, 220, 0.2))
+                    drop-shadow(0 0 60px rgba(155, 135, 245, 0.15));
             animation: logoFloat 4s ease-in-out infinite;
         }
 
@@ -132,7 +132,7 @@
             font-size: 72px;
             font-weight: 700;
             margin-bottom: 20px;
-            background: linear-gradient(135deg, #ffffff 0%, #a8a8a8 100%);
+            background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-text-secondary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -141,7 +141,7 @@
 
         .landing-tagline {
             font-size: 24px;
-            color: #999;
+            color: var(--color-text-tertiary);
             margin-bottom: 60px;
             font-weight: 300;
             letter-spacing: 1px;
@@ -153,7 +153,7 @@
             justify-content: center;
             gap: 16px;
             background: var(--gradient-primary);
-            color: white;
+            color: var(--color-text-primary);
             padding: 20px 48px;
             border: none;
             border-radius: 50px;
@@ -161,14 +161,14 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 40px rgba(114, 126, 245, 0.3),
-                        0 0 80px rgba(170, 49, 172, 0.2);
+            box-shadow: 0 10px 40px rgba(124, 102, 220, 0.2),
+                        0 0 60px rgba(155, 135, 245, 0.15);
         }
 
         .landing-sign-in-btn:hover {
             transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 20px 60px rgba(114, 126, 245, 0.4),
-                        0 0 100px rgba(170, 49, 172, 0.4);
+            box-shadow: 0 20px 60px rgba(124, 102, 220, 0.25),
+                        0 0 80px rgba(155, 135, 245, 0.2);
         }
 
         .landing-sign-in-btn:active {
@@ -579,7 +579,7 @@
         }
 
         .btn-primary:hover {
-            box-shadow: 0 0 20px rgba(114, 126, 245, 0.4);
+            box-shadow: 0 0 20px rgba(124, 102, 220, 0.25);
             transform: translateY(-2px);
         }
 
@@ -693,14 +693,14 @@
         }
 
         .panel-tab:hover {
-            background: rgba(114, 126, 245, 0.1);
-            color: white;
+            background: rgba(124, 102, 220, 0.08);
+            color: var(--color-text-primary);
         }
 
         .panel-tab.active {
-            color: white;
+            color: var(--color-text-primary);
             border-bottom-color: var(--color-accent-primary);
-            background: rgba(114, 126, 245, 0.05);
+            background: rgba(124, 102, 220, 0.04);
         }
 
         .panel-tab .tab-icon {
@@ -2205,7 +2205,7 @@
 
         .chat-input:focus {
             border-color: var(--color-accent-primary);
-            box-shadow: 0 0 0 3px rgba(114, 126, 245, 0.3);
+            box-shadow: 0 0 0 3px rgba(124, 102, 220, 0.2);
         }
 
         .chat-input::placeholder {
@@ -2229,7 +2229,7 @@
         }
 
         .send-button:hover {
-            box-shadow: 0 0 20px rgba(114, 126, 245, 0.4);
+            box-shadow: 0 0 20px rgba(124, 102, 220, 0.25);
             transform: scale(1.05);
         }
 
