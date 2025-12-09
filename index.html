@@ -631,7 +631,32 @@
 
         /* Right Panel User Section */
         .right-panel-user {
-            display: none;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 12px 16px;
+            background: var(--color-bg-primary);
+            border-bottom: 1px solid var(--color-border-default);
+        }
+
+        .right-panel-user .header-user-menu {
+            position: relative;
+        }
+
+        .right-panel-user .header-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            object-fit: cover;
+            display: block;
+        }
+
+        .right-panel-user .header-avatar:hover {
+            border-color: var(--color-accent-primary);
+            transform: scale(1.05);
         }
 
         /* Panel Tab Navigation */
