@@ -4842,9 +4842,18 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
 
         // Load analytics data
         async function loadPanelAnalytics() {
-            if (!auth.currentUser) return;
+            console.log('[Analytics] Loading analytics data...');
+
+            if (!auth.currentUser) {
+                console.error('[Analytics] No authenticated user');
+                showPanelAlert('Please sign in to view analytics', 'error');
+                return;
+            }
 
             try {
+                // Show loading state
+                recentVisitorsList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">Loading analytics...</div>';
+
                 const idToken = await auth.currentUser.getIdToken();
                 const period = analyticsPeriodFilter.value;
 
@@ -4853,12 +4862,17 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
                     ? '/api/analytics'
                     : `/api/analytics?period=${period}`;
 
+                console.log('[Analytics] Fetching from:', url);
+
                 const response = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${idToken}` }
                 });
 
+                console.log('[Analytics] Response status:', response.status);
+
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('[Analytics] Data received:', data);
 
                     // Update stats
                     panelTotalVisitors.textContent = data.totalVisitors || 0;
@@ -4875,13 +4889,18 @@ The system is working perfectly. If you see a "✅ processed successfully" messa
                     } else {
                         recentVisitorsList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No visitor data yet</div>';
                     }
+
+                    console.log('[Analytics] Analytics loaded successfully');
                 } else {
-                    console.error('Failed to load analytics');
-                    showPanelAlert('Failed to load analytics', 'error');
+                    const errorText = await response.text();
+                    console.error('[Analytics] Failed to load analytics:', response.status, errorText);
+                    recentVisitorsList.innerHTML = `<div style="text-align: center; color: #f44336; padding: 20px;">Failed to load analytics (${response.status})</div>`;
+                    showPanelAlert(`Failed to load analytics: ${response.status}`, 'error');
                 }
             } catch (error) {
-                console.error('Error loading analytics:', error);
-                showPanelAlert('Failed to load analytics', 'error');
+                console.error('[Analytics] Error loading analytics:', error);
+                recentVisitorsList.innerHTML = '<div style="text-align: center; color: #f44336; padding: 20px;">Error loading analytics</div>';
+                showPanelAlert('Error loading analytics: ' + error.message, 'error');
             }
         }
 
