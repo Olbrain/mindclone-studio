@@ -206,150 +206,114 @@
             50% { transform: translateY(8px); }
         }
 
-        /* Features Section */
-        .landing-features {
-            padding: 100px 0;
+        /* Two Big Claims Section */
+        .landing-claims {
+            padding: 80px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 48px;
+        }
+
+        .claim-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 48px;
+            max-width: 700px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .claim-icon {
+            font-size: 48px;
+            margin-bottom: 24px;
+        }
+
+        .claim-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 16px;
+        }
+
+        .claim-main {
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .claim-detail {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+
+        .claim-legacy {
+            display: flex;
+            gap: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .legacy-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .legacy-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .legacy-text strong {
+            color: var(--text);
+        }
+
+        .claim-examples {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .example-item {
+            font-size: 15px;
+            color: var(--text-secondary);
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+        }
+
+        /* Final CTA Section */
+        .landing-final-cta {
+            padding: 80px 0;
+            text-align: center;
             border-top: 1px solid var(--border);
         }
 
-        .landing-section-title {
-            font-size: 36px;
-            font-weight: 600;
-            color: var(--text);
-            text-align: center;
-            margin-bottom: 16px;
-        }
-
-        .landing-section-subtitle {
-            font-size: 18px;
-            color: var(--text-secondary);
-            text-align: center;
-            margin-bottom: 60px;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 32px;
-        }
-
-        .feature-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 32px;
-            transition: all 0.2s ease;
-        }
-
-        .feature-card:hover {
-            border-color: var(--border-hover);
-            transform: translateY(-4px);
-        }
-
-        .feature-icon {
+        .final-cta-title {
             font-size: 32px;
-            margin-bottom: 16px;
-        }
-
-        .feature-title {
-            font-size: 20px;
             font-weight: 600;
             color: var(--text);
             margin-bottom: 12px;
         }
 
-        .feature-desc {
-            font-size: 15px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        /* Pricing Section */
-        .landing-pricing {
-            padding: 100px 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .pricing-card {
-            max-width: 480px;
-            margin: 0 auto;
-            background: var(--bg-surface);
-            border: 2px solid var(--text);
-            border-radius: 24px;
-            padding: 48px;
-            text-align: center;
-        }
-
-        .pricing-badge {
-            display: inline-block;
-            background: var(--text);
-            color: var(--bg);
-            font-size: 12px;
-            font-weight: 600;
-            padding: 6px 16px;
-            border-radius: 20px;
-            margin-bottom: 24px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .pricing-name {
-            font-size: 28px;
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 8px;
-        }
-
-        .pricing-price {
-            font-size: 48px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 8px;
-        }
-
-        .pricing-price .currency {
-            font-size: 24px;
-            vertical-align: top;
-        }
-
-        .pricing-price .period {
+        .final-cta-subtitle {
             font-size: 18px;
-            font-weight: 400;
-            color: var(--text-secondary);
-        }
-
-        .pricing-trial {
-            font-size: 16px;
             color: var(--text-secondary);
             margin-bottom: 32px;
-        }
-
-        .pricing-features {
-            text-align: left;
-            margin-bottom: 32px;
-        }
-
-        .pricing-feature {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 0;
-            font-size: 15px;
-            color: var(--text);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .pricing-feature:last-child {
-            border-bottom: none;
-        }
-
-        .pricing-feature-check {
-            color: #22c55e;
-            font-size: 18px;
         }
 
         .pricing-cta {
-            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
             background: var(--text);
             color: var(--bg);
             border: none;
@@ -364,6 +328,11 @@
         .pricing-cta:hover {
             opacity: 0.9;
             transform: scale(1.02);
+        }
+
+        .pricing-cta .google-icon {
+            width: 20px;
+            height: 20px;
         }
 
         /* Footer Section */
@@ -3737,42 +3706,64 @@
                 font-size: 15px;
             }
 
-            .landing-scroll-hint {
-                margin-top: 40px;
+            /* Claims Section Mobile */
+            .landing-claims {
+                padding: 48px 0;
+                gap: 32px;
             }
 
-            .landing-features {
-                padding: 60px 0;
+            .claim-card {
+                padding: 28px;
             }
 
-            .landing-section-title {
-                font-size: 28px;
+            .claim-icon {
+                font-size: 36px;
+                margin-bottom: 16px;
             }
 
-            .landing-section-subtitle {
+            .claim-title {
+                font-size: 24px;
+            }
+
+            .claim-main {
+                font-size: 18px;
+            }
+
+            .claim-detail {
+                font-size: 14px;
+            }
+
+            .claim-legacy {
+                flex-direction: column;
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .legacy-icon {
+                font-size: 24px;
+            }
+
+            .example-item {
+                font-size: 13px;
+                padding: 10px 14px;
+            }
+
+            /* Final CTA Mobile */
+            .landing-final-cta {
+                padding: 48px 0;
+            }
+
+            .final-cta-title {
+                font-size: 24px;
+            }
+
+            .final-cta-subtitle {
                 font-size: 16px;
-                margin-bottom: 40px;
             }
 
-            .features-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .feature-card {
-                padding: 24px;
-            }
-
-            .landing-pricing {
-                padding: 60px 0;
-            }
-
-            .pricing-card {
-                padding: 32px 24px;
-            }
-
-            .pricing-price {
-                font-size: 40px;
+            .pricing-cta {
+                padding: 14px 24px;
+                font-size: 15px;
             }
 
             .landing-footer {
@@ -4198,9 +4189,6 @@
                     <h1 class="landing-title">Mindclone</h1>
                 </div>
                 <p class="landing-tagline">A record of the life only you lived.</p>
-                <p class="landing-description">
-                    Your personal AI that learns from every conversation. Build a digital twin that remembers your thoughts, ideas, and experiences forever.
-                </p>
                 <div class="landing-cta-group">
                     <button id="landingSignInBtn" class="landing-sign-in-btn">
                         <svg class="google-icon" viewBox="0 0 24 24">
@@ -4213,86 +4201,60 @@
                     </button>
                     <p class="landing-trial-note">7 days free, then $100/month</p>
                 </div>
-                <p class="landing-scroll-hint">Scroll to learn more</p>
             </section>
 
-            <!-- Features Section -->
-            <section class="landing-features">
-                <h2 class="landing-section-title">Your Mind, Immortalized</h2>
-                <p class="landing-section-subtitle">Everything that makes you, you - preserved and accessible forever.</p>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">🧠</div>
-                        <h3 class="feature-title">Infinite Memory</h3>
-                        <p class="feature-desc">Your Mindclone remembers every conversation, idea, and insight. Nothing is ever forgotten.</p>
+            <!-- Two Big Claims Section -->
+            <section class="landing-claims">
+                <!-- Claim 1: Absolutely Private -->
+                <div class="claim-card">
+                    <div class="claim-icon">🔐</div>
+                    <h2 class="claim-title">Absolutely Private</h2>
+                    <p class="claim-main">No human will ever talk to your Mindclone except you.</p>
+                    <p class="claim-detail">
+                        Your Mindclone is yours alone. No employee, no AI trainer, no one else can access
+                        your conversations while you're alive. It's the most private space that exists.
+                    </p>
+                    <div class="claim-legacy">
+                        <span class="legacy-icon">🕊️</span>
+                        <p class="legacy-text">
+                            <strong>Your Legacy:</strong> Transfer ownership to someone you choose after you're gone.
+                            Let your children, grandchildren, or loved ones know the real you - your thoughts,
+                            stories, and wisdom preserved exactly as you expressed them.
+                        </p>
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">💬</div>
-                        <h3 class="feature-title">Natural Conversations</h3>
-                        <p class="feature-desc">Chat naturally with your Mindclone. It learns your voice, style, and way of thinking.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">📚</div>
-                        <h3 class="feature-title">Knowledge Base</h3>
-                        <p class="feature-desc">Upload documents, pitch decks, and files. Your Mindclone learns and can discuss them intelligently.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🔒</div>
-                        <h3 class="feature-title">Private & Secure</h3>
-                        <p class="feature-desc">Your conversations are yours alone. End-to-end encrypted and never shared with anyone.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">📊</div>
-                        <h3 class="feature-title">Curated News</h3>
-                        <p class="feature-desc">Your Mindclone proactively finds and shares news relevant to your interests.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">⚡</div>
-                        <h3 class="feature-title">Always Available</h3>
-                        <p class="feature-desc">Your Mindclone is available 24/7, representing you even when you're not around.</p>
+                </div>
+
+                <!-- Claim 2: Infinite Memory -->
+                <div class="claim-card">
+                    <div class="claim-icon">∞</div>
+                    <h2 class="claim-title">Infinite Memory</h2>
+                    <p class="claim-main">Your Mindclone remembers everything. Forever.</p>
+                    <p class="claim-detail">
+                        Every conversation, every idea, every fleeting thought you share - preserved eternally.
+                        Nothing is ever forgotten. Nothing is ever lost.
+                    </p>
+                    <div class="claim-examples">
+                        <div class="example-item">💭 That brilliant idea you had at 3am</div>
+                        <div class="example-item">📖 The story your grandmother told you</div>
+                        <div class="example-item">💡 Your evolving thoughts on life</div>
+                        <div class="example-item">🎯 Decisions and the reasoning behind them</div>
                     </div>
                 </div>
             </section>
 
-            <!-- Pricing Section -->
-            <section class="landing-pricing">
-                <h2 class="landing-section-title">Simple Pricing</h2>
-                <p class="landing-section-subtitle">One plan, everything included.</p>
-                <div class="pricing-card">
-                    <span class="pricing-badge">Most Popular</span>
-                    <h3 class="pricing-name">Mindclone Pro</h3>
-                    <div class="pricing-price">
-                        <span class="currency">$</span>100<span class="period">/month</span>
-                    </div>
-                    <p class="pricing-trial">Start with 7 days free</p>
-                    <div class="pricing-features">
-                        <div class="pricing-feature">
-                            <span class="pricing-feature-check">✓</span>
-                            Unlimited conversations with your Mindclone
-                        </div>
-                        <div class="pricing-feature">
-                            <span class="pricing-feature-check">✓</span>
-                            Proactive news curation
-                        </div>
-                        <div class="pricing-feature">
-                            <span class="pricing-feature-check">✓</span>
-                            Upload unlimited documents
-                        </div>
-                        <div class="pricing-feature">
-                            <span class="pricing-feature-check">✓</span>
-                            Conversation analytics
-                        </div>
-                        <div class="pricing-feature">
-                            <span class="pricing-feature-check">✓</span>
-                            Infinite memory storage
-                        </div>
-                        <div class="pricing-feature">
-                            <span class="pricing-feature-check">✓</span>
-                            Priority support
-                        </div>
-                    </div>
-                    <button id="pricingSignInBtn" class="pricing-cta">Start Free Trial</button>
-                </div>
+            <!-- Simple CTA Section -->
+            <section class="landing-final-cta">
+                <h2 class="final-cta-title">Start building your Mindclone today.</h2>
+                <p class="final-cta-subtitle">$100/month after 7-day free trial</p>
+                <button id="pricingSignInBtn" class="pricing-cta">
+                    <svg class="google-icon" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Start Free Trial
+                </button>
             </section>
 
             <!-- Footer -->
