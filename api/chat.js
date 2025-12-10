@@ -2,6 +2,7 @@
 const { CONNOISSEUR_STYLE_GUIDE } = require('./_style-guide');
 const { MemoryClient } = require('mem0ai');
 const { initializeFirebaseAdmin, admin } = require('./_firebase-admin');
+const { computeAccessLevel } = require('./_billing-helpers');
 
 // Initialize Firebase Admin SDK
 initializeFirebaseAdmin();
@@ -376,6 +377,19 @@ module.exports = async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'userId required for memory management'
+      });
+    }
+
+    // === SUBSCRIPTION CHECK ===
+    const userDoc = await db.collection('users').doc(userId).get();
+    const userData = userDoc.exists ? userDoc.data() : null;
+    const accessLevel = computeAccessLevel(userData);
+
+    if (accessLevel === 'read_only') {
+      return res.status(403).json({
+        success: false,
+        error: 'subscription_required',
+        message: 'Your trial has expired. Please subscribe to continue chatting.'
       });
     }
 

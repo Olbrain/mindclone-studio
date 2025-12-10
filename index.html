@@ -2112,6 +2112,292 @@
             background: #333;
         }
 
+        /* Billing Styles */
+        .billing-scroll-container {
+            padding: 16px;
+        }
+
+        .plan-info {
+            margin-top: 12px;
+        }
+
+        .plan-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .plan-card.loading {
+            opacity: 0.6;
+        }
+
+        .plan-card.active {
+            border-color: var(--accent);
+        }
+
+        .plan-card.trial {
+            border-color: #f59e0b;
+        }
+
+        .plan-card.expired {
+            border-color: #ef4444;
+        }
+
+        .plan-card.grandfathered {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .plan-card .plan-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .plan-card .plan-status {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .grandfathered-badge {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(59, 130, 246, 0.15));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .grandfathered-badge .badge-icon {
+            font-size: 32px;
+        }
+
+        .grandfathered-badge .badge-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .grandfathered-badge .badge-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .pricing-info {
+            margin-top: 24px;
+        }
+
+        .price-display {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            margin: 12px 0;
+        }
+
+        .price-display .price {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .price-display .period {
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 16px 0;
+        }
+
+        .features-list li {
+            padding: 8px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Subscription Banner */
+        .subscription-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg, #8b5cf6, #6366f1);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .banner-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .banner-icon {
+            font-size: 18px;
+        }
+
+        .banner-text {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .banner-upgrade-btn {
+            background: white;
+            color: #6366f1;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .banner-upgrade-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .banner-close-btn {
+            position: absolute;
+            right: 16px;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .banner-close-btn:hover {
+            opacity: 1;
+        }
+
+        /* Paywall Modal */
+        .paywall-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .paywall-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .paywall-content {
+            position: relative;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .paywall-content h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .paywall-content > p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .paywall-features {
+            text-align: left;
+            margin: 24px 0;
+        }
+
+        .paywall-features .feature-item {
+            padding: 8px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .paywall-price {
+            margin: 24px 0;
+        }
+
+        .paywall-price .price {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .paywall-price .period {
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        .paywall-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+
+        .paywall-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .paywall-close {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .paywall-close:hover {
+            border-color: var(--text-secondary);
+            color: var(--text);
+        }
+
+        /* Adjust body when banner is shown */
+        body.has-banner {
+            padding-top: 50px;
+        }
+
         /* Conversation Modal */
         .conversation-modal {
             position: fixed;
@@ -3692,6 +3978,10 @@
                     <span class="tab-icon">📈</span>
                     <span class="tab-label">Analytics</span>
                 </button>
+                <button class="panel-tab" data-tab="billing">
+                    <span class="tab-icon">💳</span>
+                    <span class="tab-label">Billing</span>
+                </button>
             </div>
 
             <!-- Tab Content Container -->
@@ -3880,7 +4170,93 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Billing Tab -->
+                <div class="panel-tab-content" id="billingTab">
+                    <div class="billing-scroll-container">
+                        <!-- Current Plan Section -->
+                        <div class="panel-section">
+                            <h3 class="panel-section-title">Current Plan</h3>
+                            <div id="currentPlanInfo" class="plan-info">
+                                <div class="plan-card loading">
+                                    <span class="plan-name">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grandfathered Badge -->
+                        <div id="grandfatheredBadge" class="grandfathered-badge hidden">
+                            <span class="badge-icon">🎁</span>
+                            <div class="badge-content">
+                                <span class="badge-text">Lifetime Free Access</span>
+                                <p class="badge-subtitle">Thank you for being an early supporter!</p>
+                            </div>
+                        </div>
+
+                        <!-- Subscription Actions -->
+                        <div class="panel-section" id="subscriptionActions">
+                            <button id="upgradeBtn" class="panel-button panel-button-primary hidden">
+                                <span class="button-icon">⚡</span>
+                                <span>Start Free Trial</span>
+                            </button>
+                            <button id="manageBillingBtn" class="panel-button hidden">
+                                <span class="button-icon">⚙️</span>
+                                <span>Manage Billing</span>
+                            </button>
+                        </div>
+
+                        <!-- Pricing Info -->
+                        <div class="panel-section pricing-info">
+                            <h4 class="subsection-title">Mindclone Pro</h4>
+                            <div class="price-display">
+                                <span class="price">$100</span>
+                                <span class="period">/month</span>
+                            </div>
+                            <ul class="features-list">
+                                <li>✓ Unlimited conversations</li>
+                                <li>✓ Public Mindclone link</li>
+                                <li>✓ Knowledge base uploads</li>
+                                <li>✓ Visitor analytics</li>
+                                <li>✓ Proactive news curation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Subscription Banner -->
+    <div id="subscriptionBanner" class="subscription-banner hidden">
+        <div class="banner-content">
+            <span class="banner-icon">⚡</span>
+            <span class="banner-text" id="bannerText">Your free trial ends in 7 days</span>
+            <button id="upgradeBannerBtn" class="banner-upgrade-btn">Upgrade Now</button>
+        </div>
+        <button class="banner-close-btn" onclick="this.parentElement.classList.add('hidden')">×</button>
+    </div>
+
+    <!-- Paywall Modal -->
+    <div id="paywallModal" class="paywall-modal hidden">
+        <div class="paywall-overlay"></div>
+        <div class="paywall-content">
+            <h2>Your Trial Has Ended</h2>
+            <p>Subscribe to Mindclone Pro to continue chatting with your Mindclone and enable your public link.</p>
+
+            <div class="paywall-features">
+                <div class="feature-item">✓ Unlimited conversations</div>
+                <div class="feature-item">✓ Public Mindclone link</div>
+                <div class="feature-item">✓ Knowledge base uploads</div>
+                <div class="feature-item">✓ Visitor analytics</div>
+            </div>
+
+            <div class="paywall-price">
+                <span class="price">$100</span>
+                <span class="period">/month</span>
+            </div>
+
+            <button id="paywallUpgradeBtn" class="paywall-button">Subscribe Now</button>
+            <button id="paywallCloseBtn" class="paywall-close">View History (Read-Only)</button>
         </div>
     </div>
 
@@ -5244,13 +5620,16 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
         }
 
         // Auth State Observer
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 // User is signed in
                 showChatInterface(user);
+                // Load billing status
+                await loadBillingStatus();
             } else {
                 // User is signed out
                 showAuthScreen();
+                userBillingStatus = null;
             }
         });
 
@@ -7742,6 +8121,195 @@ Is there anything else you'd like to configure?`;
 
         // Handle URL hash for deep linking on page load
         window.addEventListener('load', handlePanelDeepLink);
+
+        // ==================== BILLING FUNCTIONS ====================
+
+        // Global billing state
+        let userBillingStatus = null;
+
+        // Load billing status
+        async function loadBillingStatus() {
+            if (!auth.currentUser) return null;
+
+            try {
+                const idToken = await auth.currentUser.getIdToken();
+                const response = await fetch('/api/billing/status', {
+                    headers: { 'Authorization': `Bearer ${idToken}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load billing status');
+
+                userBillingStatus = await response.json();
+                updateBillingUI(userBillingStatus);
+                return userBillingStatus;
+            } catch (error) {
+                console.error('[Billing] Error loading status:', error);
+                return null;
+            }
+        }
+
+        // Update UI based on billing status
+        function updateBillingUI(status) {
+            const banner = document.getElementById('subscriptionBanner');
+            const bannerText = document.getElementById('bannerText');
+            const currentPlanInfo = document.getElementById('currentPlanInfo');
+            const upgradeBtn = document.getElementById('upgradeBtn');
+            const manageBillingBtn = document.getElementById('manageBillingBtn');
+            const grandfatheredBadge = document.getElementById('grandfatheredBadge');
+
+            // Hide everything first
+            banner?.classList.add('hidden');
+            grandfatheredBadge?.classList.add('hidden');
+            upgradeBtn?.classList.add('hidden');
+            manageBillingBtn?.classList.add('hidden');
+            document.body.classList.remove('has-banner');
+
+            if (!status) return;
+
+            if (status.isGrandfathered) {
+                // Grandfathered user
+                grandfatheredBadge?.classList.remove('hidden');
+                if (currentPlanInfo) {
+                    currentPlanInfo.innerHTML = `
+                        <div class="plan-card grandfathered">
+                            <span class="plan-name">Lifetime Free</span>
+                            <span class="plan-status">Early Supporter</span>
+                        </div>
+                    `;
+                }
+            } else if (status.status === 'trialing') {
+                // Trial user
+                banner?.classList.remove('hidden');
+                document.body.classList.add('has-banner');
+                if (bannerText) bannerText.textContent = `Free trial: ${status.trialDaysRemaining} days remaining`;
+                if (currentPlanInfo) {
+                    currentPlanInfo.innerHTML = `
+                        <div class="plan-card trial">
+                            <span class="plan-name">Free Trial</span>
+                            <span class="plan-status">${status.trialDaysRemaining} days left</span>
+                        </div>
+                    `;
+                }
+                if (upgradeBtn) {
+                    upgradeBtn.querySelector('span:last-child').textContent = 'Upgrade to Pro';
+                    upgradeBtn.classList.remove('hidden');
+                }
+            } else if (status.status === 'active') {
+                // Active subscriber
+                manageBillingBtn?.classList.remove('hidden');
+                if (currentPlanInfo) {
+                    const renewDate = status.currentPeriodEnd ? new Date(status.currentPeriodEnd).toLocaleDateString() : 'N/A';
+                    currentPlanInfo.innerHTML = `
+                        <div class="plan-card active">
+                            <span class="plan-name">Mindclone Pro</span>
+                            <span class="plan-status">${status.cancelAtPeriodEnd ? 'Cancels' : 'Renews'} ${renewDate}</span>
+                        </div>
+                    `;
+                }
+            } else {
+                // Expired/no subscription - show paywall
+                if (status.accessLevel === 'read_only') {
+                    showPaywall();
+                }
+                if (currentPlanInfo) {
+                    currentPlanInfo.innerHTML = `
+                        <div class="plan-card expired">
+                            <span class="plan-name">No Active Plan</span>
+                            <span class="plan-status">Read-only access</span>
+                        </div>
+                    `;
+                }
+                if (upgradeBtn) {
+                    upgradeBtn.querySelector('span:last-child').textContent = 'Start 7-Day Free Trial';
+                    upgradeBtn.classList.remove('hidden');
+                }
+            }
+        }
+
+        // Create checkout session and redirect
+        async function startCheckout() {
+            if (!auth.currentUser) return;
+
+            try {
+                const idToken = await auth.currentUser.getIdToken();
+                const response = await fetch('/api/billing/create-checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({ returnUrl: window.location.href })
+                });
+
+                if (!response.ok) throw new Error('Failed to create checkout session');
+
+                const { checkoutUrl } = await response.json();
+                window.location.href = checkoutUrl;
+            } catch (error) {
+                console.error('[Billing] Checkout error:', error);
+                alert('Failed to start checkout. Please try again.');
+            }
+        }
+
+        // Open billing portal
+        async function openBillingPortal() {
+            if (!auth.currentUser) return;
+
+            try {
+                const idToken = await auth.currentUser.getIdToken();
+                const response = await fetch('/api/billing/create-portal', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({ returnUrl: window.location.href })
+                });
+
+                if (!response.ok) throw new Error('Failed to create portal session');
+
+                const { portalUrl } = await response.json();
+                window.location.href = portalUrl;
+            } catch (error) {
+                console.error('[Billing] Portal error:', error);
+                alert('Failed to open billing portal. Please try again.');
+            }
+        }
+
+        // Show paywall modal
+        function showPaywall() {
+            const modal = document.getElementById('paywallModal');
+            modal?.classList.remove('hidden');
+        }
+
+        // Hide paywall modal
+        function hidePaywall() {
+            const modal = document.getElementById('paywallModal');
+            modal?.classList.add('hidden');
+        }
+
+        // Check access before sending message
+        function checkAccessBeforeSend() {
+            if (!userBillingStatus) return true; // Allow if status not loaded yet
+
+            if (userBillingStatus.accessLevel === 'read_only') {
+                showPaywall();
+                return false;
+            }
+            return true;
+        }
+
+        // Initialize billing event listeners
+        function initializeBilling() {
+            document.getElementById('upgradeBtn')?.addEventListener('click', startCheckout);
+            document.getElementById('upgradeBannerBtn')?.addEventListener('click', startCheckout);
+            document.getElementById('paywallUpgradeBtn')?.addEventListener('click', startCheckout);
+            document.getElementById('manageBillingBtn')?.addEventListener('click', openBillingPortal);
+            document.getElementById('paywallCloseBtn')?.addEventListener('click', hidePaywall);
+        }
+
+        // Initialize billing on page load
+        initializeBilling();
     </script>
 </body>
 </html>

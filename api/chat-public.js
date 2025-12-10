@@ -1,6 +1,7 @@
 // Public chat API - handle conversations with Mindclone Links
 const { initializeFirebaseAdmin, admin } = require('./_firebase-admin');
 const { CONNOISSEUR_STYLE_GUIDE } = require('./_style-guide');
+const { computeAccessLevel } = require('./_billing-helpers');
 
 // Initialize Firebase Admin SDK
 initializeFirebaseAdmin();
@@ -128,6 +129,94 @@ const tools = [
             }
           },
           required: ["documentName"]
+        }
+      },
+      {
+        name: "draw_canvas",
+        description: "Create a visual diagram or illustration on canvas to help explain concepts, processes, relationships, or simple data visualizations. Use this tool when: explaining processes or workflows (draw flowchart), showing relationships between concepts (draw relationship diagram), illustrating hierarchies or org structures (draw org chart), visualizing system architecture (draw architecture diagram), drawing simple bar/line charts for data (when no Excel file exists), or when the user asks 'can you draw...', 'show me how...', 'what does that look like', 'show the chart'. DO NOT use if: there's an existing spreadsheet file (use show_excel_sheet instead) or existing slides (use show_slide instead).",
+        parameters: {
+          type: "object",
+          properties: {
+            title: {
+              type: "string",
+              description: "Title for the diagram (e.g., 'Product Development Process')"
+            },
+            drawingInstructions: {
+              type: "object",
+              description: `CRITICAL: Use EXACT property names shown in the example below. The JSON MUST follow this structure:
+
+{
+  "canvas": {
+    "width": 800,
+    "height": 600,
+    "background": "#1a1a1a"
+  },
+  "elements": [
+    {
+      "type": "rectangle",
+      "x": 100,
+      "y": 100,
+      "width": 200,
+      "height": 100,
+      "fill": "#A78BFA",
+      "stroke": "#8B5CF6",
+      "strokeWidth": 2,
+      "cornerRadius": 8
+    },
+    {
+      "type": "circle",
+      "x": 400,
+      "y": 150,
+      "radius": 50,
+      "fill": "#C4B5FD",
+      "stroke": "#A78BFA",
+      "strokeWidth": 2
+    },
+    {
+      "type": "text",
+      "x": 200,
+      "y": 150,
+      "text": "Label",
+      "font": "16px sans-serif",
+      "fill": "#ffffff",
+      "align": "center",
+      "baseline": "middle"
+    },
+    {
+      "type": "line",
+      "x1": 300,
+      "y1": 150,
+      "x2": 350,
+      "y2": 150,
+      "stroke": "#666666",
+      "strokeWidth": 2,
+      "lineDash": [5, 5]
+    },
+    {
+      "type": "arrow",
+      "x1": 350,
+      "y1": 150,
+      "x2": 450,
+      "y2": 150,
+      "stroke": "#A78BFA",
+      "strokeWidth": 3,
+      "headSize": 12
+    }
+  ]
+}
+
+IMPORTANT PROPERTY NAMES:
+- Text: Use "font" (NOT fontSize), "fill" (NOT color), "align", "baseline"
+- Rectangle: Use "fill" (NOT fillStyle), "stroke", "strokeWidth", "cornerRadius"
+- Colors: Use hex codes like "#A78BFA" (purple), "#C4B5FD" (light purple), "#ffffff" (white)
+- Canvas size: Typically 800x600, adjust for content`
+            },
+            explanation: {
+              type: "string",
+              description: "Brief explanation of the diagram to help interpret it"
+            }
+          },
+          required: ["title", "drawingInstructions", "explanation"]
         }
       }
     ]
@@ -288,6 +377,8 @@ async function loadOwnerPublicMessages(userId, limit = 50) {
 // Save visitor message
 async function saveVisitorMessage(userId, visitorId, role, content, displayAction = null) {
   try {
+    console.log('[saveVisitorMessage] Saving message for visitor:', visitorId, 'role:', role);
+
     const messageRef = db.collection('users').doc(userId)
       .collection('visitors').doc(visitorId)
       .collection('messages').doc();
@@ -304,15 +395,31 @@ async function saveVisitorMessage(userId, visitorId, role, content, displayActio
     }
 
     await messageRef.set(messageData);
+    console.log('[saveVisitorMessage] Message saved successfully');
 
     // Update visitor metadata
-    await db.collection('users').doc(userId)
-      .collection('visitors').doc(visitorId)
-      .set({
-        visitorId: visitorId,
-        lastVisit: admin.firestore.FieldValue.serverTimestamp(),
-        lastMessage: role === 'user' ? content.substring(0, 100) : null
-      }, { merge: true });
+    const visitorRef = db.collection('users').doc(userId)
+      .collection('visitors').doc(visitorId);
+
+    // Check if this is a new visitor
+    const visitorDoc = await visitorRef.get();
+    const isNewVisitor = !visitorDoc.exists;
+    console.log('[saveVisitorMessage] Visitor exists:', visitorDoc.exists);
+
+    const updateData = {
+      visitorId: visitorId,
+      lastVisit: admin.firestore.FieldValue.serverTimestamp(),
+      lastMessage: role === 'user' ? content.substring(0, 100) : null
+    };
+
+    // Only set firstVisit if this is a new visitor
+    if (isNewVisitor) {
+      updateData.firstVisit = admin.firestore.FieldValue.serverTimestamp();
+      console.log('[saveVisitorMessage] Setting firstVisit for new visitor');
+    }
+
+    await visitorRef.set(updateData, { merge: true });
+    console.log('[saveVisitorMessage] Visitor metadata updated successfully');
 
     return true;
   } catch (error) {
@@ -346,8 +453,8 @@ async function callGeminiAPI(messages, systemPrompt, pitchDeckInfo = null, knowl
       }
     };
 
-    // Only add tools if we have any PDF documents or Excel documents
-    let hasTools = false;
+    // Enable tools - draw_canvas is always available, plus document tools if available
+    let hasDocuments = false;
 
     // Check for PDF documents
     if (knowledgeBaseDocuments) {
@@ -356,8 +463,8 @@ async function callGeminiAPI(messages, systemPrompt, pitchDeckInfo = null, knowl
         const isPdf = docData.type === 'application/pdf' || docData.fileName?.toLowerCase().endsWith('.pdf');
         const isExcel = docData.type?.includes('spreadsheet') || docData.fileName?.match(/\.(xlsx?|csv)$/i);
         if ((isPdf && docData.pageCount) || isExcel) {
-          hasTools = true;
-          console.log('[ChatPublic] Tool enabled for document:', docKey, 'type:', isPdf ? 'PDF' : 'Excel');
+          hasDocuments = true;
+          console.log('[ChatPublic] Document tool enabled for:', docKey, 'type:', isPdf ? 'PDF' : 'Excel');
           break;
         }
       }
@@ -365,22 +472,19 @@ async function callGeminiAPI(messages, systemPrompt, pitchDeckInfo = null, knowl
 
     // Also check pitch deck (backward compatibility)
     if (pitchDeckInfo && pitchDeckInfo.url && pitchDeckInfo.pageCount > 0) {
-      hasTools = true;
-      console.log('[ChatPublic] Tool enabled for pitch deck');
+      hasDocuments = true;
+      console.log('[ChatPublic] Document tool enabled for pitch deck');
     }
 
-    if (hasTools) {
-      console.log('[ChatPublic] Adding tools to API request');
-      requestBody.tools = tools;
-      // Configure tool usage to encourage function calling
-      requestBody.tool_config = {
-        function_calling_config: {
-          mode: "AUTO" // AUTO mode allows model to decide, but we've made the prompts very explicit
-        }
-      };
-    } else {
-      console.log('[ChatPublic] No tools available - no PDF or Excel documents found');
-    }
+    // Always add tools (draw_canvas is always available)
+    console.log('[ChatPublic] Adding tools to API request (documents:', hasDocuments, ')');
+    requestBody.tools = tools;
+    // Configure tool usage to encourage function calling
+    requestBody.tool_config = {
+      function_calling_config: {
+        mode: "AUTO" // AUTO mode allows model to decide, but we've made the prompts very explicit
+      }
+    };
 
     let response = await fetch(url, {
       method: 'POST',
@@ -557,9 +661,99 @@ async function callGeminiAPI(messages, systemPrompt, pitchDeckInfo = null, knowl
           console.error('[ChatPublic] Excel document not found:', documentName);
         }
       }
+
+      // Handle draw_canvas tool
+      if (functionCall.name === 'draw_canvas') {
+        const title = functionCall.args?.title || 'Diagram';
+        const drawingInstructions = functionCall.args?.drawingInstructions;
+        const explanation = functionCall.args?.explanation || '';
+
+        console.log('[ChatPublic] draw_canvas called:', title);
+
+        if (drawingInstructions && drawingInstructions.canvas && drawingInstructions.elements) {
+          // Create display action for frontend
+          displayAction = {
+            type: 'canvas',
+            title: title,
+            instructions: drawingInstructions,
+            explanation: explanation
+          };
+
+          // Add function call to contents
+          contents.push({
+            role: 'model',
+            parts: [{ functionCall: functionCall }]
+          });
+
+          // Add function response
+          contents.push({
+            role: 'user',
+            parts: [{
+              functionResponse: {
+                name: functionCall.name,
+                response: {
+                  success: true,
+                  message: `Drawing "${title}" displayed on canvas`
+                }
+              }
+            }]
+          });
+
+          // Call API again to get text response
+          requestBody.contents = contents;
+          response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+          });
+
+          data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error?.message || 'Gemini API request failed after tool call');
+          }
+
+          candidate = data.candidates?.[0];
+        } else {
+          console.error('[ChatPublic] Invalid drawing instructions structure');
+        }
+      }
     }
 
-    const text = candidate?.content?.parts?.[0]?.text || 'I apologize, I was unable to generate a response.';
+    let text = candidate?.content?.parts?.[0]?.text || 'I apologize, I was unable to generate a response.';
+
+    // FALLBACK: Detect and extract raw canvas JSON if the model output it as text instead of calling the function
+    if (!displayAction && text.includes('"canvas"') && text.includes('"elements"')) {
+      console.log('[ChatPublic] Detected raw canvas JSON in text response - converting to display action');
+
+      try {
+        // Try to extract JSON from the text (it might be the entire response or embedded)
+        const jsonMatch = text.match(/\{[\s\S]*"canvas"[\s\S]*"elements"[\s\S]*\}/);
+        if (jsonMatch) {
+          const rawJson = jsonMatch[0];
+          const parsedInstructions = JSON.parse(rawJson);
+
+          // Validate it has the expected structure
+          if (parsedInstructions.canvas && parsedInstructions.elements && Array.isArray(parsedInstructions.elements)) {
+            console.log('[ChatPublic] Successfully parsed raw canvas JSON, creating display action');
+
+            displayAction = {
+              type: 'canvas',
+              title: 'Visualization',
+              instructions: parsedInstructions,
+              explanation: 'Generated visualization'
+            };
+
+            // Clean the text - remove the JSON and provide a clean response
+            text = 'Here\'s the visualization I created for you.';
+          }
+        }
+      } catch (parseError) {
+        console.error('[ChatPublic] Failed to parse raw canvas JSON:', parseError.message);
+        // Keep original text if parsing fails
+      }
+    }
+
     return { text, displayAction };
   } catch (error) {
     console.error('Gemini API error:', error);
@@ -654,6 +848,15 @@ module.exports = async (req, res) => {
 
     if (!userData.linkEnabled) {
       return res.status(403).json({ error: 'This Mindclone link is disabled' });
+    }
+
+    // Check if owner has active subscription
+    const ownerAccessLevel = computeAccessLevel(userData);
+    if (ownerAccessLevel === 'read_only') {
+      return res.status(403).json({
+        error: 'owner_subscription_required',
+        message: 'This Mindclone link is currently inactive. The owner needs to reactivate their subscription.'
+      });
     }
 
     // Check if visitor is the owner (for rate limit bypass)
@@ -961,6 +1164,72 @@ Available spreadsheets: ${excelDocKeys.map(k => `"${k}"`).join(', ')}
 When the user asks about financial data or spreadsheets, use the show_excel_sheet function.`;
       console.log('[ChatPublic] Excel documents available:', excelDocKeys);
     }
+
+    // Add canvas drawing capability to system prompt
+    enhancedSystemPrompt += `\n\n## CANVAS DRAWING CAPABILITY
+
+You can create visual diagrams to enhance explanations using draw_canvas.
+
+⚠️ CRITICAL: FUNCTION CALLING IS MANDATORY ⚠️
+
+TRIGGER PHRASES - If user says ANY of these, CALL draw_canvas() IMMEDIATELY:
+- "draw [something]"
+- "show [something] visually"
+- "can you draw"
+- "show me a chart"
+- "show the chart"
+- "visualize [something]"
+- "draw a diagram"
+- "show me how [process] works"
+- ANY request to draw or visualize
+
+🚨 EVEN IF A SLIDE IS CURRENTLY DISPLAYED, if user says "draw", YOU MUST CALL draw_canvas()!
+The user is asking for a NEW visualization, not to see an existing file.
+
+YOU MUST CALL THE FUNCTION. NOT output JSON. NOT describe. CALL IT FIRST, THEN talk about it.
+
+🚨 FORBIDDEN: NEVER output raw JSON in chat! That's a bug!
+If you see yourself about to type {"canvas": ... }, STOP and call draw_canvas() instead.
+
+✅ CORRECT BEHAVIOR:
+1. User: "draw a chart"
+2. YOU: [Call draw_canvas(title="...", drawingInstructions={...}, explanation="...")]
+3. THEN respond: "Here's the visualization showing..."
+
+WHEN TO DRAW:
+✅ Use draw_canvas when:
+- Explaining processes/workflows → Draw flowchart
+- Showing relationships → Draw relationship diagram
+- Illustrating hierarchies → Draw org chart
+- Explaining architecture → Draw system diagram
+- Simple data visualizations (bar/line charts when no Excel file exists)
+- User asks "can you draw", "show me how", "what does that look like", "show the chart"
+
+❌ ONLY restriction - don't use draw_canvas to OPEN existing files:
+- User wants to see an existing file → use show_slide or show_excel_sheet
+- User explicitly asks to DRAW → use draw_canvas (even if other content is displayed)
+
+🚨 IF USER SAYS "DRAW", YOU CALL draw_canvas(). NO EXCEPTIONS!
+
+DRAWING GUIDELINES:
+1. Keep diagrams simple and clear
+2. Use app colors: #A78BFA (purple), #C4B5FD (light purple), #1a1a1a (dark bg), #ffffff (text)
+3. Label all important elements
+4. Use arrows to show flow/direction
+5. Canvas size: typically 800x600
+6. Always provide explanation field
+
+🚨 CRITICAL JSON PROPERTY NAMES:
+- Text elements: Use "font" (NOT fontSize), "fill" (NOT color), "align", "baseline"
+- Rectangles: Use "fill" (NOT fillStyle), "stroke", "strokeWidth", "cornerRadius"
+- All primitives: type, x, y (or x1/y1, x2/y2 for lines/arrows)
+- Follow the exact structure shown in the tool's example!
+
+EXAMPLES:
+- "How does X work?" → Flowchart with boxes and arrows
+- "What's the difference?" → Side-by-side comparison boxes
+- "Show me the structure" → Org chart hierarchy
+- "Explain the architecture" → System diagram with components`;
 
     // Add current slide context if visitor is viewing a slide
     if (currentSlide && currentSlide.slideNumber) {

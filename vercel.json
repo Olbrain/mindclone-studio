@@ -12,6 +12,22 @@
   ],
   "routes": [
     {
+      "src": "^/api/billing/status$",
+      "dest": "/api/billing/status.js"
+    },
+    {
+      "src": "^/api/billing/create-checkout$",
+      "dest": "/api/billing/create-checkout.js"
+    },
+    {
+      "src": "^/api/billing/create-portal$",
+      "dest": "/api/billing/create-portal.js"
+    },
+    {
+      "src": "^/api/stripe-webhook$",
+      "dest": "/api/stripe-webhook.js"
+    },
+    {
       "src": "^/api/chat$",
       "dest": "/api/chat.js"
     },
