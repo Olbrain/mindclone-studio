@@ -11,11 +11,6 @@
         :root {
             /* Minimal Modern Palette - Clean & Professional */
             --bg: #0a0a0a;
-
-            /* Luxury Gold Accent */
-            --gold: #c9a962;
-            --gold-light: #e8d5a3;
-            --gold-glow: rgba(201, 169, 98, 0.15);
             --bg-surface: #141414;
             --bg-elevated: #1a1a1a;
             --border: #262626;
@@ -97,7 +92,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(ellipse at 50% 0%, var(--gold-glow) 0%, transparent 50%);
+            background: radial-gradient(ellipse at 50% 0%, var(--accent-muted) 0%, transparent 50%);
             pointer-events: none;
         }
 
@@ -173,7 +168,7 @@
         .landing-divider {
             width: 60px;
             height: 1px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
             margin-bottom: 48px;
         }
 
@@ -199,7 +194,7 @@
         }
 
         .claim-item:hover {
-            border-color: rgba(201, 169, 98, 0.3);
+            border-color: rgba(167, 139, 250, 0.2);
             background: rgba(255, 255, 255, 0.04);
             transform: translateY(-4px);
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
@@ -209,8 +204,8 @@
             font-size: 42px;
             margin-bottom: 20px;
             display: block;
-            color: var(--gold);
-            text-shadow: 0 0 30px rgba(201, 169, 98, 0.4);
+            color: white;
+            text-shadow: 0 0 30px rgba(167, 139, 250, 0.4);
         }
 
         .claim-title {
@@ -249,22 +244,22 @@
             display: inline-flex;
             align-items: center;
             gap: 12px;
-            background: linear-gradient(135deg, #c9a962 0%, #e8d5a3 50%, #c9a962 100%);
+            background: white;
             color: #0a0a0a;
             padding: 18px 52px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: none;
             border-radius: 50px;
             font-size: 15px;
             font-weight: 600;
             letter-spacing: 1px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(201, 169, 98, 0.3);
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
         }
 
         .landing-sign-in-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 40px rgba(201, 169, 98, 0.4);
+            box-shadow: 0 8px 40px rgba(167, 139, 250, 0.3);
         }
 
         .landing-sign-in-btn .google-icon {
@@ -279,7 +274,7 @@
         }
 
         .landing-pricing strong {
-            color: var(--gold-light);
+            color: var(--text-secondary);
         }
 
         /* Footer */
