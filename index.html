@@ -557,14 +557,15 @@
         }
 
         /* ==================== ACTIVITY MODAL ==================== */
+        /* Alpha: Link features hidden - will be enabled in Max plan */
         .activity-modal {
+            display: none !important; /* Alpha: Link features hidden */
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
             z-index: 9998;
-            display: flex;
             align-items: center;
             justify-content: center;
         }
@@ -973,7 +974,7 @@
             width: 360px;
             background: var(--color-bg-secondary);
             border-left: 1px solid var(--color-border-default);
-            display: flex;
+            display: none !important; /* Alpha: Link features hidden */
             flex-direction: column;
             overflow: hidden;
             z-index: 101;
@@ -987,6 +988,7 @@
 
         /* Toggle button for right panel */
         .right-panel-toggle {
+            display: none !important; /* Alpha: Link features hidden */
             position: fixed;
             top: 50%;
             right: 360px;
@@ -2908,7 +2910,7 @@
             flex-direction: column;
             background: #0d0d0d;
             overflow: hidden;
-            margin-right: 360px; /* Space for fixed right panel */
+            margin-right: 0; /* Alpha: Right panel hidden */
             order: 1;
             transition: margin-right 0.3s ease;
         }
@@ -4107,9 +4109,9 @@
                         <p class="feature-desc">Your Mindclone remembers every conversation, idea, and insight. Nothing is ever forgotten.</p>
                     </div>
                     <div class="feature-card">
-                        <div class="feature-icon">🔗</div>
-                        <h3 class="feature-title">Public Link</h3>
-                        <p class="feature-desc">Share your knowledge with the world. Let others chat with your Mindclone at your personal link.</p>
+                        <div class="feature-icon">💬</div>
+                        <h3 class="feature-title">Natural Conversations</h3>
+                        <p class="feature-desc">Chat naturally with your Mindclone. It learns your voice, style, and way of thinking.</p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">📚</div>
@@ -4123,8 +4125,8 @@
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">📊</div>
-                        <h3 class="feature-title">Visitor Analytics</h3>
-                        <p class="feature-desc">See who's visiting your public link and what they're curious about.</p>
+                        <h3 class="feature-title">Curated News</h3>
+                        <p class="feature-desc">Your Mindclone proactively finds and shares news relevant to your interests.</p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">⚡</div>
@@ -4152,7 +4154,7 @@
                         </div>
                         <div class="pricing-feature">
                             <span class="pricing-feature-check">✓</span>
-                            Personal public link (mindclone.link/you)
+                            Proactive news curation
                         </div>
                         <div class="pricing-feature">
                             <span class="pricing-feature-check">✓</span>
@@ -4160,7 +4162,7 @@
                         </div>
                         <div class="pricing-feature">
                             <span class="pricing-feature-check">✓</span>
-                            Visitor analytics dashboard
+                            Conversation analytics
                         </div>
                         <div class="pricing-feature">
                             <span class="pricing-feature-check">✓</span>
@@ -4631,13 +4633,13 @@
         <div class="paywall-overlay"></div>
         <div class="paywall-content">
             <h2>Your Trial Has Ended</h2>
-            <p>Subscribe to Mindclone Pro to continue chatting with your Mindclone and enable your public link.</p>
+            <p>Subscribe to Mindclone Pro to continue chatting with your Mindclone.</p>
 
             <div class="paywall-features">
                 <div class="feature-item">✓ Unlimited conversations</div>
-                <div class="feature-item">✓ Public Mindclone link</div>
                 <div class="feature-item">✓ Knowledge base uploads</div>
-                <div class="feature-item">✓ Visitor analytics</div>
+                <div class="feature-item">✓ Proactive news curation</div>
+                <div class="feature-item">✓ Conversation analytics</div>
             </div>
 
             <div class="paywall-price">
@@ -6102,7 +6104,9 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
         }
 
         // Load Link Status
+        // Alpha: Link features hidden - will be enabled in Max plan
         async function loadLinkStatus() {
+            return; // Alpha: Link features hidden
             if (!auth.currentUser) return;
 
             try {
@@ -7021,7 +7025,10 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
         // ============================================
 
         // Detect if message triggers workflow
+        // Alpha: Link workflow disabled - will be enabled in Max plan
         function detectWorkflowTrigger(message) {
+            return false; // Alpha: Link features hidden
+            /* Original triggers preserved for Max plan:
             const lowerMsg = message.toLowerCase();
             const triggers = [
                 'set up my link',
@@ -7043,6 +7050,7 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
                 'setup knowledge base'
             ];
             return triggers.some(trigger => lowerMsg.includes(trigger));
+            */
         }
 
         // Start knowledge base workflow
