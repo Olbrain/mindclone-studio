@@ -8249,8 +8249,10 @@ Is there anything else you'd like to configure?`;
 
         // Landing sign-in button
         const landingSignInBtn = document.getElementById('landingSignInBtn');
+        console.log('[Debug] landingSignInBtn element:', landingSignInBtn);
         if (landingSignInBtn) {
             landingSignInBtn.addEventListener('click', async () => {
+                console.log('[Debug] Landing sign-in button clicked!');
                 try {
                     await signInWithPopup(auth, provider);
                 } catch (error) {
