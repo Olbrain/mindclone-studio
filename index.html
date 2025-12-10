@@ -7647,6 +7647,14 @@ Is there anything else you'd like to configure?`;
                     // Save AI response to Firestore (non-blocking)
                     saveMessageToFirestore(currentUser.uid, 'assistant', data.content);
                 } else {
+                    // Check for subscription error
+                    if (data.error === 'subscription_required') {
+                        removeTypingIndicator();
+                        showPaywall();
+                        // Remove the user message we just added
+                        conversationHistory.pop();
+                        return;
+                    }
                     throw new Error(data.error || 'Failed to get response');
                 }
             } catch (error) {
