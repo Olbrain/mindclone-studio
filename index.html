@@ -77,17 +77,19 @@
             height: 100vh;
             background: var(--bg);
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
             z-index: 9999;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .landing-content {
             position: relative;
             z-index: 1;
-            text-align: center;
-            animation: landingFadeIn 1.2s ease;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
         }
 
         @keyframes landingFadeIn {
@@ -99,6 +101,18 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+
+        /* Hero Section */
+        .landing-hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 0;
+            animation: landingFadeIn 1.2s ease;
         }
 
         .landing-brand {
@@ -126,8 +140,23 @@
         .landing-tagline {
             font-size: 24px;
             color: var(--text-secondary);
-            margin-bottom: 60px;
+            margin-bottom: 16px;
             font-weight: 400;
+        }
+
+        .landing-description {
+            font-size: 18px;
+            color: var(--text-muted);
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .landing-cta-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
         }
 
         .landing-sign-in-btn {
@@ -160,8 +189,191 @@
             height: 20px;
         }
 
+        .landing-trial-note {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .landing-scroll-hint {
+            margin-top: 60px;
+            color: var(--text-muted);
+            font-size: 14px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(8px); }
+        }
+
+        /* Features Section */
+        .landing-features {
+            padding: 100px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .landing-section-title {
+            font-size: 36px;
+            font-weight: 600;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .landing-section-subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+        }
+
+        .feature-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.2s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+
+        .feature-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .feature-desc {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Pricing Section */
+        .landing-pricing {
+            padding: 100px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .pricing-card {
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--bg-surface);
+            border: 2px solid var(--text);
+            border-radius: 24px;
+            padding: 48px;
+            text-align: center;
+        }
+
+        .pricing-badge {
+            display: inline-block;
+            background: var(--text);
+            color: var(--bg);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .pricing-name {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .pricing-price {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .pricing-price .currency {
+            font-size: 24px;
+            vertical-align: top;
+        }
+
+        .pricing-price .period {
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+
+        .pricing-trial {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .pricing-features {
+            text-align: left;
+            margin-bottom: 32px;
+        }
+
+        .pricing-feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            font-size: 15px;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pricing-feature:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-feature-check {
+            color: #22c55e;
+            font-size: 18px;
+        }
+
+        .pricing-cta {
+            width: 100%;
+            background: var(--text);
+            color: var(--bg);
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pricing-cta:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        /* Footer Section */
+        .landing-footer {
+            padding: 60px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
         .landing-powered-by {
-            margin-top: 48px;
             font-size: 13px;
             color: var(--text-muted);
         }
@@ -3303,6 +3515,15 @@
             }
 
             /* Landing page mobile */
+            .landing-content {
+                padding: 0 16px;
+            }
+
+            .landing-hero {
+                min-height: auto;
+                padding: 80px 0 60px;
+            }
+
             .landing-brand {
                 gap: 12px;
             }
@@ -3317,13 +3538,60 @@
             }
 
             .landing-tagline {
-                font-size: 16px;
-                margin-bottom: 40px;
+                font-size: 18px;
+                margin-bottom: 12px;
+            }
+
+            .landing-description {
+                font-size: 15px;
+                margin-bottom: 32px;
             }
 
             .landing-sign-in-btn {
                 padding: 14px 28px;
                 font-size: 15px;
+            }
+
+            .landing-scroll-hint {
+                margin-top: 40px;
+            }
+
+            .landing-features {
+                padding: 60px 0;
+            }
+
+            .landing-section-title {
+                font-size: 28px;
+            }
+
+            .landing-section-subtitle {
+                font-size: 16px;
+                margin-bottom: 40px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .feature-card {
+                padding: 24px;
+            }
+
+            .landing-pricing {
+                padding: 60px 0;
+            }
+
+            .pricing-card {
+                padding: 32px 24px;
+            }
+
+            .pricing-price {
+                font-size: 40px;
+            }
+
+            .landing-footer {
+                padding: 40px 0;
             }
 
             /* Header mobile */
@@ -3735,24 +4003,117 @@
         <button class="workflow-cancel-btn" onclick="cancelWorkflow()">Cancel</button>
     </div>
 
-    <!-- Landing Page (Centered Auth Screen) -->
+    <!-- Landing Page -->
     <div id="landingPage" class="landing-page hidden">
         <div class="landing-content">
-            <div class="landing-brand">
-                <svg class="landing-logo-img" width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Mindclone Logo"><path d="M30 90V40L45 55L60 30L75 55L90 40V90" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="60" cy="25" r="4" fill="white"/></svg>
-                <h1 class="landing-title">Mindclone</h1>
-            </div>
-            <p class="landing-tagline">A record of the life only you lived.</p>
-            <button id="landingSignInBtn" class="landing-sign-in-btn">
-                <svg class="google-icon" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                Sign in with Google
-            </button>
-            <p class="landing-powered-by">powered by <span class="olbrain-text">Olbrain</span> - The Machine Brain</p>
+            <!-- Hero Section -->
+            <section class="landing-hero">
+                <div class="landing-brand">
+                    <svg class="landing-logo-img" width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Mindclone Logo"><path d="M30 90V40L45 55L60 30L75 55L90 40V90" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="60" cy="25" r="4" fill="white"/></svg>
+                    <h1 class="landing-title">Mindclone</h1>
+                </div>
+                <p class="landing-tagline">A record of the life only you lived.</p>
+                <p class="landing-description">
+                    Your personal AI that learns from every conversation. Build a digital twin that remembers your thoughts, ideas, and experiences forever.
+                </p>
+                <div class="landing-cta-group">
+                    <button id="landingSignInBtn" class="landing-sign-in-btn">
+                        <svg class="google-icon" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Start Free Trial
+                    </button>
+                    <p class="landing-trial-note">7 days free, then $100/month</p>
+                </div>
+                <p class="landing-scroll-hint">Scroll to learn more</p>
+            </section>
+
+            <!-- Features Section -->
+            <section class="landing-features">
+                <h2 class="landing-section-title">Your Mind, Immortalized</h2>
+                <p class="landing-section-subtitle">Everything that makes you, you - preserved and accessible forever.</p>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🧠</div>
+                        <h3 class="feature-title">Infinite Memory</h3>
+                        <p class="feature-desc">Your Mindclone remembers every conversation, idea, and insight. Nothing is ever forgotten.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔗</div>
+                        <h3 class="feature-title">Public Link</h3>
+                        <p class="feature-desc">Share your knowledge with the world. Let others chat with your Mindclone at your personal link.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📚</div>
+                        <h3 class="feature-title">Knowledge Base</h3>
+                        <p class="feature-desc">Upload documents, pitch decks, and files. Your Mindclone learns and can discuss them intelligently.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h3 class="feature-title">Private by Default</h3>
+                        <p class="feature-desc">Your conversations are yours. Control what's shared publicly and what stays private.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3 class="feature-title">Visitor Analytics</h3>
+                        <p class="feature-desc">See who's visiting your public link and what they're curious about.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3 class="feature-title">Always Available</h3>
+                        <p class="feature-desc">Your Mindclone is available 24/7, representing you even when you're not around.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pricing Section -->
+            <section class="landing-pricing">
+                <h2 class="landing-section-title">Simple Pricing</h2>
+                <p class="landing-section-subtitle">One plan, everything included.</p>
+                <div class="pricing-card">
+                    <span class="pricing-badge">Most Popular</span>
+                    <h3 class="pricing-name">Mindclone Pro</h3>
+                    <div class="pricing-price">
+                        <span class="currency">$</span>100<span class="period">/month</span>
+                    </div>
+                    <p class="pricing-trial">Start with 7 days free</p>
+                    <div class="pricing-features">
+                        <div class="pricing-feature">
+                            <span class="pricing-feature-check">✓</span>
+                            Unlimited conversations with your Mindclone
+                        </div>
+                        <div class="pricing-feature">
+                            <span class="pricing-feature-check">✓</span>
+                            Personal public link (mindclone.link/you)
+                        </div>
+                        <div class="pricing-feature">
+                            <span class="pricing-feature-check">✓</span>
+                            Upload unlimited documents
+                        </div>
+                        <div class="pricing-feature">
+                            <span class="pricing-feature-check">✓</span>
+                            Visitor analytics dashboard
+                        </div>
+                        <div class="pricing-feature">
+                            <span class="pricing-feature-check">✓</span>
+                            Infinite memory storage
+                        </div>
+                        <div class="pricing-feature">
+                            <span class="pricing-feature-check">✓</span>
+                            Priority support
+                        </div>
+                    </div>
+                    <button id="pricingSignInBtn" class="pricing-cta">Start Free Trial</button>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="landing-footer">
+                <p class="landing-powered-by">powered by <span class="olbrain-text">Olbrain</span> - The Machine Brain</p>
+            </footer>
         </div>
     </div>
 
@@ -7901,6 +8262,18 @@ Is there anything else you'd like to configure?`;
         const landingSignInBtn = document.getElementById('landingSignInBtn');
         if (landingSignInBtn) {
             landingSignInBtn.addEventListener('click', async () => {
+                try {
+                    await signInWithPopup(auth, provider);
+                } catch (error) {
+                    console.error('Sign-in error:', error);
+                }
+            });
+        }
+
+        // Pricing sign-in button
+        const pricingSignInBtn = document.getElementById('pricingSignInBtn');
+        if (pricingSignInBtn) {
+            pricingSignInBtn.addEventListener('click', async () => {
                 try {
                     await signInWithPopup(auth, provider);
                 } catch (error) {
