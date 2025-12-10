@@ -865,14 +865,14 @@
         .account-menu-button {
             width: 100%;
             padding: 12px;
-            background: #dc2626;
-            border: none;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
             border-radius: 8px;
-            color: white;
+            color: var(--text-secondary);
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -880,7 +880,9 @@
         }
 
         .account-menu-button:hover {
-            background: #b91c1c;
+            background: var(--bg-elevated);
+            color: var(--text);
+            border-color: var(--border-hover);
         }
 
         /* Adjust main content to account for account sidebar */
