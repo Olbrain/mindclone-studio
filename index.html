@@ -143,13 +143,13 @@
             font-style: italic;
         }
 
-        /* Two Claims - Side by Side */
+        /* Three Value Props */
         .landing-claims {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
             width: 100%;
-            margin-bottom: 48px;
+            margin-bottom: 40px;
         }
 
         .claim-item {
@@ -3615,29 +3615,31 @@
 
             .landing-claims {
                 grid-template-columns: 1fr;
-                gap: 16px;
-                margin-bottom: 32px;
+                gap: 12px;
+                margin-bottom: 24px;
             }
 
             .claim-item {
-                padding: 24px 20px;
+                padding: 16px;
             }
 
             .claim-icon {
-                font-size: 28px;
-                margin-bottom: 12px;
+                font-size: 24px;
+                margin-bottom: 8px;
             }
 
             .claim-title {
-                font-size: 14px;
+                font-size: 12px;
+                margin-bottom: 6px;
             }
 
             .claim-text {
-                font-size: 13px;
+                font-size: 12px;
             }
 
             .claim-subtext {
-                font-size: 11px;
+                font-size: 10px;
+                margin-top: 6px;
             }
 
             .landing-sign-in-btn {
@@ -4078,7 +4080,7 @@
             <!-- Tagline -->
             <p class="landing-tagline">A record of the life only you lived.</p>
 
-            <!-- Two Claims Side by Side -->
+            <!-- Three Value Props -->
             <div class="landing-claims">
                 <div class="claim-item">
                     <span class="claim-icon">🔐</span>
@@ -4091,6 +4093,12 @@
                     <h2 class="claim-title">Infinite Memory</h2>
                     <p class="claim-text">Every conversation, idea, and thought preserved forever. Nothing is ever lost.</p>
                     <p class="claim-subtext">Your mind, immortalized.</p>
+                </div>
+                <div class="claim-item">
+                    <span class="claim-icon">🧭</span>
+                    <h2 class="claim-title">Your Guide</h2>
+                    <p class="claim-text">A friend, philosopher, and guide who knows you deeply and grows with you.</p>
+                    <p class="claim-subtext">Always there when you need clarity.</p>
                 </div>
             </div>
 
