@@ -3921,6 +3921,41 @@
             animation: spin 1s linear infinite;
         }
 
+        /* Typing Timer and Cancel Button */
+        .typing-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .typing-timer {
+            font-size: 12px;
+            color: var(--text-secondary, #666);
+            font-family: monospace;
+            min-width: 32px;
+        }
+
+        .typing-cancel-btn {
+            background: transparent;
+            border: 1px solid #666;
+            color: #888;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s, background 0.2s;
+        }
+
+        .typing-cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .typing-cancel-btn.visible {
+            opacity: 1;
+        }
+
         /* Copy Button */
         .message.ai {
             position: relative;
@@ -8914,29 +8949,71 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
             }
         }
 
-        // Show typing indicator
+        // Typing indicator state
+        let typingTimerInterval = null;
+        let typingStartTime = null;
+        let currentAbortController = null;
+
+        // Show typing indicator with timer and cancel button
         function showTypingIndicator() {
+            typingStartTime = Date.now();
             const typingDiv = document.createElement('div');
             typingDiv.id = 'typingIndicator';
             typingDiv.className = 'message ai';
             typingDiv.innerHTML = `
                 <div class="message-avatar">🔮</div>
                 <div class="message-content">
-                    <div class="typing-indicator">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
+                    <div class="typing-wrapper">
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                        <span class="typing-timer">0s</span>
+                        <button class="typing-cancel-btn" onclick="cancelPendingRequest()">Cancel</button>
                     </div>
                 </div>
             `;
             chatMessages.appendChild(typingDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Start the timer
+            typingTimerInterval = setInterval(() => {
+                const timerEl = typingDiv.querySelector('.typing-timer');
+                const cancelBtn = typingDiv.querySelector('.typing-cancel-btn');
+                if (timerEl && typingStartTime) {
+                    const elapsed = Math.floor((Date.now() - typingStartTime) / 1000);
+                    timerEl.textContent = `${elapsed}s`;
+                    // Show cancel button after 3 seconds
+                    if (elapsed >= 3 && cancelBtn) {
+                        cancelBtn.classList.add('visible');
+                    }
+                }
+            }, 1000);
         }
 
         // Remove typing indicator
         function removeTypingIndicator() {
+            if (typingTimerInterval) {
+                clearInterval(typingTimerInterval);
+                typingTimerInterval = null;
+            }
+            typingStartTime = null;
             const typingDiv = document.getElementById('typingIndicator');
             if (typingDiv) typingDiv.remove();
+        }
+
+        // Cancel pending request
+        function cancelPendingRequest() {
+            if (currentAbortController) {
+                currentAbortController.abort();
+                currentAbortController = null;
+            }
+            removeTypingIndicator();
+            // Re-enable the input
+            messageInput.disabled = false;
+            sendBtn.disabled = false;
+            messageInput.focus();
         }
 
         // Show recalling indicator (for memory search)
@@ -10003,6 +10080,9 @@ Is there anything else you'd like to configure?`;
             sendButton.disabled = true;
 
             try {
+                // Create AbortController for cancellation
+                currentAbortController = new AbortController();
+
                 // Call API
                 const response = await fetch('/api/chat', {
                     method: 'POST',
@@ -10014,6 +10094,7 @@ Is there anything else you'd like to configure?`;
                         systemPrompt: systemPrompt,
                         userId: auth.currentUser.uid
                     }),
+                    signal: currentAbortController.signal
                 });
 
                 const data = await response.json();
@@ -10061,6 +10142,12 @@ Is there anything else you'd like to configure?`;
             } catch (error) {
                 console.error('Error:', error);
                 removeTypingIndicator();
+
+                // Don't show error if user cancelled the request
+                if (error.name === 'AbortError') {
+                    console.log('Request was cancelled by user');
+                    return;
+                }
 
                 // Show error message with retry button
                 const errorDiv = document.createElement('div');
