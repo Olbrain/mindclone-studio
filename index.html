@@ -5904,6 +5904,8 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
                 }
             }
         }
+        // Expose to global scope for onclick handler
+        window.loadOlderMessages = loadOlderMessages;
 
         function addLoadMoreButton() {
             const chatContainer = document.getElementById('chatMessages');
