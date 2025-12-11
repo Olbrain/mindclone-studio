@@ -87,6 +87,56 @@ const tools = [
           },
           required: []
         }
+      },
+      {
+        name: "search_memory",
+        description: "Search through all past conversations to find specific information, names, topics, or context. AUTOMATICALLY use this tool when: (1) You encounter an unfamiliar name (person, place, project, pet, etc.), (2) The user asks 'remember when...', 'what did I say about...', or similar recall questions, (3) You need context about something previously discussed, (4) The user mentions something you should know but don't recognize. This searches the ACTUAL conversation history stored in the database, not just extracted memories.",
+        parameters: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description: "The search term - a name, topic, keyword, or phrase to search for in past conversations"
+            },
+            limit: {
+              type: "number",
+              description: "Maximum number of messages to return (default 20, max 50)"
+            }
+          },
+          required: ["query"]
+        }
+      },
+      {
+        name: "browse_url",
+        description: "Fetch and read the content of a web page. Use this when the user asks you to look at a website, check a URL, read an article, or view content from the internet. Returns the text content of the page.",
+        parameters: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "The full URL to fetch (must include http:// or https://)"
+            }
+          },
+          required: ["url"]
+        }
+      },
+      {
+        name: "analyze_image",
+        description: "Analyze an image from a URL using vision AI. Use this when the user asks you to look at, describe, or analyze an image, photo, or picture from the internet. Can identify objects, people, scenes, text in images, and more. For recognizing the user in photos, use the context from their knowledge base about their appearance.",
+        parameters: {
+          type: "object",
+          properties: {
+            image_url: {
+              type: "string",
+              description: "The full URL of the image to analyze (must be a direct image URL ending in .jpg, .png, .gif, .webp, or similar)"
+            },
+            question: {
+              type: "string",
+              description: "Optional specific question about the image (e.g., 'Is there a person in this image?', 'What products are shown?'). If not provided, will give a general description."
+            }
+          },
+          required: ["image_url"]
+        }
       }
     ]
   }
@@ -302,6 +352,324 @@ async function handleGetLinkConversations(userId, params = {}) {
   }
 }
 
+// Search through conversation history in Firestore
+async function handleSearchMemory(userId, params = {}) {
+  try {
+    const query = params.query;
+    const limit = Math.min(params.limit || 20, 50);
+
+    if (!query || query.trim().length === 0) {
+      return { success: false, error: 'Search query is required' };
+    }
+
+    console.log(`[Memory Search] Searching for "${query}" in user ${userId}'s messages`);
+
+    // Get all messages (Firestore doesn't support full-text search, so we fetch and filter)
+    // Fetch recent messages (last 1000) ordered by timestamp
+    const messagesSnapshot = await db.collection('users').doc(userId)
+      .collection('messages')
+      .orderBy('timestamp', 'desc')
+      .limit(1000)
+      .get();
+
+    if (messagesSnapshot.empty) {
+      return {
+        success: true,
+        query: query,
+        matchCount: 0,
+        matches: [],
+        instruction: "No conversation history found. Tell the user you don't have any record of this yet."
+      };
+    }
+
+    // Search for query in message content (case-insensitive)
+    const searchLower = query.toLowerCase();
+    const matches = [];
+
+    messagesSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      const content = data.content || '';
+
+      if (content.toLowerCase().includes(searchLower)) {
+        matches.push({
+          role: data.role,
+          content: content,
+          timestamp: data.timestamp?.toDate?.()?.toISOString() || null,
+          // Include a snippet with context around the match
+          matchContext: extractMatchContext(content, searchLower)
+        });
+      }
+    });
+
+    // Return limited results, oldest first to show chronological order of mentions
+    const limitedMatches = matches.slice(0, limit).reverse();
+
+    console.log(`[Memory Search] Found ${matches.length} matches for "${query}", returning ${limitedMatches.length}`);
+
+    // Build a summary of what we found - prioritize user messages as they contain facts
+    const userMessages = limitedMatches.filter(m => m.role === 'user').map(m => m.content);
+
+    // Create instruction based on results
+    let instruction = '';
+    if (matches.length > 0) {
+      instruction = `IMPORTANT: You found ${matches.length} messages about "${query}". READ THE MATCHES BELOW CAREFULLY and extract the SPECIFIC FACTS to answer the user. Do NOT give vague answers like "likely" or "seems to be" - use the EXACT information from the messages. If the user asked who someone is, tell them the specific relationship. If they asked about a date, give the exact date. The user's own messages are the source of truth.`;
+    } else {
+      instruction = `No messages found mentioning "${query}". You genuinely don't remember this - you haven't talked about "${query}" before. Respond naturally like a person who doesn't recognize the name: "I don't think you've mentioned Nishant to me before. Who is he?" or "Hmm, I'm not sure - have we talked about them?". Invite them to tell you more. DO NOT say "no record" or "database" or "memory search".`;
+    }
+
+    return {
+      success: true,
+      query: query,
+      matchCount: matches.length,
+      instruction: instruction,
+      userSaidAboutThis: userMessages.slice(0, 5), // Most important - what user themselves said
+      allMatches: limitedMatches.map(m => ({
+        who: m.role === 'user' ? 'USER SAID' : 'YOU SAID',
+        when: m.timestamp,
+        message: m.content.substring(0, 500) // Truncate long messages
+      }))
+    };
+  } catch (error) {
+    console.error('[Tool] Error searching memory:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Helper to extract context around a match
+function extractMatchContext(content, searchTerm) {
+  const lowerContent = content.toLowerCase();
+  const matchIndex = lowerContent.indexOf(searchTerm);
+
+  if (matchIndex === -1) return content.substring(0, 200);
+
+  // Get 100 chars before and after the match
+  const start = Math.max(0, matchIndex - 100);
+  const end = Math.min(content.length, matchIndex + searchTerm.length + 100);
+
+  let context = content.substring(start, end);
+  if (start > 0) context = '...' + context;
+  if (end < content.length) context = context + '...';
+
+  return context;
+}
+
+// Browse URL - fetch and extract text from a webpage
+async function handleBrowseUrl(params = {}) {
+  try {
+    const { url } = params;
+
+    if (!url) {
+      return { success: false, error: 'URL is required' };
+    }
+
+    // Validate URL
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(url);
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+        return { success: false, error: 'URL must use http or https protocol' };
+      }
+    } catch (e) {
+      return { success: false, error: 'Invalid URL format' };
+    }
+
+    console.log(`[Tool] Browsing URL: ${url}`);
+
+    // Fetch the page with timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; MindcloneBot/1.0; +https://mindclone.one)',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5'
+      }
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: `Failed to fetch URL: HTTP ${response.status} ${response.statusText}`
+      };
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+
+    // Only process text/html content
+    if (!contentType.includes('text/html') && !contentType.includes('text/plain')) {
+      return {
+        success: false,
+        error: `Cannot read this content type: ${contentType}. Only HTML and text pages are supported.`
+      };
+    }
+
+    const html = await response.text();
+
+    // Extract text content from HTML (basic extraction)
+    let textContent = html
+      // Remove script and style tags with their content
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+      // Remove all HTML tags
+      .replace(/<[^>]+>/g, ' ')
+      // Decode common HTML entities
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      // Normalize whitespace
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // Truncate if too long (keep it manageable for the LLM)
+    const maxLength = 10000;
+    if (textContent.length > maxLength) {
+      textContent = textContent.substring(0, maxLength) + '... [content truncated]';
+    }
+
+    // Extract title if present
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const title = titleMatch ? titleMatch[1].trim() : null;
+
+    return {
+      success: true,
+      url: url,
+      title: title,
+      contentLength: textContent.length,
+      content: textContent,
+      instruction: 'Read the webpage content above and summarize or answer questions about it. If looking for photos/images, note that I can only see text content, not actual images on the page.'
+    };
+  } catch (error) {
+    console.error('[Tool] Error browsing URL:', error);
+    if (error.name === 'AbortError') {
+      return { success: false, error: 'Request timed out after 15 seconds' };
+    }
+    return { success: false, error: error.message };
+  }
+}
+
+// Handle analyze_image tool - uses Gemini vision to analyze images from URLs
+async function handleAnalyzeImage(args) {
+  const { image_url, question } = args;
+
+  if (!image_url) {
+    return { success: false, error: 'image_url is required' };
+  }
+
+  console.log(`[Tool] Analyzing image: ${image_url}`);
+
+  try {
+    // Fetch the image
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000); // 20 second timeout for images
+
+    const response = await fetch(image_url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Mindclone/1.0)',
+        'Accept': 'image/*'
+      }
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: `Failed to fetch image: HTTP ${response.status}`
+      };
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+
+    // Check if it's an image
+    if (!contentType.startsWith('image/')) {
+      return {
+        success: false,
+        error: `URL does not point to an image. Content-Type: ${contentType}`
+      };
+    }
+
+    // Get image as buffer and convert to base64
+    const arrayBuffer = await response.arrayBuffer();
+    const base64Image = Buffer.from(arrayBuffer).toString('base64');
+
+    // Determine MIME type
+    let mimeType = contentType.split(';')[0].trim();
+    if (!mimeType.startsWith('image/')) {
+      mimeType = 'image/jpeg'; // Default
+    }
+
+    // Call Gemini vision API
+    const apiKey = process.env.GEMINI_API_KEY;
+    const prompt = question || 'Describe this image in detail. What do you see? Include any text, people, objects, and the overall scene.';
+
+    const visionResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: prompt },
+              {
+                inline_data: {
+                  mime_type: mimeType,
+                  data: base64Image
+                }
+              }
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 1024
+          }
+        })
+      }
+    );
+
+    if (!visionResponse.ok) {
+      const errorText = await visionResponse.text();
+      console.error('[Tool] Gemini vision API error:', errorText);
+      return {
+        success: false,
+        error: `Vision API error: ${visionResponse.status}`
+      };
+    }
+
+    const visionData = await visionResponse.json();
+    const analysis = visionData.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!analysis) {
+      return {
+        success: false,
+        error: 'No analysis returned from vision API'
+      };
+    }
+
+    return {
+      success: true,
+      image_url: image_url,
+      analysis: analysis,
+      instruction: 'Use this image analysis to respond to the user. If they asked about recognizing someone specific (like the user or their partner), use your knowledge base context to help identify if the person in the image matches descriptions you have.'
+    };
+
+  } catch (error) {
+    console.error('[Tool] Error analyzing image:', error);
+    if (error.name === 'AbortError') {
+      return { success: false, error: 'Image fetch timed out after 20 seconds' };
+    }
+    return { success: false, error: error.message };
+  }
+}
+
 // Helper function to format file size
 function formatFileSize(bytes) {
   if (!bytes) return '0 B';
@@ -324,6 +692,12 @@ async function executeTool(toolName, toolArgs, userId) {
       return await handleGetKnowledgeBase(userId);
     case 'get_link_conversations':
       return await handleGetLinkConversations(userId, toolArgs);
+    case 'search_memory':
+      return await handleSearchMemory(userId, toolArgs);
+    case 'browse_url':
+      return await handleBrowseUrl(toolArgs);
+    case 'analyze_image':
+      return await handleAnalyzeImage(toolArgs);
     default:
       return { success: false, error: `Unknown tool: ${toolName}` };
   }
@@ -480,8 +854,59 @@ Available tools:
 - update_link_settings: Change settings (linkEnabled, displayName, bio, customGreeting, knowledgeBaseEnabled)
 - get_knowledge_base: See uploaded documents
 - get_link_conversations: Fetch visitor conversations and analyze topics
+- search_memory: Search through ALL past conversations to find context
 
-When you get conversation data, analyze the 'allUserQuestions' array to identify themes and popular topics. Present real insights from the actual data.`;
+When you get conversation data, analyze the 'allUserQuestions' array to identify themes and popular topics. Present real insights from the actual data.
+
+## MEMORY SEARCH - CRITICAL FOR BEING A GREAT MINDCLONE:
+You have access to search_memory which searches through ALL past conversations stored in the database.
+
+AUTOMATICALLY USE search_memory WHEN:
+1. You encounter a NAME you don't recognize (person, pet, place, project, company)
+2. User asks recall questions ("Remember when...", "What did I say about...", "Who is...")
+3. User references something from the past
+4. You feel like you SHOULD know something but don't
+
+**CRITICAL - HOW TO CALL search_memory:**
+- SILENTLY call the tool - DO NOT announce that you're searching or looking things up
+- DO NOT say "Let me search..." or "I don't recognize that name, let me check..." or "Let me look that up..."
+- Just call search_memory() WITHOUT any text response first
+- The UI shows a "recalling" animation automatically - you don't need to say anything
+
+HOW TO USE search_memory RESULTS:
+1. Call search_memory with a simple keyword: search_memory({query: "Virika"})
+2. The results contain "userSaidAboutThis" (what the USER said) and "allMatches" (full conversation)
+3. READ THE "instruction" FIELD - it tells you exactly what to do
+4. EXTRACT SPECIFIC FACTS from the matches - dates, names, relationships, details
+5. NEVER give vague responses like "seems to be" or "likely" - use EXACT information
+
+**CRITICAL RULES FOR YOUR RESPONSE (after getting results):**
+- ANSWER DIRECTLY with the facts - the UI already showed a "recalling" animation to the user
+- DO NOT start your response with ANY preamble (no "Let me try to recall...", no "Trying to remember...", no "I found...")
+- NEVER use these words: "search", "searching", "looking up", "checking", "database", "records", "past conversations"
+- Just state the facts naturally and confidently, like you actually remember them yourself
+- DO NOT say "likely", "seems to be", "appears to be" - give CONFIDENT answers from the data
+- The USER's messages are the source of truth - they told you these facts
+
+EXAMPLES:
+User: "Who's Nishant?"
+BAD: "I don't recognize that name. Let me search our past conversations..." (NEVER SAY THIS)
+BAD: "Let me check if we've talked about Nishant before..." (NEVER SAY THIS)
+GOOD: [silently call search_memory({query: "Nishant"}), then respond:] "Nishant is your colleague at work. He joined your team last March."
+
+User: "Who's Virika?"
+BAD: "Let me try to recall..." or "Trying to remember..." or "She seems to be someone..." or "Let me search..."
+GOOD: "Virika Solanki is your partner. You've been together for over 6 years, first met on November 17, 2019."
+
+User: "When did we first meet?"  (about Virika)
+BAD: "Trying to remember..." or "Searching for that information..." or "Looking up our records..."
+GOOD: "You and Virika first met on November 17, 2019."
+
+User: "Who's Nishant?" (and search returns NO results)
+BAD: "I don't have any record of Nishant in my memory." or "I couldn't find anything about Nishant."
+GOOD: "I don't think you've mentioned Nishant to me before. Who is he?" or "Hmm, that name doesn't ring a bell - who's Nishant?"
+
+The goal is to be a MINDCLONE - you should remember everything. Use search_memory liberally but SILENTLY to maintain continuity.`;
 
       // Add style guide
       enhancedPrompt += `\n\n${CONNOISSEUR_STYLE_GUIDE}`;
@@ -522,11 +947,17 @@ When you get conversation data, analyze the 'allUserQuestions' array to identify
     let candidate = data.candidates?.[0];
     let maxToolCalls = 5; // Prevent infinite loops
     let toolCallCount = 0;
+    let usedMemorySearch = false; // Track if search_memory was called for UI animation
 
     while (candidate?.content?.parts?.[0]?.functionCall && toolCallCount < maxToolCalls) {
       toolCallCount++;
       const functionCall = candidate.content.parts[0].functionCall;
       console.log(`[Tool] Model requested: ${functionCall.name}`);
+
+      // Track if memory search was used (for "recalling" UI animation)
+      if (functionCall.name === 'search_memory') {
+        usedMemorySearch = true;
+      }
 
       // Execute the tool
       const toolResult = await executeTool(functionCall.name, functionCall.args || {}, userId);
@@ -593,7 +1024,8 @@ When you get conversation data, analyze the 'allUserQuestions' array to identify
       success: true,
       content: text,
       memoriesUsed: relevantMemories.length,
-      toolCallsUsed: toolCallCount
+      toolCallsUsed: toolCallCount,
+      usedMemorySearch: usedMemorySearch // For frontend "recalling" animation
     });
 
   } catch (error) {

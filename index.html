@@ -8,7 +8,7 @@
 
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0a0a0f">
+    <meta name="theme-color" content="#2f2f2f">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Mindclone">
@@ -18,12 +18,12 @@
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap');
 
         :root {
-            /* Minimal Modern Palette - Clean & Professional */
-            --bg: #0a0a0a;
-            --bg-surface: #141414;
-            --bg-elevated: #1a1a1a;
-            --border: #262626;
-            --border-hover: #333333;
+            /* Claude.ai-inspired Dark Palette - Warmer & Softer */
+            --bg: #2f2f2f;
+            --bg-surface: #343434;
+            --bg-elevated: #3a3a3a;
+            --border: #4a4a4a;
+            --border-hover: #5a5a5a;
 
             /* Text */
             --text: #fafafa;
@@ -87,7 +87,7 @@
             width: 100vw;
             height: 100vh;
             height: 100dvh;
-            background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%);
+            background: linear-gradient(135deg, #2f2f2f 0%, #343434 50%, #2f2f2f 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -257,7 +257,7 @@
             align-items: center;
             gap: 12px;
             background: white;
-            color: #0a0a0a;
+            color: #2f2f2f;
             padding: 18px 52px;
             border: none;
             border-radius: 50px;
@@ -355,7 +355,7 @@
         }
 
         .header-icon-btn:hover {
-            background: #1a1a1a;
+            background: #3a3a3a;
         }
 
         .activity-badge {
@@ -394,7 +394,7 @@
             position: absolute;
             top: calc(100% + 12px);
             right: 0;
-            background: #1a1a1a;
+            background: #3a3a3a;
             border: 1px solid #333;
             border-radius: 12px;
             min-width: 260px;
@@ -516,7 +516,7 @@
         .activity-modal-content {
             position: relative;
             z-index: 1;
-            background: #1a1a1a;
+            background: #3a3a3a;
             border: 1px solid #333;
             border-radius: 20px;
             width: 90%;
@@ -737,7 +737,7 @@
             position: fixed;
             left: 72px;
             top: 12px;
-            background: #1a1a1a;
+            background: #3a3a3a;
             border: 1px solid #333;
             border-radius: 12px;
             min-width: 280px;
@@ -1088,6 +1088,87 @@
             display: none;
         }
 
+        /* Trial Countdown Banner */
+        .trial-countdown-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(234, 179, 8, 0.05) 100%);
+            border-bottom: 1px solid rgba(234, 179, 8, 0.2);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .trial-countdown-banner:hover {
+            background: linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(234, 179, 8, 0.1) 100%);
+        }
+
+        .trial-countdown-icon {
+            flex-shrink: 0;
+        }
+
+        .trial-countdown-icon svg {
+            width: 18px;
+            height: 18px;
+            color: #eab308;
+        }
+
+        .trial-countdown-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .trial-label {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(234, 179, 8, 0.9);
+        }
+
+        .trial-days {
+            font-size: 13px;
+            font-weight: 500;
+            color: #eab308;
+        }
+
+        .trial-upgrade-btn {
+            margin-left: auto;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #eab308, #ca8a04);
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .trial-upgrade-btn:hover {
+            background: linear-gradient(135deg, #fbbf24, #eab308);
+            transform: scale(1.02);
+        }
+
+        .trial-countdown-banner.urgent .trial-countdown-icon svg {
+            color: #ef4444;
+        }
+
+        .trial-countdown-banner.urgent {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border-bottom-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .trial-countdown-banner.urgent .trial-label {
+            color: rgba(239, 68, 68, 0.9);
+        }
+
+        .left-panel.collapsed .trial-countdown-banner {
+            display: none;
+        }
+
         /* Panel Content */
         .left-panel-content {
             flex: 1;
@@ -1424,7 +1505,7 @@
         /* Sidebar - Hidden by default */
         .sidebar {
             width: 220px;
-            background: #1a1a1a;
+            background: #3a3a3a;
             border-left: 1px solid #333;
             display: none;
             flex-direction: column;
@@ -1461,7 +1542,7 @@
             transform: translateY(-50%);
             width: 24px;
             height: 48px;
-            background: #1a1a1a;
+            background: #3a3a3a;
             border: 1px solid #333;
             border-right: none;
             border-radius: 8px 0 0 8px;
@@ -1667,7 +1748,7 @@
 
         .settings-scroll-container::-webkit-scrollbar-track,
         .analytics-scroll-container::-webkit-scrollbar-track {
-            background: #1a1a1a;
+            background: #3a3a3a;
         }
 
         .settings-scroll-container::-webkit-scrollbar-thumb,
@@ -1683,7 +1764,7 @@
 
         /* Panel Sections */
         .panel-section {
-            background: #1a1a1a;
+            background: #3a3a3a;
             border: 1px solid #333;
             border-radius: 12px;
             padding: 20px;
@@ -1709,7 +1790,7 @@
             align-items: center;
             gap: 12px;
             padding: 16px;
-            background: #0a0a0a;
+            background: #2f2f2f;
             border: 1px solid #333;
             border-radius: 8px;
             margin-bottom: 16px;
@@ -1813,7 +1894,7 @@
             padding: 12px;
             color: #666;
             font-size: 13px;
-            background: #1a1a1a;
+            background: #3a3a3a;
             border-right: 1px solid #333;
             white-space: nowrap;
             flex-shrink: 0;
@@ -2182,7 +2263,7 @@
         }
 
         .recent-visitor-item:hover {
-            background: #1a1a1a;
+            background: #3a3a3a;
             border-color: #444;
         }
 
@@ -2279,7 +2360,7 @@
 
         .knowledge-base-item:hover {
             border-color: #555;
-            background: #1a1a1a;
+            background: #3a3a3a;
         }
 
         .kb-file-icon {
@@ -2546,7 +2627,7 @@
             left: 0;
             right: 0;
             margin-bottom: 0;
-            background: #1a1a1a;
+            background: #3a3a3a;
             border: 1px solid #333;
             border-radius: 12px;
             min-width: 200px;
@@ -2696,7 +2777,7 @@
         .activity-feed-header {
             padding: 16px 20px;
             border-bottom: 1px solid #333;
-            background: #1a1a1a;
+            background: #3a3a3a;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -2754,7 +2835,7 @@
         }
 
         .activity-feed-list::-webkit-scrollbar-track {
-            background: #1a1a1a;
+            background: #3a3a3a;
         }
 
         .activity-feed-list::-webkit-scrollbar-thumb {
@@ -2995,18 +3076,9 @@
             font-size: 14px;
         }
 
-        /* Subscription Banner */
+        /* Subscription Banner - REMOVED */
         .subscription-banner {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(90deg, #8b5cf6, #6366f1);
-            padding: 12px 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            display: none !important;
         }
 
         .banner-content {
@@ -3185,7 +3257,7 @@
         }
 
         .conversation-modal-content {
-            background: #1a1a1a;
+            background: #3a3a3a;
             border: 1px solid #333;
             border-radius: 16px;
             width: 90%;
@@ -3207,7 +3279,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #1a1a1a;
+            background: #3a3a3a;
         }
 
         .conversation-modal-title {
@@ -3305,7 +3377,7 @@
         }
 
         .conversation-modal-body::-webkit-scrollbar-track {
-            background: #1a1a1a;
+            background: #3a3a3a;
         }
 
         .conversation-modal-body::-webkit-scrollbar-thumb {
@@ -3400,7 +3472,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: #0d0d0d;
+            background: var(--bg);
             overflow: hidden;
             margin-right: 0; /* Alpha: Right panel hidden */
             order: 1;
@@ -3434,7 +3506,16 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            background: var(--color-bg-secondary);
+            background: var(--bg);
+            max-width: 850px;
+            margin: 0 auto;
+            width: 100%;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
         }
 
         .message {
@@ -3479,7 +3560,7 @@
             align-items: center;
             justify-content: center;
             font-size: 20px;
-            background: #1a1a1a;
+            background: #3a3a3a;
             border: 2px solid #333;
         }
 
@@ -3524,18 +3605,29 @@
 
         .chat-input-container {
             padding: 12px 16px 16px 16px;
-            background: rgba(10, 10, 10, 0.85);
+            background: rgba(47, 47, 47, 0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-top: none;
             display: flex;
             gap: 8px;
             align-items: center;
+            max-width: 850px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
         }
 
         .chat-input {
-            flex: 1;
-            padding: 12px 18px;
+            width: 100%;
+            padding: 12px 48px 12px 18px;
             background: rgba(30, 30, 30, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
@@ -3584,46 +3676,47 @@
         }
 
         .attach-button {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: transparent;
+            background: rgba(255, 255, 255, 0.08);
             color: rgba(255, 255, 255, 0.6);
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
             transition: all 0.2s ease;
             flex-shrink: 0;
         }
 
         .attach-button:hover {
             color: rgba(255, 255, 255, 0.9);
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
-        /* Voice Mode Styles */
+        /* Voice Mode Styles - positioned inside input */
         .voice-button {
-            width: 44px;
-            height: 44px;
+            position: absolute;
+            right: 8px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background: transparent;
-            color: rgba(255, 255, 255, 0.6);
+            color: rgba(255, 255, 255, 0.5);
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
             transition: all 0.2s ease;
             flex-shrink: 0;
         }
 
         .voice-button:hover {
             color: rgba(255, 255, 255, 0.9);
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .voice-button.listening {
@@ -3707,7 +3800,7 @@
             bottom: 72px;
             left: 20px;
             right: 20px;
-            background: #1a1a1a;
+            background: #3a3a3a;
             border: 1px solid #333;
             border-radius: 12px;
             padding: 12px;
@@ -3809,6 +3902,25 @@
             }
         }
 
+        /* Recalling Indicator (for memory search) */
+        .recalling-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            color: var(--text-secondary, #888);
+            font-style: italic;
+        }
+
+        .recalling-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-color, #444);
+            border-top-color: var(--text-secondary, #888);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
         /* Copy Button */
         .message.ai {
             position: relative;
@@ -3833,7 +3945,7 @@
         }
 
         .copy-btn:hover {
-            background: #1a1a1a;
+            background: #3a3a3a;
             color: #999;
         }
 
@@ -4070,15 +4182,24 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100%;
-            padding: 40px;
+            justify-content: flex-start;
+            min-height: 100%;
+            padding: 40px 20px;
+            padding-top: 60px;
             text-align: center;
+            box-sizing: border-box;
         }
 
         .empty-state-icon {
             font-size: 64px;
             margin-bottom: 20px;
+        }
+
+        .empty-state-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            object-fit: contain;
         }
 
         .empty-state h2 {
@@ -4103,7 +4224,7 @@
         }
 
         .prompt-card {
-            background: #1a1a1a;
+            background: #3a3a3a;
             border: 1px solid #333;
             padding: 15px;
             border-radius: 12px;
@@ -4382,15 +4503,15 @@
                 display: none;
             }
 
-            /* Show WhatsApp-style mobile header */
+            /* Show PWA-style mobile header */
             .mobile-header {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
                 padding: 10px 16px;
                 padding-top: calc(10px + env(safe-area-inset-top));
-                background: #0d0d0d;
-                border-bottom: 1px solid #333;
+                background: var(--bg);
+                border-bottom: none;
                 height: calc(56px + env(safe-area-inset-top));
                 min-height: 56px;
                 flex-shrink: 0;
@@ -4404,39 +4525,102 @@
             .mobile-header-left {
                 display: flex;
                 align-items: center;
-                gap: 12px;
+                width: 48px;
+            }
+
+            .mobile-header-center {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                text-align: center;
+            }
+
+            .mobile-header-right {
+                display: flex;
+                align-items: center;
+                width: 48px;
+                justify-content: flex-end;
+                position: relative;
+            }
+
+            /* Mobile Profile Dropdown */
+            .mobile-profile-dropdown {
+                position: absolute;
+                top: calc(100% + 8px);
+                right: 0;
+                background: #2a2a2a;
+                border: 1px solid #333;
+                border-radius: 12px;
+                min-width: 220px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+                z-index: 1001;
+            }
+
+            .mobile-dropdown-header {
+                padding: 12px;
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .mobile-profile-dropdown .dropdown-avatar {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                border: 2px solid #333;
+                flex-shrink: 0;
+            }
+
+            .mobile-profile-dropdown .avatar-dropdown-item {
+                width: 100%;
+                padding: 12px;
+                background: none;
+                border: none;
+                color: white;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 14px;
+                transition: background 0.2s ease;
+            }
+
+            .mobile-profile-dropdown .avatar-dropdown-item:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .mobile-profile-dropdown .avatar-dropdown-item:last-child {
+                border-radius: 0 0 12px 12px;
+            }
+
+            .mobile-profile-dropdown .avatar-dropdown-item svg {
+                opacity: 0.7;
             }
 
             .mobile-header .user-avatar {
-                width: 40px;
-                height: 40px;
+                width: 36px;
+                height: 36px;
                 border-radius: 50%;
                 object-fit: cover;
             }
 
             .mobile-header-title {
-                display: flex;
-                flex-direction: column;
-            }
-
-            .mobile-header-name {
-                font-size: 16px;
+                font-size: 18px;
                 font-weight: 600;
-                color: white;
-            }
-
-            .mobile-header-subtitle {
-                font-size: 12px;
-                color: #999;
+                color: rgba(255, 255, 255, 0.5);
+                letter-spacing: 0.5px;
             }
 
             .mobile-menu-btn {
                 background: none;
                 border: none;
-                color: white;
+                color: rgba(255, 255, 255, 0.8);
                 font-size: 24px;
                 cursor: pointer;
-                padding: 4px 8px;
+                padding: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             /* Make main content fill screen */
@@ -4474,13 +4658,18 @@
                 left: 0;
                 right: 0;
                 width: 100%;
+                max-width: 100vw;
+                box-sizing: border-box;
                 padding: 8px 12px;
+                padding-left: max(12px, env(safe-area-inset-left));
+                padding-right: max(12px, env(safe-area-inset-right));
                 padding-bottom: max(12px, calc(12px + env(safe-area-inset-bottom)));
-                background: rgba(10, 10, 10, 0.95);
+                background: rgba(47, 47, 47, 0.98);
                 backdrop-filter: blur(20px);
                 -webkit-backdrop-filter: blur(20px);
                 border-top: none;
                 z-index: 1000;
+                overflow: hidden;
             }
 
             /* Remove Safari-specific padding - no longer needed with fixed position */
@@ -4500,6 +4689,8 @@
                 border: 1px solid rgba(255, 255, 255, 0.08);
                 border-radius: 22px;
                 padding: 10px 16px;
+                min-width: 0;
+                flex: 1;
             }
 
             .chat-input::placeholder {
@@ -4515,6 +4706,8 @@
             .send-button {
                 width: 40px;
                 height: 40px;
+                min-width: 40px;
+                flex-shrink: 0;
                 background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
                 color: white;
                 border: none;
@@ -4530,9 +4723,22 @@
                 transform: scale(0.95);
             }
 
-            .attach-button, .voice-button {
-                width: 40px;
-                height: 40px;
+            .attach-button {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                flex-shrink: 0;
+            }
+
+            .voice-button {
+                width: 28px;
+                height: 28px;
+                right: 6px;
+            }
+
+            .input-wrapper {
+                flex: 1;
+                min-width: 0;
             }
 
             /* Ensure chat messages don't hide behind fixed input bar */
@@ -4551,6 +4757,7 @@
                 transition: transform 0.3s ease;
                 z-index: 1000;
                 bottom: 0;
+                padding-top: max(50px, env(safe-area-inset-top, 50px));
                 padding-bottom: max(50px, env(safe-area-inset-bottom, 50px));
             }
 
@@ -4575,14 +4782,52 @@
                 display: block;
             }
 
-            /* Ensure footer content is visible above home indicator */
+            /* Hide left panel footer on mobile - profile moved to top-right dropdown */
             .left-panel-footer {
-                padding-bottom: 24px;
+                display: none !important;
             }
 
             /* Make main content full width on mobile */
             .main-content {
                 margin-left: 0 !important;
+            }
+
+            /* Mobile empty state - smaller padding, smaller logo, single column prompts */
+            .empty-state {
+                padding: 20px 16px;
+                padding-top: 30px;
+                padding-bottom: calc(80px + env(safe-area-inset-bottom));
+            }
+
+            .empty-state-logo {
+                width: 60px;
+                height: 60px;
+            }
+
+            .empty-state h2 {
+                font-size: 20px;
+            }
+
+            .empty-state p {
+                font-size: 14px;
+                margin-bottom: 20px;
+            }
+
+            .suggested-prompts {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .prompt-card {
+                padding: 12px;
+            }
+
+            .prompt-card-title {
+                font-size: 13px;
+            }
+
+            .prompt-card-text {
+                font-size: 12px;
             }
         }
 
@@ -4618,7 +4863,7 @@
         .kb-preview-content {
             position: relative;
             z-index: 1;
-            background: #1a1a1a;
+            background: #3a3a3a;
             border: 1px solid #333;
             border-radius: 20px;
             width: 90%;
@@ -4785,6 +5030,284 @@
                 display: none;
             }
         }
+
+        /* ==========================================
+           REALTIME VOICE MODE OVERLAY
+           ========================================== */
+        .voice-mode-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, #2f2f2f 0%, #3a3a4e 50%, #2f2f2f 100%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .voice-mode-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .voice-mode-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .voice-mode-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .voice-mode-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .voice-orb-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-orb {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 60px rgba(167, 139, 250, 0.5),
+                        0 0 100px rgba(139, 92, 246, 0.3);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .voice-orb.listening {
+            animation: orb-pulse-listen 2s ease-in-out infinite;
+        }
+
+        .voice-orb.speaking {
+            animation: orb-pulse-speak 0.5s ease-in-out infinite;
+        }
+
+        .voice-orb.connecting {
+            animation: orb-connecting 1.5s ease-in-out infinite;
+        }
+
+        @keyframes orb-pulse-listen {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 60px rgba(167, 139, 250, 0.5),
+                            0 0 100px rgba(139, 92, 246, 0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 80px rgba(167, 139, 250, 0.6),
+                            0 0 120px rgba(139, 92, 246, 0.4);
+            }
+        }
+
+        @keyframes orb-pulse-speak {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes orb-connecting {
+            0%, 100% {
+                opacity: 0.5;
+                transform: scale(0.9);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .voice-rings {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .voice-ring {
+            position: absolute;
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            border-radius: 50%;
+            animation: ring-expand 2s ease-out infinite;
+        }
+
+        .voice-ring:nth-child(1) {
+            width: 140px;
+            height: 140px;
+            top: -70px;
+            left: -70px;
+            animation-delay: 0s;
+        }
+
+        .voice-ring:nth-child(2) {
+            width: 180px;
+            height: 180px;
+            top: -90px;
+            left: -90px;
+            animation-delay: 0.5s;
+        }
+
+        .voice-ring:nth-child(3) {
+            width: 220px;
+            height: 220px;
+            top: -110px;
+            left: -110px;
+            animation-delay: 1s;
+        }
+
+        @keyframes ring-expand {
+            0% {
+                opacity: 0.6;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.2);
+            }
+        }
+
+        .voice-mode-status {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .voice-mode-transcript {
+            max-width: 400px;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .voice-mode-transcript-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .voice-mode-transcript-text {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.5;
+            min-height: 48px;
+        }
+
+        .voice-mode-footer {
+            position: absolute;
+            bottom: 40px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .voice-mode-btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .voice-mode-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .voice-mode-btn.muted {
+            background: rgba(220, 53, 69, 0.3);
+            border-color: rgba(220, 53, 69, 0.5);
+        }
+
+        /* Mobile adjustments for voice overlay */
+        @media (max-width: 768px) {
+            .voice-mode-close {
+                top: 16px;
+                right: 16px;
+                width: 44px;
+                height: 44px;
+            }
+
+            .voice-orb-container {
+                width: 160px;
+                height: 160px;
+            }
+
+            .voice-orb {
+                width: 100px;
+                height: 100px;
+            }
+
+            .voice-ring:nth-child(1) {
+                width: 120px;
+                height: 120px;
+                top: -60px;
+                left: -60px;
+            }
+
+            .voice-ring:nth-child(2) {
+                width: 150px;
+                height: 150px;
+                top: -75px;
+                left: -75px;
+            }
+
+            .voice-ring:nth-child(3) {
+                width: 180px;
+                height: 180px;
+                top: -90px;
+                left: -90px;
+            }
+
+            .voice-mode-status {
+                font-size: 16px;
+            }
+
+            .voice-mode-transcript-text {
+                font-size: 14px;
+            }
+
+            .voice-mode-footer {
+                bottom: 30px;
+            }
+        }
     </style>
     <!-- Razorpay Checkout Script -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -4936,6 +5459,21 @@
                 </button>
             </div>
 
+            <!-- Trial Countdown Banner (hidden by default) -->
+            <div id="trialCountdownBanner" class="trial-countdown-banner hidden">
+                <div class="trial-countdown-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12,6 12,12 16,14"/>
+                    </svg>
+                </div>
+                <div class="trial-countdown-text">
+                    <span class="trial-label">Free Trial</span>
+                    <span id="trialDaysText" class="trial-days">7 days left</span>
+                </div>
+                <button id="trialUpgradeBtn" class="trial-upgrade-btn">Upgrade</button>
+            </div>
+
             <!-- Panel Content -->
             <div class="left-panel-content">
                 <!-- Knowledge Base Section -->
@@ -5047,16 +5585,43 @@
             </div>
         </div>
 
-        <!-- Mobile Header (WhatsApp style - only visible on mobile) -->
+        <!-- Mobile Header (PWA style - only visible on mobile) -->
         <div id="mobileHeader" class="mobile-header hidden">
             <div class="mobile-header-left">
+                <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+            </div>
+            <div class="mobile-header-center">
+                <div class="mobile-header-title">Mindclone</div>
+            </div>
+            <div class="mobile-header-right">
                 <img id="mobileAvatar" class="user-avatar" src="" alt="User">
-                <div class="mobile-header-title">
-                    <div id="mobileName" class="mobile-header-name">Mindclone</div>
-                    <div class="mobile-header-subtitle">Private cognitive twin</div>
+                <!-- Mobile Profile Dropdown -->
+                <div id="mobileProfileDropdown" class="mobile-profile-dropdown hidden">
+                    <div class="mobile-dropdown-header">
+                        <img id="mobileDropdownAvatar" class="dropdown-avatar" src="" alt="User">
+                        <div class="dropdown-user-info">
+                            <div id="mobileDropdownName" class="dropdown-user-name"></div>
+                            <div id="mobileDropdownEmail" class="dropdown-user-email"></div>
+                        </div>
+                    </div>
+                    <hr class="avatar-dropdown-divider">
+                    <button id="mobileSettingsBtn" class="avatar-dropdown-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                        <span>Settings</span>
+                    </button>
+                    <button id="mobileSignOutBtn" class="avatar-dropdown-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span>Sign Out</span>
+                    </button>
                 </div>
             </div>
-            <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
         </div>
 
         <!-- Mobile overlay for closing panel -->
@@ -5142,20 +5707,33 @@
                         accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.csv"
                     >
                     <button id="attachButton" class="attach-button" title="Attach file">
-                        📎
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
                     </button>
-                    <input
-                        type="text"
-                        id="chatInput"
-                        class="chat-input"
-                        placeholder="Type or speak your message..."
-                        autocomplete="off"
-                    >
-                    <button id="voiceButton" class="voice-button" title="Voice input (click to speak)">
-                        🎤
-                    </button>
+                    <div class="input-wrapper">
+                        <input
+                            type="text"
+                            id="chatInput"
+                            class="chat-input"
+                            placeholder="Message your Mindclone..."
+                            autocomplete="off"
+                        >
+                        <button id="voiceButton" class="voice-button" title="Voice input (click to speak)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                            </svg>
+                        </button>
+                    </div>
                     <button id="sendButton" class="send-button">
-                        ➤
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -5387,6 +5965,44 @@
         <button class="banner-close-btn" onclick="this.parentElement.classList.add('hidden')">×</button>
     </div>
 
+    <!-- Realtime Voice Mode Overlay -->
+    <div id="voiceModeOverlay" class="voice-mode-overlay">
+        <button class="voice-mode-close" id="voiceModeClose" title="Exit voice mode">
+            ×
+        </button>
+
+        <div class="voice-mode-content">
+            <div class="voice-orb-container">
+                <div class="voice-orb" id="voiceOrb"></div>
+                <div class="voice-rings" id="voiceRings">
+                    <div class="voice-ring"></div>
+                    <div class="voice-ring"></div>
+                    <div class="voice-ring"></div>
+                </div>
+            </div>
+
+            <div class="voice-mode-status" id="voiceModeStatus">
+                Tap microphone to start
+            </div>
+
+            <div class="voice-mode-transcript">
+                <div class="voice-mode-transcript-label">Transcript</div>
+                <div class="voice-mode-transcript-text" id="voiceTranscript">
+                    Your conversation will appear here...
+                </div>
+            </div>
+        </div>
+
+        <div class="voice-mode-footer">
+            <button class="voice-mode-btn" id="voiceModeMute" title="Mute microphone">
+                Mute
+            </button>
+            <button class="voice-mode-btn" id="voiceModeEnd" title="End conversation">
+                End Call
+            </button>
+        </div>
+    </div>
+
     <!-- Paywall Modal -->
     <div id="paywallModal" class="paywall-modal hidden">
         <div class="paywall-overlay"></div>
@@ -5397,7 +6013,7 @@
             <div class="paywall-features">
                 <div class="feature-item">✓ Unlimited conversations</div>
                 <div class="feature-item">✓ Knowledge base uploads</div>
-                <div class="feature-item">✓ Proactive news curation</div>
+                <div class="feature-item">✓ Content recommendation</div>
                 <div class="feature-item">✓ Conversation analytics</div>
             </div>
 
@@ -5836,6 +6452,72 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
         let oldestLoadedTimestamp = null;
         let hasMoreMessages = false;
         const MESSAGES_PER_PAGE = 10;
+
+        // ==================== MESSAGE CACHING FOR INSTANT PWA LOAD ====================
+        const MESSAGE_CACHE_KEY = 'mindclone_cached_messages';
+        const MESSAGE_CACHE_TIMESTAMP_KEY = 'mindclone_cache_timestamp';
+        const CACHE_MAX_MESSAGES = 20; // Cache last 20 messages
+
+        function getCachedMessages() {
+            try {
+                const cached = localStorage.getItem(MESSAGE_CACHE_KEY);
+                if (cached) {
+                    const messages = JSON.parse(cached);
+                    console.log('[Cache] Retrieved', messages.length, 'cached messages');
+                    return messages;
+                }
+            } catch (e) {
+                console.warn('[Cache] Error reading cache:', e);
+            }
+            return null;
+        }
+
+        function cacheMessages(messages) {
+            try {
+                // Only cache the most recent messages
+                const toCache = messages.slice(-CACHE_MAX_MESSAGES).map(msg => ({
+                    role: msg.role,
+                    content: msg.content,
+                    timestamp: msg.timestamp ? (msg.timestamp.toDate ? msg.timestamp.toDate().toISOString() : msg.timestamp) : null
+                }));
+                localStorage.setItem(MESSAGE_CACHE_KEY, JSON.stringify(toCache));
+                localStorage.setItem(MESSAGE_CACHE_TIMESTAMP_KEY, Date.now().toString());
+                console.log('[Cache] Cached', toCache.length, 'messages');
+            } catch (e) {
+                console.warn('[Cache] Error caching messages:', e);
+            }
+        }
+
+        function displayCachedMessagesInstantly() {
+            const cached = getCachedMessages();
+            if (cached && cached.length > 0) {
+                console.log('[Cache] Displaying cached messages instantly');
+                chatMessages.innerHTML = ''; // Clear any loading state
+                cached.forEach(msg => {
+                    addMessage(msg.role === 'assistant' ? 'ai' : msg.role, msg.content, msg.timestamp);
+                });
+                return true;
+            }
+            return false;
+        }
+
+        function appendMessageToCache(role, content) {
+            try {
+                const cached = getCachedMessages() || [];
+                cached.push({
+                    role: role,
+                    content: content,
+                    timestamp: new Date().toISOString()
+                });
+                // Keep only the last N messages
+                const trimmed = cached.slice(-CACHE_MAX_MESSAGES);
+                localStorage.setItem(MESSAGE_CACHE_KEY, JSON.stringify(trimmed));
+                localStorage.setItem(MESSAGE_CACHE_TIMESTAMP_KEY, Date.now().toString());
+            } catch (e) {
+                console.warn('[Cache] Error appending to cache:', e);
+            }
+        }
+        // ==================== END MESSAGE CACHING ====================
 
         async function loadConversationHistory(userId, loadOlder = false) {
             try {
@@ -7053,6 +7735,25 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
             mobilePanelOverlay.addEventListener('click', closeMobilePanel);
         }
 
+        // Swipe left to close left panel on mobile
+        if (leftPanelEl) {
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            leftPanelEl.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            leftPanelEl.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                const swipeDistance = touchStartX - touchEndX;
+                // If swiped left more than 50px, close the panel
+                if (swipeDistance > 50 && leftPanelEl.classList.contains('mobile-open')) {
+                    closeMobilePanel();
+                }
+            }, { passive: true });
+        }
+
         // ========== LEFT PANEL FUNCTIONALITY ==========
 
         // Panel Toggle
@@ -7164,6 +7865,42 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
             });
         }
 
+        // Mobile Profile Dropdown handlers
+        const mobileAvatar = document.getElementById('mobileAvatar');
+        const mobileProfileDropdown = document.getElementById('mobileProfileDropdown');
+        const mobileSettingsBtn = document.getElementById('mobileSettingsBtn');
+        const mobileSignOutBtn = document.getElementById('mobileSignOutBtn');
+
+        if (mobileAvatar && mobileProfileDropdown) {
+            mobileAvatar.addEventListener('click', (e) => {
+                e.stopPropagation();
+                mobileProfileDropdown.classList.toggle('hidden');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!mobileProfileDropdown.contains(e.target) && e.target !== mobileAvatar) {
+                    mobileProfileDropdown.classList.add('hidden');
+                }
+            });
+        }
+
+        if (mobileSettingsBtn) {
+            mobileSettingsBtn.addEventListener('click', () => {
+                // Close dropdown
+                if (mobileProfileDropdown) {
+                    mobileProfileDropdown.classList.add('hidden');
+                }
+                // Open right panel and switch to settings tab
+                openRightPanel();
+                switchPanelTab('settings');
+            });
+        }
+
+        if (mobileSignOutBtn) {
+            mobileSignOutBtn.addEventListener('click', handleSignOut);
+        }
+
         // Right panel toggle handle (on left wall of panel)
         if (rightPanelToggle) {
             rightPanelToggle.addEventListener('click', toggleRightPanel);
@@ -7174,6 +7911,25 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
         const panelKbFileInput = document.getElementById('panelKbFileInput');
         const panelKbList = document.getElementById('panelKbList');
         const panelKbCount = document.getElementById('panelKbCount');
+        const trialCountdownBanner = document.getElementById('trialCountdownBanner');
+
+        // Trial countdown banner click - opens settings (but not when clicking upgrade button)
+        if (trialCountdownBanner) {
+            trialCountdownBanner.addEventListener('click', (e) => {
+                if (e.target.id === 'trialUpgradeBtn') return; // Let button handle its own click
+                openRightPanel();
+                switchPanelTab('settings');
+            });
+        }
+
+        // Trial upgrade button click - start checkout
+        const trialUpgradeBtn = document.getElementById('trialUpgradeBtn');
+        if (trialUpgradeBtn) {
+            trialUpgradeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                startCheckout();
+            });
+        }
 
         if (panelUploadBtn && panelKbFileInput) {
             panelUploadBtn.addEventListener('click', () => {
@@ -7913,6 +8669,14 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
                 const mobileName = document.getElementById('mobileName');
                 if (mobileAvatar) mobileAvatar.src = user.photoURL || 'https://via.placeholder.com/40';
                 if (mobileName) mobileName.textContent = user.displayName || 'Mindclone';
+
+                // Update mobile profile dropdown
+                const mobileDropdownAvatar = document.getElementById('mobileDropdownAvatar');
+                const mobileDropdownName = document.getElementById('mobileDropdownName');
+                const mobileDropdownEmail = document.getElementById('mobileDropdownEmail');
+                if (mobileDropdownAvatar) mobileDropdownAvatar.src = user.photoURL || 'https://via.placeholder.com/36';
+                if (mobileDropdownName) mobileDropdownName.textContent = user.displayName || 'User';
+                if (mobileDropdownEmail) mobileDropdownEmail.textContent = user.email || '';
             }
 
             // Hide sidebar components (not needed with header layout)
@@ -7987,7 +8751,13 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
             chatMessages.innerHTML = '';
             console.log('[Chat] Cleared chat messages');
 
-            // Show loading indicator
+            // INSTANT CACHE: Show cached messages immediately while loading from Firestore
+            const hasCachedMessages = displayCachedMessagesInstantly();
+            if (hasCachedMessages) {
+                console.log('[Cache] Displayed cached messages for instant load');
+            }
+
+            // Show loading indicator (subtle if we already have cached messages)
             showLoadingIndicator();
 
             // Load data in parallel for faster startup
@@ -8017,11 +8787,17 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
                         addLoadMoreButton();
                     }
 
+                    // Clear cached display and show fresh Firestore messages
+                    chatMessages.innerHTML = '';
+
                     // Display all messages in UI with timestamps
                     messages.forEach(msg => {
                         addMessage(msg.role === 'assistant' ? 'ai' : msg.role, msg.content, msg.timestamp);
                     });
                     console.log('[Chat] Displayed', messages.length, 'messages in UI');
+
+                    // Update cache with fresh Firestore messages for next PWA launch
+                    cacheMessages(messages);
                 } else {
                     // No history - show empty state
                     console.log('[Chat] No messages found, showing empty state');
@@ -8163,31 +8939,55 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
             if (typingDiv) typingDiv.remove();
         }
 
+        // Show recalling indicator (for memory search)
+        function showRecallingIndicator() {
+            const indicator = document.createElement('div');
+            indicator.id = 'recallingIndicator';
+            indicator.className = 'message ai';
+            indicator.innerHTML = `
+                <div class="message-avatar">🔮</div>
+                <div class="message-content">
+                    <div class="recalling-indicator">
+                        <div class="recalling-spinner"></div>
+                        <span>Recalling...</span>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(indicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Remove recalling indicator
+        function removeRecallingIndicator() {
+            const indicator = document.getElementById('recallingIndicator');
+            if (indicator) indicator.remove();
+        }
+
         // Show empty state with suggested prompts
         function showEmptyState() {
             const emptyStateDiv = document.createElement('div');
             emptyStateDiv.id = 'emptyState';
             emptyStateDiv.className = 'empty-state';
             emptyStateDiv.innerHTML = `
-                <div class="empty-state-icon">🔮</div>
+                <img src="logo.png" alt="Mindclone" class="empty-state-logo">
                 <h2>Start Your Journey</h2>
                 <p>Begin your lifelong conversation with your Mindclone. I'm here to listen, learn, and grow with you.</p>
                 <div class="suggested-prompts">
-                    <div class="prompt-card" data-prompt="Tell me about yourself - what makes you unique?">
-                        <div class="prompt-card-title">Get to know you</div>
-                        <div class="prompt-card-text">Tell me about yourself - what makes you unique?</div>
+                    <div class="prompt-card" data-prompt="Hi! I'd like to tell you about myself.">
+                        <div class="prompt-card-title">Introduce yourself</div>
+                        <div class="prompt-card-text">Start by sharing who you are</div>
                     </div>
-                    <div class="prompt-card" data-prompt="What's on your mind today?">
+                    <div class="prompt-card" data-prompt="I've been thinking about something lately...">
                         <div class="prompt-card-title">Share your thoughts</div>
-                        <div class="prompt-card-text">What's on your mind today?</div>
+                        <div class="prompt-card-text">What's on your mind?</div>
                     </div>
-                    <div class="prompt-card" data-prompt="What are your biggest dreams and aspirations?">
-                        <div class="prompt-card-title">Explore your dreams</div>
-                        <div class="prompt-card-text">What are your biggest dreams and aspirations?</div>
+                    <div class="prompt-card" data-prompt="Let me tell you about my day.">
+                        <div class="prompt-card-title">Talk about your day</div>
+                        <div class="prompt-card-text">Share what happened today</div>
                     </div>
-                    <div class="prompt-card" data-prompt="What's something you've been thinking about lately?">
-                        <div class="prompt-card-title">Deep conversation</div>
-                        <div class="prompt-card-text">What's something you've been thinking about lately?</div>
+                    <div class="prompt-card" data-prompt="I have a dream I want to share with you.">
+                        <div class="prompt-card-title">Share a dream</div>
+                        <div class="prompt-card-text">Tell me about your aspirations</div>
                     </div>
                 </div>
             `;
@@ -9192,6 +9992,9 @@ Is there anything else you'd like to configure?`;
             // Save user message to Firestore (non-blocking)
             saveMessageToFirestore(currentUser.uid, 'user', finalMessage);
 
+            // Update local cache with user message
+            appendMessageToCache('user', finalMessage);
+
             // Show typing indicator
             showTypingIndicator();
 
@@ -9219,6 +10022,13 @@ Is there anything else you'd like to configure?`;
                 removeTypingIndicator();
 
                 if (data.success && data.content) {
+                    // If memory search was used, show recalling spinner animation (no text message)
+                    if (data.usedMemorySearch) {
+                        showRecallingIndicator();
+                        await new Promise(r => setTimeout(r, 1200)); // Brief pause for effect
+                        removeRecallingIndicator();
+                    }
+
                     // Add AI response to UI with timestamp
                     const aiTimestamp = new Date();
                     await addWorkflowMessage('ai', data.content, aiTimestamp);
@@ -9231,6 +10041,9 @@ Is there anything else you'd like to configure?`;
 
                     // Save AI response to Firestore (non-blocking)
                     saveMessageToFirestore(currentUser.uid, 'assistant', data.content);
+
+                    // Update local cache with AI response
+                    appendMessageToCache('assistant', data.content);
 
                     // Speak the response if voice mode is enabled
                     speakResponse(data.content);
@@ -9487,6 +10300,325 @@ Is there anything else you'd like to configure?`;
 
         // ==========================================
         // END VOICE MODE
+        // ==========================================
+
+        // ==========================================
+        // OPENAI REALTIME VOICE MODE (WebRTC)
+        // ==========================================
+
+        const voiceModeOverlay = document.getElementById('voiceModeOverlay');
+        const voiceModeClose = document.getElementById('voiceModeClose');
+        const voiceOrb = document.getElementById('voiceOrb');
+        const voiceRings = document.getElementById('voiceRings');
+        const voiceModeStatus = document.getElementById('voiceModeStatus');
+        const voiceTranscript = document.getElementById('voiceTranscript');
+        const voiceModeMute = document.getElementById('voiceModeMute');
+        const voiceModeEnd = document.getElementById('voiceModeEnd');
+
+        let realtimePeerConnection = null;
+        let realtimeDataChannel = null;
+        let localMediaStream = null;
+        let isRealtimeConnected = false;
+        let isRealtimeMuted = false;
+        let realtimeAudioElement = null;
+
+        // Open voice mode overlay
+        function openRealtimeVoiceMode() {
+            voiceModeOverlay.classList.add('active');
+            voiceModeStatus.textContent = 'Connecting...';
+            voiceOrb.className = 'voice-orb connecting';
+            voiceTranscript.textContent = 'Initializing voice connection...';
+            startRealtimeSession();
+        }
+
+        // Close voice mode overlay
+        function closeRealtimeVoiceMode() {
+            voiceModeOverlay.classList.remove('active');
+            stopRealtimeSession();
+        }
+
+        // Start realtime session with OpenAI
+        async function startRealtimeSession() {
+            try {
+                // Get ephemeral token from our backend
+                const tokenResponse = await fetch('/api/realtime-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ voice: 'alloy' })
+                });
+
+                if (!tokenResponse.ok) {
+                    const error = await tokenResponse.json();
+                    throw new Error(error.error || 'Failed to get session token');
+                }
+
+                const sessionData = await tokenResponse.json();
+                const ephemeralKey = sessionData.client_secret?.value || sessionData.client_secret;
+
+                if (!ephemeralKey) {
+                    throw new Error('No ephemeral key received');
+                }
+
+                console.log('[Realtime] Session created:', sessionData.session_id);
+
+                // Create peer connection
+                realtimePeerConnection = new RTCPeerConnection();
+
+                // Set up audio element for playback
+                realtimeAudioElement = document.createElement('audio');
+                realtimeAudioElement.autoplay = true;
+                realtimePeerConnection.ontrack = (event) => {
+                    console.log('[Realtime] Received audio track');
+                    realtimeAudioElement.srcObject = event.streams[0];
+                };
+
+                // Get user microphone
+                localMediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                });
+
+                // Add microphone track to connection
+                localMediaStream.getTracks().forEach(track => {
+                    realtimePeerConnection.addTrack(track, localMediaStream);
+                });
+
+                // Create data channel for events
+                realtimeDataChannel = realtimePeerConnection.createDataChannel('oai-events');
+                setupDataChannelHandlers();
+
+                // Create offer
+                const offer = await realtimePeerConnection.createOffer();
+                await realtimePeerConnection.setLocalDescription(offer);
+
+                // Send offer to OpenAI
+                const sdpResponse = await fetch(
+                    'https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${ephemeralKey}`,
+                            'Content-Type': 'application/sdp'
+                        },
+                        body: offer.sdp
+                    }
+                );
+
+                if (!sdpResponse.ok) {
+                    throw new Error('Failed to connect to OpenAI Realtime');
+                }
+
+                const answerSdp = await sdpResponse.text();
+                await realtimePeerConnection.setRemoteDescription({
+                    type: 'answer',
+                    sdp: answerSdp
+                });
+
+                isRealtimeConnected = true;
+                voiceModeStatus.textContent = 'Listening...';
+                voiceOrb.className = 'voice-orb listening';
+                voiceTranscript.textContent = 'Start speaking...';
+
+                console.log('[Realtime] Connected successfully');
+
+            } catch (error) {
+                console.error('[Realtime] Connection error:', error);
+                voiceModeStatus.textContent = 'Connection failed';
+                voiceOrb.className = 'voice-orb';
+                voiceTranscript.textContent = error.message;
+
+                // Auto-close after showing error
+                setTimeout(() => {
+                    if (!isRealtimeConnected) {
+                        closeRealtimeVoiceMode();
+                    }
+                }, 3000);
+            }
+        }
+
+        // Set up data channel event handlers
+        function setupDataChannelHandlers() {
+            realtimeDataChannel.onopen = () => {
+                console.log('[Realtime] Data channel open');
+            };
+
+            realtimeDataChannel.onmessage = (event) => {
+                try {
+                    const message = JSON.parse(event.data);
+                    handleRealtimeEvent(message);
+                } catch (e) {
+                    console.error('[Realtime] Failed to parse message:', e);
+                }
+            };
+
+            realtimeDataChannel.onerror = (error) => {
+                console.error('[Realtime] Data channel error:', error);
+            };
+
+            realtimeDataChannel.onclose = () => {
+                console.log('[Realtime] Data channel closed');
+            };
+        }
+
+        // Handle events from OpenAI Realtime
+        function handleRealtimeEvent(event) {
+            console.log('[Realtime] Event:', event.type);
+
+            switch (event.type) {
+                case 'session.created':
+                    console.log('[Realtime] Session ready');
+                    break;
+
+                case 'input_audio_buffer.speech_started':
+                    voiceModeStatus.textContent = 'Listening...';
+                    voiceOrb.className = 'voice-orb listening';
+                    break;
+
+                case 'input_audio_buffer.speech_stopped':
+                    voiceModeStatus.textContent = 'Processing...';
+                    break;
+
+                case 'conversation.item.input_audio_transcription.completed':
+                    if (event.transcript) {
+                        voiceTranscript.textContent = `You: ${event.transcript}`;
+                    }
+                    break;
+
+                case 'response.audio_transcript.delta':
+                    voiceModeStatus.textContent = 'Speaking...';
+                    voiceOrb.className = 'voice-orb speaking';
+                    if (event.delta) {
+                        const currentText = voiceTranscript.textContent;
+                        if (currentText.startsWith('AI: ')) {
+                            voiceTranscript.textContent = currentText + event.delta;
+                        } else {
+                            voiceTranscript.textContent = `AI: ${event.delta}`;
+                        }
+                    }
+                    break;
+
+                case 'response.audio_transcript.done':
+                    if (event.transcript) {
+                        voiceTranscript.textContent = `AI: ${event.transcript}`;
+                    }
+                    break;
+
+                case 'response.done':
+                    voiceModeStatus.textContent = 'Listening...';
+                    voiceOrb.className = 'voice-orb listening';
+                    break;
+
+                case 'error':
+                    console.error('[Realtime] Error:', event.error);
+                    voiceTranscript.textContent = `Error: ${event.error?.message || 'Unknown error'}`;
+                    break;
+            }
+        }
+
+        // Stop realtime session
+        function stopRealtimeSession() {
+            isRealtimeConnected = false;
+
+            if (realtimeDataChannel) {
+                realtimeDataChannel.close();
+                realtimeDataChannel = null;
+            }
+
+            if (realtimePeerConnection) {
+                realtimePeerConnection.close();
+                realtimePeerConnection = null;
+            }
+
+            if (localMediaStream) {
+                localMediaStream.getTracks().forEach(track => track.stop());
+                localMediaStream = null;
+            }
+
+            if (realtimeAudioElement) {
+                realtimeAudioElement.srcObject = null;
+                realtimeAudioElement = null;
+            }
+
+            voiceOrb.className = 'voice-orb';
+            voiceModeStatus.textContent = 'Tap microphone to start';
+            voiceTranscript.textContent = 'Your conversation will appear here...';
+            isRealtimeMuted = false;
+            voiceModeMute.textContent = 'Mute';
+            voiceModeMute.classList.remove('muted');
+
+            console.log('[Realtime] Session stopped');
+        }
+
+        // Toggle mute
+        function toggleRealtimeMute() {
+            if (!localMediaStream) return;
+
+            isRealtimeMuted = !isRealtimeMuted;
+            localMediaStream.getAudioTracks().forEach(track => {
+                track.enabled = !isRealtimeMuted;
+            });
+
+            voiceModeMute.textContent = isRealtimeMuted ? 'Unmute' : 'Mute';
+            voiceModeMute.classList.toggle('muted', isRealtimeMuted);
+            voiceModeStatus.textContent = isRealtimeMuted ? 'Muted' : 'Listening...';
+        }
+
+        // Event listeners for voice mode overlay
+        voiceModeClose?.addEventListener('click', closeRealtimeVoiceMode);
+        voiceModeEnd?.addEventListener('click', closeRealtimeVoiceMode);
+        voiceModeMute?.addEventListener('click', toggleRealtimeMute);
+
+        // Long-press on voice button to open realtime mode
+        let voiceButtonPressTimer = null;
+        voiceButton?.addEventListener('mousedown', () => {
+            voiceButtonPressTimer = setTimeout(() => {
+                openRealtimeVoiceMode();
+            }, 500); // 500ms long press
+        });
+
+        voiceButton?.addEventListener('mouseup', () => {
+            if (voiceButtonPressTimer) {
+                clearTimeout(voiceButtonPressTimer);
+            }
+        });
+
+        voiceButton?.addEventListener('mouseleave', () => {
+            if (voiceButtonPressTimer) {
+                clearTimeout(voiceButtonPressTimer);
+            }
+        });
+
+        // Touch support for mobile
+        voiceButton?.addEventListener('touchstart', (e) => {
+            voiceButtonPressTimer = setTimeout(() => {
+                e.preventDefault();
+                openRealtimeVoiceMode();
+            }, 500);
+        });
+
+        voiceButton?.addEventListener('touchend', () => {
+            if (voiceButtonPressTimer) {
+                clearTimeout(voiceButtonPressTimer);
+            }
+        });
+
+        // Also allow double-tap to open realtime mode
+        let lastVoiceTap = 0;
+        voiceButton?.addEventListener('click', (e) => {
+            const now = Date.now();
+            if (now - lastVoiceTap < 300) {
+                e.preventDefault();
+                e.stopPropagation();
+                openRealtimeVoiceMode();
+            }
+            lastVoiceTap = now;
+        });
+
+        // ==========================================
+        // END OPENAI REALTIME VOICE MODE
         // ==========================================
 
         function showFilePreview(file) {
@@ -9920,12 +11052,15 @@ Is there anything else you'd like to configure?`;
             const upgradeBtn = document.getElementById('upgradeBtn');
             const manageBillingBtn = document.getElementById('manageBillingBtn');
             const grandfatheredBadge = document.getElementById('grandfatheredBadge');
+            const trialCountdownBanner = document.getElementById('trialCountdownBanner');
+            const trialDaysText = document.getElementById('trialDaysText');
 
             // Hide everything first
             banner?.classList.add('hidden');
             grandfatheredBadge?.classList.add('hidden');
             upgradeBtn?.classList.add('hidden');
             manageBillingBtn?.classList.add('hidden');
+            trialCountdownBanner?.classList.add('hidden');
             document.body.classList.remove('has-banner');
 
             if (!status) return;
@@ -9943,20 +11078,42 @@ Is there anything else you'd like to configure?`;
                 }
             } else if (status.trialDaysRemaining > 0 || ['created', 'authenticated'].includes(status.status)) {
                 // Trial user (Razorpay uses 'created' or 'authenticated' during trial)
+                const daysLeft = status.trialDaysRemaining || 7;
                 banner?.classList.remove('hidden');
                 document.body.classList.add('has-banner');
-                if (bannerText) bannerText.textContent = `Free trial: ${status.trialDaysRemaining || 7} days remaining`;
+                if (bannerText) bannerText.textContent = `Free trial: ${daysLeft} days remaining`;
                 if (currentPlanInfo) {
                     currentPlanInfo.innerHTML = `
                         <div class="plan-card trial">
                             <span class="plan-name">Free Trial</span>
-                            <span class="plan-status">${status.trialDaysRemaining || 7} days left</span>
+                            <span class="plan-status">${daysLeft} days left</span>
                         </div>
                     `;
                 }
                 if (upgradeBtn) {
                     upgradeBtn.textContent = 'Upgrade';
                     upgradeBtn.classList.remove('hidden');
+                }
+                // Show trial countdown banner in left panel
+                if (trialCountdownBanner) {
+                    trialCountdownBanner.classList.remove('hidden');
+                    if (trialDaysText) {
+                        // Calculate days and remaining hours for granular display
+                        const totalHours = status.trialHoursRemaining || (daysLeft * 24);
+                        const days = Math.floor(totalHours / 24);
+                        const hours = totalHours % 24;
+                        if (days > 0) {
+                            trialDaysText.textContent = `${days}d ${hours}h left`;
+                        } else {
+                            trialDaysText.textContent = `${hours}h left`;
+                        }
+                    }
+                    // Add urgent class if 2 days or less
+                    if (daysLeft <= 2) {
+                        trialCountdownBanner.classList.add('urgent');
+                    } else {
+                        trialCountdownBanner.classList.remove('urgent');
+                    }
                 }
             } else if (status.status === 'active') {
                 // Active subscriber
