@@ -3951,6 +3951,28 @@
             cursor: not-allowed;
         }
 
+        /* Mobile/Desktop text toggle */
+        .load-more-btn .mobile-text {
+            display: none;
+        }
+        .load-more-btn .desktop-text {
+            display: inline;
+        }
+        @media (max-width: 768px) {
+            .load-more-btn .mobile-text {
+                display: inline;
+            }
+            .load-more-btn .desktop-text {
+                display: none;
+            }
+            .load-more-btn {
+                background: transparent;
+                border: none;
+                color: rgba(255, 255, 255, 0.5);
+                font-size: 12px;
+            }
+        }
+
         /* Markdown Styling */
         .message-content p {
             margin: 0.5em 0;
@@ -5914,13 +5936,33 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
 
             const loadMoreDiv = document.createElement('div');
             loadMoreDiv.className = 'load-more-container';
+            loadMoreDiv.id = 'loadMoreContainer';
             loadMoreDiv.innerHTML = `
                 <button id="loadMoreMessages" class="load-more-btn" onclick="loadOlderMessages()">
-                    Load older messages
+                    <span class="desktop-text">Load older messages</span>
+                    <span class="mobile-text">↑ Pull down for more</span>
                 </button>
             `;
             chatContainer.insertBefore(loadMoreDiv, chatContainer.firstChild);
         }
+
+        // Scroll-to-top detection to load older messages (works on mobile and desktop)
+        let isLoadingOlder = false;
+        function setupScrollToLoadMore() {
+            const chatContainer = document.getElementById('chatMessages');
+            if (!chatContainer) return;
+
+            chatContainer.addEventListener('scroll', async () => {
+                // If scrolled to top and there are more messages
+                if (chatContainer.scrollTop <= 50 && hasMoreMessages && !isLoadingOlder) {
+                    isLoadingOlder = true;
+                    await loadOlderMessages();
+                    isLoadingOlder = false;
+                }
+            });
+        }
+        // Initialize scroll listener after DOM is ready
+        document.addEventListener('DOMContentLoaded', setupScrollToLoadMore);
 
         function createMessageElement(type, content, timestamp) {
             const messageDiv = document.createElement('div');
