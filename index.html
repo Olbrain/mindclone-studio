@@ -5793,7 +5793,7 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
         // Track pagination state for chat history
         let oldestLoadedTimestamp = null;
         let hasMoreMessages = false;
-        const MESSAGES_PER_PAGE = 50;
+        const MESSAGES_PER_PAGE = 10;
 
         async function loadConversationHistory(userId, loadOlder = false) {
             try {
