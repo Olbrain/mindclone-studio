@@ -611,7 +611,7 @@ async function handleAnalyzeImage(args) {
     const prompt = question || 'Describe this image in detail. What do you see? Include any text, people, objects, and the overall scene.';
 
     const visionResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -916,7 +916,7 @@ The goal is to be a MINDCLONE - you should remember everything. Use search_memor
       };
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${apiKey}`;
 
     // Build request with tools
     const requestBody = {
