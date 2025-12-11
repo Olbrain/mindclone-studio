@@ -8950,39 +8950,62 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
         }
 
         // Typing indicator state
-        let typingTimerInterval = null;
-        let typingStartTime = null;
         let currentAbortController = null;
 
-        // Show typing indicator with timer and cancel button
+        // Show simple typing indicator (just bouncing dots)
         function showTypingIndicator() {
-            typingStartTime = Date.now();
             const typingDiv = document.createElement('div');
             typingDiv.id = 'typingIndicator';
             typingDiv.className = 'message ai';
             typingDiv.innerHTML = `
                 <div class="message-avatar">🔮</div>
                 <div class="message-content">
-                    <div class="typing-wrapper">
-                        <div class="typing-indicator">
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                        </div>
-                        <span class="typing-timer">0s</span>
-                        <button class="typing-cancel-btn" onclick="cancelPendingRequest()">Cancel</button>
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
                     </div>
                 </div>
             `;
             chatMessages.appendChild(typingDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Remove typing indicator
+        function removeTypingIndicator() {
+            const typingDiv = document.getElementById('typingIndicator');
+            if (typingDiv) typingDiv.remove();
+        }
+
+        // Waiting indicator state (for when Mindclone "promises" to come back)
+        let waitingTimerInterval = null;
+        let waitingStartTime = null;
+
+        // Show waiting indicator with timer (after pendingMessage is shown)
+        function showWaitingIndicator() {
+            waitingStartTime = Date.now();
+            const waitingDiv = document.createElement('div');
+            waitingDiv.id = 'waitingIndicator';
+            waitingDiv.className = 'message ai';
+            waitingDiv.innerHTML = `
+                <div class="message-avatar">🔮</div>
+                <div class="message-content">
+                    <div class="typing-wrapper">
+                        <div class="recalling-spinner"></div>
+                        <span class="typing-timer">0s</span>
+                        <button class="typing-cancel-btn" onclick="cancelPendingRequest()">Cancel</button>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(waitingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
 
             // Start the timer
-            typingTimerInterval = setInterval(() => {
-                const timerEl = typingDiv.querySelector('.typing-timer');
-                const cancelBtn = typingDiv.querySelector('.typing-cancel-btn');
-                if (timerEl && typingStartTime) {
-                    const elapsed = Math.floor((Date.now() - typingStartTime) / 1000);
+            waitingTimerInterval = setInterval(() => {
+                const timerEl = waitingDiv.querySelector('.typing-timer');
+                const cancelBtn = waitingDiv.querySelector('.typing-cancel-btn');
+                if (timerEl && waitingStartTime) {
+                    const elapsed = Math.floor((Date.now() - waitingStartTime) / 1000);
                     timerEl.textContent = `${elapsed}s`;
                     // Show cancel button after 3 seconds
                     if (elapsed >= 3 && cancelBtn) {
@@ -8992,15 +9015,15 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
             }, 1000);
         }
 
-        // Remove typing indicator
-        function removeTypingIndicator() {
-            if (typingTimerInterval) {
-                clearInterval(typingTimerInterval);
-                typingTimerInterval = null;
+        // Remove waiting indicator
+        function removeWaitingIndicator() {
+            if (waitingTimerInterval) {
+                clearInterval(waitingTimerInterval);
+                waitingTimerInterval = null;
             }
-            typingStartTime = null;
-            const typingDiv = document.getElementById('typingIndicator');
-            if (typingDiv) typingDiv.remove();
+            waitingStartTime = null;
+            const waitingDiv = document.getElementById('waitingIndicator');
+            if (waitingDiv) waitingDiv.remove();
         }
 
         // Cancel pending request
@@ -9010,6 +9033,7 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
                 currentAbortController = null;
             }
             removeTypingIndicator();
+            removeWaitingIndicator();
             // Re-enable the input
             messageInput.disabled = false;
             sendBtn.disabled = false;
@@ -10103,15 +10127,33 @@ Is there anything else you'd like to configure?`;
                 removeTypingIndicator();
 
                 if (data.success && data.content) {
-                    // If memory search was used, show recalling spinner animation (no text message)
-                    if (data.usedMemorySearch) {
+                    const aiTimestamp = new Date();
+
+                    // If there's a pendingMessage (Mindclone said something before using a tool),
+                    // show it first, then simulate "waiting" for the final response
+                    if (data.pendingMessage) {
+                        // Show the "promise" message (e.g., "Let me take a look...")
+                        await addWorkflowMessage('ai', data.pendingMessage, aiTimestamp);
+
+                        // Show waiting indicator with timer while "waiting" for result
+                        showWaitingIndicator();
+
+                        // Simulate the waiting time (the actual work already happened on backend,
+                        // but we show this for UX to make it feel like Mindclone is working)
+                        const minWaitTime = 1500; // At least 1.5 seconds
+                        const maxWaitTime = 3000; // At most 3 seconds
+                        const waitTime = Math.min(maxWaitTime, Math.max(minWaitTime, data.toolCallsUsed * 500));
+                        await new Promise(r => setTimeout(r, waitTime));
+
+                        removeWaitingIndicator();
+                    } else if (data.usedMemorySearch) {
+                        // Fallback: If no pending message but memory search was used, show recalling spinner
                         showRecallingIndicator();
-                        await new Promise(r => setTimeout(r, 1200)); // Brief pause for effect
+                        await new Promise(r => setTimeout(r, 1200));
                         removeRecallingIndicator();
                     }
 
-                    // Add AI response to UI with timestamp
-                    const aiTimestamp = new Date();
+                    // Add AI response to UI
                     await addWorkflowMessage('ai', data.content, aiTimestamp);
 
                     // Add to conversation history

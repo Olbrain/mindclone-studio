@@ -74,6 +74,25 @@ function getTrialDaysRemaining(userData) {
 }
 
 /**
+ * Get number of hours remaining in trial (for granular countdown)
+ * Returns: number (hours) or null if not in trial
+ */
+function getTrialHoursRemaining(userData) {
+  const billing = userData?.billing || {};
+  const trialEnd = billing.trialEnd?.toDate?.() ||
+                   (billing.trialEnd ? new Date(billing.trialEnd) : null);
+
+  if (!trialEnd) return null;
+
+  const now = new Date();
+  const end = new Date(trialEnd);
+  const diffMs = end - now;
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+  return Math.max(0, diffHours);
+}
+
+/**
  * Get subscription status summary for API response
  */
 function getSubscriptionSummary(userData) {
@@ -82,6 +101,7 @@ function getSubscriptionSummary(userData) {
       status: 'none',
       isGrandfathered: false,
       trialDaysRemaining: null,
+      trialHoursRemaining: null,
       currentPeriodEnd: null,
       cancelAtPeriodEnd: false,
       accessLevel: 'read_only'
@@ -91,6 +111,7 @@ function getSubscriptionSummary(userData) {
   const billing = userData.billing || {};
   const accessLevel = computeAccessLevel(userData);
   const trialDaysRemaining = getTrialDaysRemaining(userData);
+  const trialHoursRemaining = getTrialHoursRemaining(userData);
 
   // Convert Firestore timestamp to ISO string
   const periodEnd = billing.currentPeriodEnd?.toDate?.() ||
@@ -100,6 +121,7 @@ function getSubscriptionSummary(userData) {
     status: billing.subscriptionStatus || 'none',
     isGrandfathered: userData.isGrandfathered || false,
     trialDaysRemaining,
+    trialHoursRemaining,
     currentPeriodEnd: periodEnd ? periodEnd.toISOString() : null,
     cancelAtPeriodEnd: billing.cancelAtPeriodEnd || false,
     accessLevel,

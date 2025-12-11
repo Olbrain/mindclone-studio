@@ -948,11 +948,29 @@ The goal is to be a MINDCLONE - you should remember everything. Use search_memor
     let maxToolCalls = 5; // Prevent infinite loops
     let toolCallCount = 0;
     let usedMemorySearch = false; // Track if search_memory was called for UI animation
+    let pendingMessage = null; // Text before tool calls (e.g., "Let me check...")
+    let usedTool = null; // Track which tool was used
 
-    while (candidate?.content?.parts?.[0]?.functionCall && toolCallCount < maxToolCalls) {
+    // Check for function call in any part (not just parts[0])
+    const findFunctionCall = (parts) => parts?.find(p => p.functionCall)?.functionCall;
+    const findText = (parts) => parts?.filter(p => p.text).map(p => p.text).join('');
+
+    let functionCall = findFunctionCall(candidate?.content?.parts);
+
+    while (functionCall && toolCallCount < maxToolCalls) {
       toolCallCount++;
-      const functionCall = candidate.content.parts[0].functionCall;
       console.log(`[Tool] Model requested: ${functionCall.name}`);
+
+      // Capture any text that came with this tool call as "pending message"
+      // Only capture on first tool call
+      if (toolCallCount === 1) {
+        const textBefore = findText(candidate?.content?.parts);
+        if (textBefore) {
+          pendingMessage = textBefore;
+          console.log(`[Tool] Pending message: "${pendingMessage.substring(0, 50)}..."`);
+        }
+        usedTool = functionCall.name;
+      }
 
       // Track if memory search was used (for "recalling" UI animation)
       if (functionCall.name === 'search_memory') {
@@ -995,10 +1013,11 @@ The goal is to be a MINDCLONE - you should remember everything. Use search_memor
       }
 
       candidate = data.candidates?.[0];
+      functionCall = findFunctionCall(candidate?.content?.parts);
     }
 
-    // Extract final text response
-    const text = candidate?.content?.parts?.[0]?.text || 'I apologize, I was unable to generate a response.';
+    // Extract final text response (use findText to handle multi-part responses)
+    const text = findText(candidate?.content?.parts) || 'I apologize, I was unable to generate a response.';
 
     // === STORE NEW MEMORIES (non-blocking) ===
     // Fire-and-forget to avoid delaying the response
@@ -1025,7 +1044,9 @@ The goal is to be a MINDCLONE - you should remember everything. Use search_memor
       content: text,
       memoriesUsed: relevantMemories.length,
       toolCallsUsed: toolCallCount,
-      usedMemorySearch: usedMemorySearch // For frontend "recalling" animation
+      usedMemorySearch: usedMemorySearch, // For frontend "recalling" animation
+      pendingMessage: pendingMessage, // "Promise" message before tool execution
+      usedTool: usedTool // Which tool was used (browse_url, search_memory, etc.)
     });
 
   } catch (error) {
