@@ -1176,11 +1176,11 @@
         .left-panel-content {
             flex: 1 1 0; /* flex-grow: 1, flex-shrink: 1, flex-basis: 0 - forces proper size calculation */
             min-height: 0; /* Required for flex child overflow to work */
+            height: 0; /* Force height from flex, enables overflow to work */
             overflow-y: auto;
             overflow-x: hidden;
-            padding-bottom: 80px; /* Extra padding to ensure submit button isn't covered by footer */
-            position: relative;
-            z-index: 1;
+            padding-bottom: 100px; /* Extra padding to ensure submit button isn't covered by footer */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
         }
 
         /* Panel Sections */
