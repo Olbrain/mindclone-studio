@@ -828,6 +828,116 @@
             font-size: 12px;
         }
 
+        /* Feedback Admin List Styles */
+        .feedback-scroll-container {
+            padding: 16px;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .feedback-filters {
+            margin-bottom: 12px;
+        }
+
+        .feedback-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .feedback-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .feedback-empty .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .feedback-empty .message {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .feedback-card {
+            background: #29282e;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+        }
+
+        .feedback-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .feedback-type-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .feedback-type-badge.bug {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .feedback-type-badge.feature {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .feedback-type-badge.other {
+            background: rgba(156, 163, 175, 0.2);
+            color: #9ca3af;
+        }
+
+        .feedback-status-select {
+            padding: 4px 8px;
+            font-size: 12px;
+            background: #1a191e;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .feedback-message {
+            font-size: 14px;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 12px;
+        }
+
+        .feedback-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 12px;
+        }
+
+        .feedback-screenshot-thumb {
+            width: 100%;
+            max-width: 200px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .feedback-screenshot-thumb:hover {
+            transform: scale(1.02);
+        }
+
         .activity-modal-stats {
             display: flex;
             gap: 16px;
@@ -6401,6 +6511,10 @@
                     <span class="tab-icon">📈</span>
                     <span class="tab-label">Analytics</span>
                 </button>
+                <button class="panel-tab" data-tab="feedback" id="feedbackTabBtn" style="display: none;">
+                    <span class="tab-icon">💬</span>
+                    <span class="tab-label">Feedback</span>
+                </button>
             </div>
 
             <!-- Tab Content Container -->
@@ -6581,6 +6695,38 @@
                                     <option value="90">Last 90 Days</option>
                                     <option value="all">All Time</option>
                                 </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feedback Tab (Admin Only) -->
+                <div class="panel-tab-content" id="feedbackTab">
+                    <div class="feedback-scroll-container">
+                        <div class="panel-section">
+                            <h3 class="panel-section-title">User Feedback</h3>
+                            <p class="panel-section-subtitle">Review and manage feedback submissions</p>
+
+                            <div class="feedback-filters">
+                                <label class="panel-label">Status Filter</label>
+                                <select id="feedbackStatusFilter" class="panel-select">
+                                    <option value="all">All</option>
+                                    <option value="new" selected>New</option>
+                                    <option value="reviewed">Reviewed</option>
+                                    <option value="resolved">Resolved</option>
+                                </select>
+                            </div>
+
+                            <button id="refreshFeedbackBtn" class="panel-button" style="margin-top: 12px;">
+                                Refresh
+                            </button>
+                        </div>
+
+                        <div id="feedbackList" class="feedback-list">
+                            <!-- Feedback items will be dynamically added here -->
+                            <div class="feedback-empty">
+                                <div class="icon">💬</div>
+                                <div class="message">No feedback yet<br>Click Refresh to load</div>
                             </div>
                         </div>
                     </div>
@@ -8229,6 +8375,9 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
                         if (userData.username === 'alok') {
                             const feedbackSection = document.getElementById('feedbackSection');
                             if (feedbackSection) feedbackSection.style.display = '';
+                            // Also show Feedback tab in right panel for admin
+                            const feedbackTabBtn = document.getElementById('feedbackTabBtn');
+                            if (feedbackTabBtn) feedbackTabBtn.style.display = '';
                         }
                     } else {
                         updatePanelUIForNoUsername();
@@ -8598,6 +8747,143 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
                 return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             }
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+        }
+
+        // ==================== FEEDBACK ADMIN TAB (Admin Only) ====================
+
+        // Initialize feedback admin
+        function initializeFeedbackAdmin() {
+            const refreshBtn = document.getElementById('refreshFeedbackBtn');
+            const statusFilter = document.getElementById('feedbackStatusFilter');
+
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => {
+                    loadFeedbackAdmin();
+                });
+            }
+
+            if (statusFilter) {
+                statusFilter.addEventListener('change', () => {
+                    loadFeedbackAdmin();
+                });
+            }
+
+            console.log('[Feedback Admin] Initialized');
+        }
+
+        // Load feedback from Firestore
+        async function loadFeedbackAdmin() {
+            const feedbackList = document.getElementById('feedbackList');
+            const statusFilter = document.getElementById('feedbackStatusFilter');
+
+            if (!feedbackList) return;
+
+            const filterValue = statusFilter ? statusFilter.value : 'new';
+
+            try {
+                feedbackList.innerHTML = '<div class="feedback-empty"><div class="icon">⏳</div><div class="message">Loading...</div></div>';
+
+                // Query feedback collection
+                let feedbackQuery;
+                if (filterValue === 'all') {
+                    feedbackQuery = query(
+                        collection(db, 'feedback'),
+                        orderBy('submittedAt', 'desc'),
+                        limit(50)
+                    );
+                } else {
+                    feedbackQuery = query(
+                        collection(db, 'feedback'),
+                        where('status', '==', filterValue),
+                        orderBy('submittedAt', 'desc'),
+                        limit(50)
+                    );
+                }
+
+                const snapshot = await getDocs(feedbackQuery);
+
+                if (snapshot.empty) {
+                    feedbackList.innerHTML = '<div class="feedback-empty"><div class="icon">💬</div><div class="message">No feedback found</div></div>';
+                    return;
+                }
+
+                feedbackList.innerHTML = '';
+                snapshot.forEach(docSnap => {
+                    const feedback = docSnap.data();
+                    const card = createFeedbackCard(docSnap.id, feedback);
+                    feedbackList.appendChild(card);
+                });
+
+                console.log('[Feedback Admin] Loaded', snapshot.size, 'feedback items');
+            } catch (error) {
+                console.error('[Feedback Admin] Error loading feedback:', error);
+                feedbackList.innerHTML = '<div class="feedback-empty"><div class="icon">❌</div><div class="message">Error loading feedback<br>' + error.message + '</div></div>';
+            }
+        }
+
+        // Create feedback card element
+        function createFeedbackCard(feedbackId, feedback) {
+            const card = document.createElement('div');
+            card.className = 'feedback-card';
+
+            // Format date
+            let dateStr = 'Unknown';
+            if (feedback.submittedAt) {
+                const date = feedback.submittedAt.toDate ? feedback.submittedAt.toDate() : new Date(feedback.submittedAt);
+                dateStr = date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+            }
+
+            // Type badge class
+            const typeClass = feedback.type === 'bug' ? 'bug' : feedback.type === 'feature' ? 'feature' : 'other';
+
+            card.innerHTML = `
+                <div class="feedback-card-header">
+                    <span class="feedback-type-badge ${typeClass}">${feedback.type || 'other'}</span>
+                    <select class="feedback-status-select" data-feedback-id="${feedbackId}">
+                        <option value="new" ${feedback.status === 'new' ? 'selected' : ''}>New</option>
+                        <option value="reviewed" ${feedback.status === 'reviewed' ? 'selected' : ''}>Reviewed</option>
+                        <option value="resolved" ${feedback.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                    </select>
+                </div>
+                <div class="feedback-message">${escapeHtml(feedback.message || '')}</div>
+                <div class="feedback-meta">
+                    <span>From: ${escapeHtml(feedback.userEmail || feedback.userId || 'Anonymous')}</span>
+                    <span>${dateStr}</span>
+                </div>
+                ${feedback.screenshotUrl ? `<img src="${feedback.screenshotUrl}" class="feedback-screenshot-thumb" onclick="window.open('${feedback.screenshotUrl}', '_blank')" alt="Screenshot">` : ''}
+            `;
+
+            // Add status change listener
+            const statusSelect = card.querySelector('.feedback-status-select');
+            if (statusSelect) {
+                statusSelect.addEventListener('change', async (e) => {
+                    await updateFeedbackStatus(feedbackId, e.target.value);
+                });
+            }
+
+            return card;
+        }
+
+        // Update feedback status in Firestore
+        async function updateFeedbackStatus(feedbackId, newStatus) {
+            try {
+                const feedbackRef = doc(db, 'feedback', feedbackId);
+                await updateDoc(feedbackRef, {
+                    status: newStatus,
+                    updatedAt: serverTimestamp()
+                });
+                console.log('[Feedback Admin] Updated status to:', newStatus);
+            } catch (error) {
+                console.error('[Feedback Admin] Error updating status:', error);
+                alert('Failed to update status: ' + error.message);
+            }
+        }
+
+        // Helper to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // ==================== PANEL ANALYTICS TAB ====================
@@ -9850,6 +10136,7 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
             initializePanelSettings();
             initializePanelAnalytics();
             initializeKnowledgeBase();
+            initializeFeedbackAdmin();
 
             // Set up real-time listener for activity feed
             setupActivityListener();
