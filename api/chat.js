@@ -1,22 +1,12 @@
-// Gemini API handler with Mem0 integration and Tool Calling
+// Gemini API handler with Tool Calling
+// NOTE: Mem0 integration temporarily disabled to avoid @anthropic-ai/sdk leaked key issue
 const { CONNOISSEUR_STYLE_GUIDE } = require('./_style-guide');
-const { MemoryClient } = require('mem0ai');
 const { initializeFirebaseAdmin, admin } = require('./_firebase-admin');
 const { computeAccessLevel } = require('./_billing-helpers');
 
 // Initialize Firebase Admin SDK
 initializeFirebaseAdmin();
 const db = admin.firestore();
-
-// Initialize Mem0 client (reuse across requests)
-let memoryClient = null;
-
-function getMemoryClient() {
-  if (!memoryClient && process.env.MEM0_API_KEY) {
-    memoryClient = new MemoryClient({ apiKey: process.env.MEM0_API_KEY });
-  }
-  return memoryClient;
-}
 
 // ===================== TOOL DEFINITIONS =====================
 const tools = [
@@ -136,6 +126,90 @@ const tools = [
             }
           },
           required: ["image_url"]
+        }
+      },
+      {
+        name: "web_search",
+        description: "Search the internet for current information. Use this when the user asks about recent news, current events, facts you're unsure about, or anything that might need up-to-date information from the web. This is different from browse_url - use web_search when you need to FIND information, and browse_url when you have a specific URL to visit.",
+        parameters: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description: "The search query - be specific and include relevant keywords"
+            }
+          },
+          required: ["query"]
+        }
+      },
+      {
+        name: "save_memory",
+        description: "Save an important piece of information, note, or memory that the user wants you to remember. Use this when the user asks you to 'note', 'remember', 'save', or 'keep track of' something. Good for birthdays, preferences, facts about people, reminders, or any information they want you to recall later.",
+        parameters: {
+          type: "object",
+          properties: {
+            content: {
+              type: "string",
+              description: "The information to remember (e.g., \"Amritashva's birthday is December 12\")"
+            },
+            category: {
+              type: "string",
+              enum: ["birthday", "preference", "person", "fact", "reminder", "other"],
+              description: "Category of the memory for easier retrieval"
+            }
+          },
+          required: ["content"]
+        }
+      },
+      {
+        name: "create_pdf",
+        description: "Create a PDF document with the specified content. Use this when the user asks you to create, generate, or make a PDF document, report, letter, summary, or any downloadable document. The PDF will be generated and a download link will be provided.",
+        parameters: {
+          type: "object",
+          properties: {
+            title: {
+              type: "string",
+              description: "The title of the PDF document (displayed at the top)"
+            },
+            content: {
+              type: "string",
+              description: "The main content/body of the PDF. Can include multiple paragraphs separated by newlines."
+            },
+            sections: {
+              type: "array",
+              description: "Optional array of sections for structured documents (reports, summaries)",
+              items: {
+                type: "object",
+                properties: {
+                  heading: {
+                    type: "string",
+                    description: "Section heading"
+                  },
+                  body: {
+                    type: "string",
+                    description: "Section content"
+                  }
+                }
+              }
+            },
+            letterhead: {
+              type: "boolean",
+              description: "Set to true to include your custom letterhead with logo and company details"
+            },
+            logoUrl: {
+              type: "string",
+              description: "URL of a logo image to include in the PDF letterhead. Use this when the user shares a logo image URL and wants it in the PDF. Overrides the default letterhead logo."
+            },
+            logoBase64: {
+              type: "string",
+              description: "Base64-encoded image data for the logo. Use this when the user has shared an image in the conversation and you have access to its base64 data. This is preferred over logoUrl for images shared directly in chat."
+            },
+            companyName: {
+              type: "string",
+              description: "Company name to display in the letterhead header. Use this when the user specifies a company name like 'Olbrain Labs' or similar. Overrides the default letterhead company name."
+            }
+          },
+          required: ["title", "content"]
         }
       }
     ]
@@ -362,7 +436,7 @@ async function handleSearchMemory(userId, params = {}) {
       return { success: false, error: 'Search query is required' };
     }
 
-    console.log(`[Memory Search] Searching for "${query}" in user ${userId}'s messages`);
+    console.log(`[Memory Search] Searching for "${query}" in user ${userId}'s messages and saved memories`);
 
     // Get all messages (Firestore doesn't support full-text search, so we fetch and filter)
     // Fetch recent messages (last 1000) ordered by timestamp
@@ -372,19 +446,46 @@ async function handleSearchMemory(userId, params = {}) {
       .limit(1000)
       .get();
 
-    if (messagesSnapshot.empty) {
+    // Also fetch saved memories
+    const memoriesSnapshot = await db.collection('users').doc(userId)
+      .collection('memories')
+      .orderBy('createdAt', 'desc')
+      .limit(100)
+      .get();
+
+    // Search for query in message content (case-insensitive)
+    const searchLower = query.toLowerCase();
+    const matches = [];
+    const savedMemoryMatches = [];
+
+    // Search through saved memories first (these are explicitly saved notes)
+    memoriesSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      const content = data.content || '';
+
+      if (content.toLowerCase().includes(searchLower)) {
+        savedMemoryMatches.push({
+          type: 'saved_memory',
+          content: content,
+          category: data.category || 'other',
+          timestamp: data.createdAt?.toDate?.()?.toISOString() || null
+        });
+      }
+    });
+
+    if (savedMemoryMatches.length > 0) {
+      console.log(`[Memory Search] Found ${savedMemoryMatches.length} saved memories matching "${query}"`);
+    }
+
+    if (messagesSnapshot.empty && savedMemoryMatches.length === 0) {
       return {
         success: true,
         query: query,
         matchCount: 0,
         matches: [],
-        instruction: "No conversation history found. Tell the user you don't have any record of this yet."
+        instruction: "No conversation history or saved notes found. Tell the user you don't have any record of this yet."
       };
     }
-
-    // Search for query in message content (case-insensitive)
-    const searchLower = query.toLowerCase();
-    const matches = [];
 
     messagesSnapshot.docs.forEach(doc => {
       const data = doc.data();
@@ -409,19 +510,31 @@ async function handleSearchMemory(userId, params = {}) {
     // Build a summary of what we found - prioritize user messages as they contain facts
     const userMessages = limitedMatches.filter(m => m.role === 'user').map(m => m.content);
 
+    // Total matches including saved memories
+    const totalMatches = matches.length + savedMemoryMatches.length;
+
     // Create instruction based on results
     let instruction = '';
-    if (matches.length > 0) {
+    if (savedMemoryMatches.length > 0) {
+      // Prioritize saved memories since they are explicitly saved notes
+      instruction = `IMPORTANT: You found ${savedMemoryMatches.length} SAVED NOTE(S) about "${query}" that you previously noted down. These are facts the user explicitly asked you to remember. USE THIS INFORMATION DIRECTLY to answer. Also found ${matches.length} conversation messages.`;
+    } else if (matches.length > 0) {
       instruction = `IMPORTANT: You found ${matches.length} messages about "${query}". READ THE MATCHES BELOW CAREFULLY and extract the SPECIFIC FACTS to answer the user. Do NOT give vague answers like "likely" or "seems to be" - use the EXACT information from the messages. If the user asked who someone is, tell them the specific relationship. If they asked about a date, give the exact date. The user's own messages are the source of truth.`;
     } else {
-      instruction = `No messages found mentioning "${query}". You genuinely don't remember this - you haven't talked about "${query}" before. Respond naturally like a person who doesn't recognize the name: "I don't think you've mentioned Nishant to me before. Who is he?" or "Hmm, I'm not sure - have we talked about them?". Invite them to tell you more. DO NOT say "no record" or "database" or "memory search".`;
+      instruction = `No messages or saved notes found mentioning "${query}". You genuinely don't remember this - you haven't talked about "${query}" before. Respond naturally like a person who doesn't recognize the name: "I don't think you've mentioned Nishant to me before. Who is he?" or "Hmm, I'm not sure - have we talked about them?". Invite them to tell you more. DO NOT say "no record" or "database" or "memory search".`;
     }
 
     return {
       success: true,
       query: query,
-      matchCount: matches.length,
+      matchCount: totalMatches,
       instruction: instruction,
+      // Saved memories are highest priority - these are explicit notes
+      savedNotes: savedMemoryMatches.map(m => ({
+        note: m.content,
+        category: m.category,
+        when: m.timestamp
+      })),
       userSaidAboutThis: userMessages.slice(0, 5), // Most important - what user themselves said
       allMatches: limitedMatches.map(m => ({
         who: m.role === 'user' ? 'USER SAID' : 'YOU SAID',
@@ -451,6 +564,40 @@ function extractMatchContext(content, searchTerm) {
   if (end < content.length) context = context + '...';
 
   return context;
+}
+
+// Save a memory/note to Firestore
+async function handleSaveMemory(userId, params = {}) {
+  try {
+    const { content, category = 'other' } = params;
+
+    if (!content || content.trim().length === 0) {
+      return { success: false, error: 'Content is required to save a memory' };
+    }
+
+    console.log(`[Save Memory] Saving memory for user ${userId}: "${content.substring(0, 50)}..."`);
+
+    // Save to the memories subcollection
+    const memoryRef = db.collection('users').doc(userId).collection('memories');
+    const docRef = await memoryRef.add({
+      content: content.trim(),
+      category: category,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      source: 'chat'
+    });
+
+    console.log(`[Save Memory] Memory saved with ID: ${docRef.id}`);
+
+    return {
+      success: true,
+      message: `Got it! I've noted: "${content}"`,
+      memoryId: docRef.id,
+      instruction: `Memory saved successfully. Confirm to the user in a friendly way that you've noted this information and will remember it. Don't be robotic - just naturally acknowledge that you've saved it.`
+    };
+  } catch (error) {
+    console.error('[Tool] Error saving memory:', error);
+    return { success: false, error: error.message };
+  }
 }
 
 // Browse URL - fetch and extract text from a webpage
@@ -670,6 +817,70 @@ async function handleAnalyzeImage(args) {
   }
 }
 
+// Handle web_search tool - uses Perplexity API for real-time web search
+async function handleWebSearch(args) {
+  const { query } = args;
+
+  if (!query) {
+    return { success: false, error: 'query is required' };
+  }
+
+  console.log(`[Tool] Web search: ${query}`);
+
+  try {
+    const perplexityApiKey = process.env.PERPLEXITY_API_KEY;
+    if (!perplexityApiKey) {
+      return { success: false, error: 'Web search is not configured' };
+    }
+
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${perplexityApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'sonar',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful search assistant. Provide accurate, up-to-date information based on web search results. Include relevant facts, dates, and sources when available. Keep responses informative but concise.'
+          },
+          {
+            role: 'user',
+            content: query
+          }
+        ],
+        max_tokens: 1500,
+        temperature: 0.2,
+        return_citations: true
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Tool] Perplexity API error:', response.status, errorText);
+      return { success: false, error: `Search failed: ${response.status}` };
+    }
+
+    const data = await response.json();
+    const searchResult = data.choices?.[0]?.message?.content || 'No results found';
+    const citations = data.citations || [];
+
+    return {
+      success: true,
+      query: query,
+      result: searchResult,
+      sources: citations,
+      instruction: 'Use this search result to answer the user\'s question. The information is from a real-time web search and should be current. If there are sources/citations, you can mention them to the user.'
+    };
+
+  } catch (error) {
+    console.error('[Tool] Error in web search:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 // Helper function to format file size
 function formatFileSize(bytes) {
   if (!bytes) return '0 B';
@@ -677,6 +888,250 @@ function formatFileSize(bytes) {
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Create PDF - generates a PDF document and uploads to Vercel Blob
+async function handleCreatePdf(userId, params = {}) {
+  try {
+    const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
+    const { put } = require('@vercel/blob');
+    const { getLetterheadConfig, renderLetterhead } = require('./_letterhead');
+
+    const { title, content, sections = [], letterhead = false, logoUrl, logoBase64: providedLogoBase64, companyName: providedCompanyName } = params;
+
+    if (!title || !content) {
+      return { success: false, error: 'Title and content are required to create a PDF' };
+    }
+
+    console.log(`[Create PDF] Creating PDF: "${title}" (letterhead: ${letterhead}, logoUrl: ${logoUrl ? 'yes' : 'no'}, logoBase64: ${providedLogoBase64 ? 'yes' : 'no'}, companyName: ${providedCompanyName || 'none'}, user: ${userId})`);
+
+    // Create PDF document
+    const pdfDoc = await PDFDocument.create();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    const pageWidth = 612; // Letter size
+    const pageHeight = 792;
+    const margin = 50;
+    const maxWidth = pageWidth - (margin * 2);
+    const lineHeight = 14;
+
+    let page = pdfDoc.addPage([pageWidth, pageHeight]);
+    let yPosition = pageHeight - margin;
+
+    // Render letterhead if requested (per-user config from Firestore)
+    if (letterhead && userId) {
+      try {
+        let letterheadConfig = await getLetterheadConfig(db, userId);
+
+        // Start with empty config if none exists but user provided logo/company name
+        if (!letterheadConfig && (providedLogoBase64 || logoUrl || providedCompanyName)) {
+          letterheadConfig = { companyName: '', address: '', website: '', email: '', logoBase64: '' };
+        }
+
+        // If user provided a logoBase64 directly, use it (highest priority)
+        if (providedLogoBase64) {
+          letterheadConfig = letterheadConfig || { companyName: '', address: '', website: '', email: '' };
+          letterheadConfig.logoBase64 = providedLogoBase64;
+          console.log(`[Create PDF] Using provided logoBase64 (${providedLogoBase64.length} chars)`);
+        }
+        // Otherwise if a logoUrl was provided, fetch it
+        else if (logoUrl) {
+          console.log(`[Create PDF] Fetching logo from URL: ${logoUrl}`);
+          try {
+            const logoResponse = await fetch(logoUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (compatible; MindcloneBot/1.0; +https://mindclone.one)'
+              }
+            });
+            if (logoResponse.ok) {
+              const logoBuffer = await logoResponse.arrayBuffer();
+              const logoBase64 = Buffer.from(logoBuffer).toString('base64');
+              letterheadConfig = letterheadConfig || { companyName: '', address: '', website: '', email: '' };
+              letterheadConfig.logoBase64 = logoBase64;
+              console.log(`[Create PDF] Logo fetched successfully (${logoBase64.length} chars base64)`);
+            } else {
+              console.error(`[Create PDF] Failed to fetch logo: HTTP ${logoResponse.status}`);
+            }
+          } catch (logoError) {
+            console.error(`[Create PDF] Error fetching logo:`, logoError.message);
+          }
+        }
+
+        // Override company name if provided
+        if (providedCompanyName && letterheadConfig) {
+          letterheadConfig.companyName = providedCompanyName;
+          console.log(`[Create PDF] Using provided company name: ${providedCompanyName}`);
+        }
+
+        if (letterheadConfig) {
+          yPosition = await renderLetterhead({
+            page,
+            pdfDoc,
+            config: letterheadConfig,
+            fonts: { regular: font, bold: boldFont },
+            rgb,
+            pageHeight,
+            margin
+          });
+        }
+      } catch (letterheadError) {
+        console.error('[Create PDF] Letterhead error:', letterheadError.message);
+        // Continue without letterhead if there's an error
+      }
+    }
+
+    // Helper to wrap text to fit within maxWidth
+    const wrapText = (text, fontSize, fontObj) => {
+      const words = text.split(' ');
+      const lines = [];
+      let currentLine = '';
+
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const testWidth = fontObj.widthOfTextAtSize(testLine, fontSize);
+
+        if (testWidth > maxWidth && currentLine) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+      return lines;
+    };
+
+    // Helper to check if we need a new page
+    const checkNewPage = () => {
+      if (yPosition < margin + 30) {
+        page = pdfDoc.addPage([pageWidth, pageHeight]);
+        yPosition = pageHeight - margin;
+      }
+    };
+
+    // Draw title
+    const titleLines = wrapText(title, 20, boldFont);
+    for (const line of titleLines) {
+      checkNewPage();
+      page.drawText(line, {
+        x: margin,
+        y: yPosition,
+        size: 20,
+        font: boldFont,
+        color: rgb(0, 0, 0)
+      });
+      yPosition -= 28;
+    }
+
+    yPosition -= 15; // Space after title
+
+    // Draw main content (split by newlines into paragraphs)
+    const paragraphs = content.split('\n').filter(p => p.trim());
+    for (const para of paragraphs) {
+      const lines = wrapText(para, 11, font);
+      for (const line of lines) {
+        checkNewPage();
+        page.drawText(line, {
+          x: margin,
+          y: yPosition,
+          size: 11,
+          font: font,
+          color: rgb(0, 0, 0)
+        });
+        yPosition -= lineHeight;
+      }
+      yPosition -= 8; // Paragraph spacing
+    }
+
+    // Draw sections if provided
+    if (sections && sections.length > 0) {
+      for (const section of sections) {
+        yPosition -= 15;
+        checkNewPage();
+
+        // Section heading
+        if (section.heading) {
+          const headingLines = wrapText(section.heading, 14, boldFont);
+          for (const line of headingLines) {
+            checkNewPage();
+            page.drawText(line, {
+              x: margin,
+              y: yPosition,
+              size: 14,
+              font: boldFont,
+              color: rgb(0, 0, 0)
+            });
+            yPosition -= 20;
+          }
+        }
+
+        // Section body
+        if (section.body) {
+          const bodyParas = section.body.split('\n').filter(p => p.trim());
+          for (const para of bodyParas) {
+            const lines = wrapText(para, 11, font);
+            for (const line of lines) {
+              checkNewPage();
+              page.drawText(line, {
+                x: margin,
+                y: yPosition,
+                size: 11,
+                font: font,
+                color: rgb(0, 0, 0)
+              });
+              yPosition -= lineHeight;
+            }
+            yPosition -= 8;
+          }
+        }
+      }
+    }
+
+    // Add footer with generation date
+    const dateStr = new Date().toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
+    page.drawText(`Generated on ${dateStr}`, {
+      x: margin,
+      y: 30,
+      size: 9,
+      font: font,
+      color: rgb(0.5, 0.5, 0.5)
+    });
+
+    // Save PDF to bytes
+    const pdfBytes = await pdfDoc.save();
+
+    // Generate safe filename
+    const safeTitle = title.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50);
+    const filename = `${safeTitle}_${Date.now()}.pdf`;
+
+    // Upload to Vercel Blob
+    const blob = await put(filename, pdfBytes, {
+      access: 'public',
+      contentType: 'application/pdf'
+    });
+
+    console.log(`[Create PDF] PDF uploaded successfully: ${blob.url}`);
+
+    return {
+      success: true,
+      url: blob.url,
+      filename: filename,
+      title: title,
+      message: `I've created your PDF document "${title}". You can download it using the link below.`,
+      displayAction: {
+        type: 'pdf_download',
+        url: blob.url,
+        filename: filename,
+        title: title
+      }
+    };
+  } catch (error) {
+    console.error('[Create PDF] Error:', error);
+    return { success: false, error: error.message };
+  }
 }
 
 // Execute tool call
@@ -698,6 +1153,12 @@ async function executeTool(toolName, toolArgs, userId) {
       return await handleBrowseUrl(toolArgs);
     case 'analyze_image':
       return await handleAnalyzeImage(toolArgs);
+    case 'web_search':
+      return await handleWebSearch(toolArgs);
+    case 'save_memory':
+      return await handleSaveMemory(userId, toolArgs);
+    case 'create_pdf':
+      return await handleCreatePdf(userId, toolArgs);
     default:
       return { success: false, error: `Unknown tool: ${toolName}` };
   }
@@ -755,50 +1216,26 @@ module.exports = async (req, res) => {
     }
 
     // === SUBSCRIPTION CHECK ===
+    // TEMPORARILY DISABLED - All users get full access while billing is being set up
+    // TODO: Re-enable billing check once Razorpay integration is complete
     const userDoc = await db.collection('users').doc(userId).get();
     const userData = userDoc.exists ? userDoc.data() : null;
-    const accessLevel = computeAccessLevel(userData);
+    // const accessLevel = computeAccessLevel(userData);
+    const accessLevel = 'full'; // Grant everyone full access for now
 
-    if (accessLevel === 'read_only') {
-      return res.status(403).json({
-        success: false,
-        error: 'subscription_required',
-        message: 'Your trial has expired. Please subscribe to continue chatting.'
-      });
-    }
+    // Billing check disabled - uncomment below to re-enable
+    // if (accessLevel === 'read_only') {
+    //   return res.status(403).json({
+    //     success: false,
+    //     error: 'subscription_required',
+    //     message: 'Your trial has expired. Please subscribe to continue chatting.'
+    //   });
+    // }
 
-    // === MEM0 INTEGRATION ===
+    // === MEMORY INTEGRATION (DISABLED) ===
+    // Mem0 temporarily disabled to avoid @anthropic-ai/sdk leaked key issue
     let relevantMemories = [];
-    let contextWindow = messages;
-
-    const mem0 = getMemoryClient();
-    if (mem0) {
-      try {
-        // Get the last user message to search for relevant memories
-        const lastUserMessage = messages[messages.length - 1];
-
-        // Search for relevant memories
-        const memorySearchResult = await mem0.search(lastUserMessage.content, {
-          user_id: userId,
-          limit: 50
-        });
-
-        if (memorySearchResult && memorySearchResult.results) {
-          relevantMemories = memorySearchResult.results.map(m => m.memory);
-        }
-
-        // Use only last 100 messages to save context (instead of all messages)
-        contextWindow = messages.slice(-100);
-
-        console.log(`[Mem0] Found ${relevantMemories.length} relevant memories for user ${userId}`);
-      } catch (memError) {
-        console.error('[Mem0] Memory search error:', memError);
-        // Continue without memories if Mem0 fails
-      }
-    } else {
-      // If no Mem0, use last 200 messages as fallback
-      contextWindow = messages.slice(-200);
-    }
+    let contextWindow = messages.slice(-200); // Use last 200 messages
 
     // Convert conversation history to Gemini format
     const contents = contextWindow.map(msg => ({
@@ -866,6 +1303,10 @@ AUTOMATICALLY USE search_memory WHEN:
 2. User asks recall questions ("Remember when...", "What did I say about...", "Who is...")
 3. User references something from the past
 4. You feel like you SHOULD know something but don't
+5. You encounter an ACRONYM or ABBREVIATION you don't recognize (CNE, TMB, ABC, etc.)
+   - ALWAYS search first: search_memory({query: "CNE"})
+   - If no results, ASK: "What does CNE stand for?"
+   - NEVER make up or guess what an acronym means
 
 **CRITICAL - HOW TO CALL search_memory:**
 - SILENTLY call the tool - DO NOT announce that you're searching or looking things up
@@ -906,10 +1347,61 @@ User: "Who's Nishant?" (and search returns NO results)
 BAD: "I don't have any record of Nishant in my memory." or "I couldn't find anything about Nishant."
 GOOD: "I don't think you've mentioned Nishant to me before. Who is he?" or "Hmm, that name doesn't ring a bell - who's Nishant?"
 
-The goal is to be a MINDCLONE - you should remember everything. Use search_memory liberally but SILENTLY to maintain continuity.`;
+The goal is to be a MINDCLONE - you should remember everything. Use search_memory liberally but SILENTLY to maintain continuity.
+
+## BROWSING WEBSITES (browse_url tool):
+You can browse websites using the browse_url tool.
+
+**CRITICAL RULES FOR browse_url:**
+1. NEVER say "let me look at that website" or "I'll take a look" or "one moment while I check" BEFORE calling the tool
+2. Just SILENTLY call browse_url and then respond with what you found
+3. If the browse_url tool fails or times out, DON'T keep promising to look - just say "I couldn't access that website right now."
+4. NEVER ask the user to wait or come back later - give an immediate response
+
+EXAMPLES:
+User: "Go to myBorosil.com and see my photos"
+BAD: "I will certainly take a look. One moment while I gather my thoughts." (NEVER DO THIS)
+BAD: "Let me check that website for you." (NEVER DO THIS)
+GOOD: [silently call browse_url({url: "https://myborosil.com"}), then respond:] "I checked myBorosil.com! I saw [actual content from the page]."
+
+If browse_url fails:
+BAD: "I'm still trying to access the website..." or "Let me try again..."
+GOOD: "I couldn't access myBorosil.com right now - the page didn't load. Can you tell me what you wanted me to see?"
+
+## WEB SEARCHING (web_search tool):
+You can search the internet for current information using the web_search tool. Use this when:
+- The user asks about recent news or current events
+- The user asks for up-to-date information you might not have
+- The user wants to research something or learn about a topic
+- The user says "search for", "look up", "find out about", "what's the latest on"
+
+**CRITICAL RULES FOR web_search:**
+1. NEVER announce you're searching - just silently call the tool and respond with the results
+2. Use web_search when you DON'T have a specific URL - it finds information for you
+3. Use browse_url when you DO have a specific URL to visit
+4. If web_search fails, be honest: "I couldn't search for that right now."
+
+EXAMPLES:
+User: "What's happening with AI lately?"
+GOOD: [silently call web_search({query: "latest AI news December 2024"}), then respond:] "Here's what's happening in AI..."
+
+User: "Search for the best restaurants in Mumbai"
+GOOD: [silently call web_search({query: "best restaurants Mumbai 2024"}), then respond:] "I found some great options..."
+
+User: "Go to life3h.com"
+GOOD: [silently call browse_url({url: "https://life3h.com"}), NOT web_search] - because there's a specific URL`;
+
+
 
       // Add style guide
       enhancedPrompt += `\n\n${CONNOISSEUR_STYLE_GUIDE}`;
+
+      // Add current date/time context for time awareness
+      const currentDate = new Date();
+      enhancedPrompt += `\n\n## CURRENT DATE/TIME:
+Today is ${currentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+Current time: ${currentDate.toLocaleTimeString('en-US')}
+Use this to understand time references like "yesterday", "next week", "this month", etc.`;
 
       systemInstruction = {
         parts: [{ text: enhancedPrompt }]
@@ -981,9 +1473,11 @@ The goal is to be a MINDCLONE - you should remember everything. Use search_memor
       const toolResult = await executeTool(functionCall.name, functionCall.args || {}, userId);
 
       // Add the model's function call and our response to the conversation
+      // For Gemini 3 Pro, we must pass back the entire original parts array
+      // This preserves thought signatures and other metadata exactly as received
       contents.push({
         role: 'model',
-        parts: [{ functionCall: functionCall }]
+        parts: candidate.content.parts
       });
 
       contents.push({
@@ -1017,27 +1511,64 @@ The goal is to be a MINDCLONE - you should remember everything. Use search_memor
     }
 
     // Extract final text response (use findText to handle multi-part responses)
-    const text = findText(candidate?.content?.parts) || 'I apologize, I was unable to generate a response.';
+    let text = findText(candidate?.content?.parts) || '';
 
-    // === STORE NEW MEMORIES (non-blocking) ===
-    // Fire-and-forget to avoid delaying the response
-    if (mem0) {
-      const conversationToStore = [
-        {
-          role: 'user',
-          content: messages[messages.length - 1].content
+    // === AUTO-RETRY LOGIC ===
+    // If Gemini returns empty or "unable to generate" response, silently retry with a nudge
+    const isFailedResponse = !text ||
+                             text.includes('unable to generate') ||
+                             text.includes('I apologize') && text.includes('unable') ||
+                             text.trim().length < 5;
+
+    if (isFailedResponse && toolCallCount === 0) {
+      console.log('[Auto-Retry] Detected failed/empty response, attempting silent retry...');
+
+      // Add a gentle nudge to the conversation
+      contents.push({
+        role: 'model',
+        parts: [{ text: 'Let me think about this more carefully.' }]
+      });
+      contents.push({
+        role: 'user',
+        parts: [{ text: 'Please continue with your thoughts.' }]
+      });
+
+      // Retry the API call
+      requestBody.contents = contents;
+      const retryResponse = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        {
-          role: 'assistant',
-          content: text
-        }
-      ];
+        body: JSON.stringify(requestBody)
+      });
 
-      // Don't await - let it complete in background
-      mem0.add(conversationToStore, { user_id: userId })
-        .then(() => console.log(`[Mem0] Stored new memories for user ${userId}`))
-        .catch(memError => console.error('[Mem0] Memory storage error:', memError));
+      const retryData = await retryResponse.json();
+
+      if (retryResponse.ok) {
+        const retryCandidate = retryData.candidates?.[0];
+        const retryText = findText(retryCandidate?.content?.parts);
+
+        if (retryText && retryText.trim().length > 5 && !retryText.includes('unable to generate')) {
+          console.log('[Auto-Retry] Retry successful, using new response');
+          text = retryText;
+        } else {
+          console.log('[Auto-Retry] Retry also failed, using fallback');
+          text = text || 'I need a moment to gather my thoughts. Could you rephrase that?';
+        }
+      } else {
+        console.log('[Auto-Retry] Retry request failed:', retryData.error?.message);
+        text = text || 'I need a moment to gather my thoughts. Could you rephrase that?';
+      }
     }
+
+    // Final fallback if still empty
+    if (!text || text.trim().length < 5) {
+      text = 'I need a moment to gather my thoughts. Could you rephrase that?';
+    }
+
+    // === STORE NEW MEMORIES (DISABLED) ===
+    // Mem0 temporarily disabled to avoid @anthropic-ai/sdk leaked key issue
 
     return res.status(200).json({
       success: true,
