@@ -5802,21 +5802,24 @@
 
             <!-- Panel Content -->
             <div class="left-panel-content">
-                <!-- Knowledge Base Section -->
-                <div class="left-panel-section">
-                    <div class="left-panel-section-header">
+                <!-- Knowledge Base Section (collapsible) -->
+                <div class="left-panel-section" id="kbSection">
+                    <div class="left-panel-section-header" id="kbSectionHeader" style="cursor: pointer;">
                         <span class="left-panel-section-icon">📚</span>
                         <span class="left-panel-section-title">Knowledge Base</span>
                         <span id="panelKbCount" class="kb-count" style="margin-left: auto;">0</span>
+                        <span class="left-panel-expand-icon" id="kbExpandIcon" style="margin-left: 8px;">▶</span>
                     </div>
-                    <div class="panel-kb-list" id="panelKbList">
-                        <!-- KB files will be listed here -->
+                    <div class="left-panel-section-content" id="kbSectionContent" style="display: none;">
+                        <div class="panel-kb-list" id="panelKbList">
+                            <!-- KB files will be listed here -->
+                        </div>
+                        <input type="file" id="panelKbFileInput" class="hidden" accept=".pdf,.doc,.docx,.txt,.md,.json" multiple>
+                        <button class="panel-upload-btn" id="panelUploadBtn">
+                            <span>+</span>
+                            <span>Upload Document</span>
+                        </button>
                     </div>
-                    <input type="file" id="panelKbFileInput" class="hidden" accept=".pdf,.doc,.docx,.txt,.md,.json" multiple>
-                    <button class="panel-upload-btn" id="panelUploadBtn">
-                        <span>+</span>
-                        <span>Upload Document</span>
-                    </button>
                 </div>
 
                 <!-- Feedback Section (admin only) -->
@@ -8612,6 +8615,19 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
 
                 // Reload KB files
                 loadPanelKbFiles();
+            });
+        }
+
+        // Knowledge Base section expand/collapse toggle
+        const kbSectionHeader = document.getElementById('kbSectionHeader');
+        const kbSectionContent = document.getElementById('kbSectionContent');
+        const kbExpandIcon = document.getElementById('kbExpandIcon');
+
+        if (kbSectionHeader && kbSectionContent && kbExpandIcon) {
+            kbSectionHeader.addEventListener('click', function() {
+                const isExpanded = kbSectionContent.style.display !== 'none';
+                kbSectionContent.style.display = isExpanded ? 'none' : 'block';
+                kbExpandIcon.textContent = isExpanded ? '▶' : '▼';
             });
         }
 
