@@ -7793,9 +7793,11 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
 
                 console.log('[Feedback Modal] Preparing payload...');
 
+                // Get current user from Firebase auth
+                const user = firebase.auth().currentUser;
                 const payload = {
-                    userId: currentUser?.uid || 'anonymous',
-                    userEmail: currentUser?.email || 'anonymous',
+                    userId: user?.uid || 'anonymous',
+                    userEmail: user?.email || 'anonymous',
                     type: typeSelect?.value || 'other',
                     message: messageInput.value.trim(),
                     screenshot: feedbackModalScreenshot,
