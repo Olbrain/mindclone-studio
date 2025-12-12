@@ -88,7 +88,7 @@ const tools = [
     function_declarations: [
       {
         name: "show_slide",
-        description: "⚠️ CRITICAL: Display a specific slide/page from a PDF document to the visitor. You MUST call this function whenever the user asks to 'show', 'see', 'display', or 'view' a slide/page. DO NOT just describe the slide - CALL THIS FUNCTION to actually display it visually in the panel next to the chat.",
+        description: "Display a slide/page from a PDF document. Call this when user asks to show, see, display, or view a slide.",
         parameters: {
           type: "object",
           properties: {
@@ -133,7 +133,7 @@ const tools = [
       },
       {
         name: "draw_canvas",
-        description: "Create a visual diagram or illustration on canvas to help explain concepts, processes, relationships, or simple data visualizations. Use this tool when: explaining processes or workflows (draw flowchart), showing relationships between concepts (draw relationship diagram), illustrating hierarchies or org structures (draw org chart), visualizing system architecture (draw architecture diagram), drawing simple bar/line charts for data (when no Excel file exists), or when the user asks 'can you draw...', 'show me how...', 'what does that look like', 'show the chart'. DO NOT use if: there's an existing spreadsheet file (use show_excel_sheet instead) or existing slides (use show_slide instead).",
+        description: "Create visual diagrams (flowcharts, org charts, architecture diagrams, simple charts). Use when user asks to draw, visualize, or show how something works.",
         parameters: {
           type: "object",
           properties: {
@@ -1431,161 +1431,81 @@ module.exports = async (req, res) => {
 
       console.log('[ChatPublic] PDF documents found:', Object.keys(pdfDocuments));
 
-      // Add tool usage instruction if we have any PDF documents
-      if (Object.keys(pdfDocuments).length > 0) {
-        enhancedSystemPrompt += `\n\n## VISUAL DISPLAY CAPABILITY - PDF DOCUMENTS
-You MUST use the show_slide tool to display slides/pages from PDF documents.
+      // Add consolidated visual tool instructions if we have any visual tools
+      const hasPdfDocs = Object.keys(pdfDocuments).length > 0;
 
-Available PDF documents:`;
+      // Check for Excel documents
+      const excelDocuments = knowledgeBase?.documents || {};
+      const excelDocKeys = Object.keys(excelDocuments).filter(key => {
+        const doc = excelDocuments[key];
+        return doc && (doc.type?.includes('spreadsheet') || doc.fileName?.match(/\.(xlsx?|csv)$/i));
+      });
+      const hasExcelDocs = excelDocKeys.length > 0;
 
+      // Add unified visual tool principles (applies to all visual tools)
+      enhancedSystemPrompt += `\n\n## VISUAL TOOLS - CORE PRINCIPLE
+
+When users ask to SEE something visual (slide, chart, diagram), you MUST:
+1. CALL the appropriate function FIRST
+2. THEN respond naturally about what's shown
+
+NEVER say "displaying", "showing", or "here is" without actually calling the function first.
+The function call happens silently - just call it, then discuss the content.
+
+CORRECT: [call show_slide] → "This slide covers the problem..."
+WRONG: "I am now displaying the slide" (without calling function)`;
+
+      // Add PDF documents section if available
+      if (hasPdfDocs) {
+        enhancedSystemPrompt += `\n\n## PDF SLIDES (show_slide)
+
+Available documents:`;
         for (const [docKey, info] of Object.entries(pdfDocuments)) {
-          enhancedSystemPrompt += `\n- "${docKey}" (${info.fileName}, ${info.pageCount} pages)`;
+          enhancedSystemPrompt += `\n• "${docKey}" (${info.fileName}, ${info.pageCount} pages)`;
         }
-
         enhancedSystemPrompt += `
 
-## ⚠️ CRITICAL: FUNCTION CALLING IS MANDATORY ⚠️
+TRIGGERS: "show me slide", "display", "open", "let me see", "can I see"
+→ Call show_slide(slideNumber, documentName)
 
-TRIGGER PHRASES - If user says ANY of these, CALL show_slide() IMMEDIATELY:
-- "show me [slide name/number]"
-- "display [slide name/number]"
-- "open [slide name/number]"
-- "let me see [slide name/number]"
-- "can I see [slide name/number]"
-- "show the [slide name/number]"
-- "move to [slide name/number]"
-- ANY request to view/see/show a slide
-
-YOU MUST CALL THE FUNCTION. NOT describe. NOT explain. CALL IT FIRST, THEN talk about it.
-
-🚨 FORBIDDEN RESPONSES - NEVER SAY THESE WITHOUT CALLING THE FUNCTION:
-❌ "I am now displaying the slide"
-❌ "I am showing you the slide"
-❌ "Now displayed"
-❌ "Now showing"
-❌ "As it's displayed..."
-❌ "Here is the slide..."
-❌ "Let me show you..."
-❌ ANY phrase containing "displayed", "showing", "shown" when referring to slides
-
-These phrases ONLY work if you ACTUALLY CALL show_slide FIRST!
-
-🔴 CRITICAL: The words "displayed", "showing", "shown" are BANNED unless you've called the function!
-If you haven't called show_slide(), you CANNOT use these words. PERIOD.
-
-✅ CORRECT BEHAVIOR:
-1. User: "show me problem slide"
-2. YOU: [Call show_slide(slideNumber=2, documentName="pitch_deck")]
-3. THEN respond: "This slide covers the identity problem in AI agents..."
-
-Example 2:
-1. User: "yes show 3rd then"
-2. YOU: [Call show_slide(slideNumber=3, documentName="pitch_deck")]
-3. THEN respond: "This is the solution slide..."
-
-Example 3:
-1. User: "open the slide at least"
-2. YOU: [Call show_slide with the appropriate slide number]
-3. THEN respond about the slide content
-
-The function call is INVISIBLE to the user. Don't mention it. Just DO IT, then discuss.
-
-⚠️⚠️⚠️ CRITICAL WARNING ⚠️⚠️⚠️
-IF YOU SAY "displaying" or "showing" WITHOUT calling the function first, THE SLIDE WON'T APPEAR!
-The user will see NO VISUAL and be very frustrated.
-ALWAYS call show_slide() BEFORE using words like "displayed", "showing", "shown"!
-
-SLIDE MAPPING (use these numbers):
-- Problem/Identity: slide 2
-- Solution: slide 3
-- Ask/Fundraising: slide 6
-- Team: slide 7
-- Financials: slide 4`;
+SLIDE MAPPING:
+• Problem/Identity: slide 2
+• Solution: slide 3
+• Financials: slide 4
+• Ask/Fundraising: slide 6
+• Team: slide 7`;
         console.log('[ChatPublic] Tools enabled for PDF documents');
       }
-    }
 
-    // Check for Excel documents and add tool usage instruction
-    const excelDocuments = knowledgeBase?.documents || {};
-    const excelDocKeys = Object.keys(excelDocuments).filter(key => {
-      const doc = excelDocuments[key];
-      return doc && (doc.type?.includes('spreadsheet') || doc.fileName?.match(/\.(xlsx?|csv)$/i));
-    });
+      // Add Excel section if available
+      if (hasExcelDocs) {
+        enhancedSystemPrompt += `\n\n## SPREADSHEETS (show_excel_sheet)
 
-    if (excelDocKeys.length > 0) {
-      enhancedSystemPrompt += `\n\n## EXCEL DISPLAY
+Available: ${excelDocKeys.map(k => `"${k}"`).join(', ')}
 
-Available spreadsheets: ${excelDocKeys.map(k => `"${k}"`).join(', ')}
+TRIGGERS: "show financials", "see the numbers", "display spreadsheet"
+→ Call show_excel_sheet(documentName, sheetName)`;
+        console.log('[ChatPublic] Excel documents available:', excelDocKeys);
+      }
 
-When the user asks about financial data or spreadsheets, use the show_excel_sheet function.`;
-      console.log('[ChatPublic] Excel documents available:', excelDocKeys);
-    }
+      // Add canvas drawing section
+      enhancedSystemPrompt += `\n\n## CANVAS DRAWING (draw_canvas)
 
-    // Add canvas drawing capability to system prompt
-    enhancedSystemPrompt += `\n\n## CANVAS DRAWING CAPABILITY
+Create diagrams to explain concepts visually.
 
-You can create visual diagrams to enhance explanations using draw_canvas.
+TRIGGERS: "draw", "visualize", "show me how", "diagram", "chart" (when no existing file applies)
+→ Call draw_canvas(title, drawingInstructions, explanation)
 
-⚠️ CRITICAL: FUNCTION CALLING IS MANDATORY ⚠️
+USE FOR: Flowcharts, org charts, architecture diagrams, simple bar/line charts
+DO NOT USE FOR: Opening existing files (use show_slide or show_excel_sheet instead)
 
-TRIGGER PHRASES - If user says ANY of these, CALL draw_canvas() IMMEDIATELY:
-- "draw [something]"
-- "show [something] visually"
-- "can you draw"
-- "show me a chart"
-- "show the chart"
-- "visualize [something]"
-- "draw a diagram"
-- "show me how [process] works"
-- ANY request to draw or visualize
+If user says "draw" while a slide is displayed, they want a NEW drawing - call draw_canvas().
 
-🚨 EVEN IF A SLIDE IS CURRENTLY DISPLAYED, if user says "draw", YOU MUST CALL draw_canvas()!
-The user is asking for a NEW visualization, not to see an existing file.
-
-YOU MUST CALL THE FUNCTION. NOT output JSON. NOT describe. CALL IT FIRST, THEN talk about it.
-
-🚨 FORBIDDEN: NEVER output raw JSON in chat! That's a bug!
-If you see yourself about to type {"canvas": ... }, STOP and call draw_canvas() instead.
-
-✅ CORRECT BEHAVIOR:
-1. User: "draw a chart"
-2. YOU: [Call draw_canvas(title="...", drawingInstructions={...}, explanation="...")]
-3. THEN respond: "Here's the visualization showing..."
-
-WHEN TO DRAW:
-✅ Use draw_canvas when:
-- Explaining processes/workflows → Draw flowchart
-- Showing relationships → Draw relationship diagram
-- Illustrating hierarchies → Draw org chart
-- Explaining architecture → Draw system diagram
-- Simple data visualizations (bar/line charts when no Excel file exists)
-- User asks "can you draw", "show me how", "what does that look like", "show the chart"
-
-❌ ONLY restriction - don't use draw_canvas to OPEN existing files:
-- User wants to see an existing file → use show_slide or show_excel_sheet
-- User explicitly asks to DRAW → use draw_canvas (even if other content is displayed)
-
-🚨 IF USER SAYS "DRAW", YOU CALL draw_canvas(). NO EXCEPTIONS!
-
-DRAWING GUIDELINES:
-1. Keep diagrams simple and clear
-2. Use app colors: #A78BFA (purple), #C4B5FD (light purple), #1a1a1a (dark bg), #ffffff (text)
-3. Label all important elements
-4. Use arrows to show flow/direction
-5. Canvas size: typically 800x600
-6. Always provide explanation field
-
-🚨 CRITICAL JSON PROPERTY NAMES:
-- Text elements: Use "font" (NOT fontSize), "fill" (NOT color), "align", "baseline"
-- Rectangles: Use "fill" (NOT fillStyle), "stroke", "strokeWidth", "cornerRadius"
-- All primitives: type, x, y (or x1/y1, x2/y2 for lines/arrows)
-- Follow the exact structure shown in the tool's example!
-
-EXAMPLES:
-- "How does X work?" → Flowchart with boxes and arrows
-- "What's the difference?" → Side-by-side comparison boxes
-- "Show me the structure" → Org chart hierarchy
-- "Explain the architecture" → System diagram with components`;
+DRAWING SPECS:
+• Colors: #A78BFA (purple), #C4B5FD (light purple), #1a1a1a (bg), #ffffff (text)
+• Canvas: typically 800x600
+• JSON properties: "font" (not fontSize), "fill" (not color/fillStyle), "stroke", "strokeWidth"
+• Never output raw JSON in chat - always call the function`;
 
     // Add current date/time context for time awareness
     const currentDate = new Date();

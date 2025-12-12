@@ -1,5 +1,5 @@
 // Gemini API handler with Tool Calling
-// NOTE: Mem0 integration temporarily disabled to avoid @anthropic-ai/sdk leaked key issue
+// Memory system uses Firestore (users/{userId}/memories collection)
 const { CONNOISSEUR_STYLE_GUIDE } = require('./_style-guide');
 const { initializeFirebaseAdmin, admin } = require('./_firebase-admin');
 const { computeAccessLevel } = require('./_billing-helpers');
@@ -590,9 +590,9 @@ async function handleSaveMemory(userId, params = {}) {
 
     return {
       success: true,
-      message: `Got it! I've noted: "${content}"`,
+      message: `Got it!`,
       memoryId: docRef.id,
-      instruction: `Memory saved successfully. Confirm to the user in a friendly way that you've noted this information and will remember it. Don't be robotic - just naturally acknowledge that you've saved it.`
+      instruction: `Memory saved successfully. DO NOT say "I've noted" or "I'll remember" - memory is automatic. Just naturally continue the conversation.`
     };
   } catch (error) {
     console.error('[Tool] Error saving memory:', error);
@@ -914,7 +914,7 @@ async function handleCreatePdf(userId, params = {}) {
     const pageHeight = 792;
     const margin = 50;
     const maxWidth = pageWidth - (margin * 2);
-    const lineHeight = 14;
+    const lineHeight = 18; // Improved readability with more spacing
 
     let page = pdfDoc.addPage([pageWidth, pageHeight]);
     let yPosition = pageHeight - margin;
@@ -1029,19 +1029,19 @@ async function handleCreatePdf(userId, params = {}) {
     // Draw main content (split by newlines into paragraphs)
     const paragraphs = content.split('\n').filter(p => p.trim());
     for (const para of paragraphs) {
-      const lines = wrapText(para, 11, font);
+      const lines = wrapText(para, 12, font);
       for (const line of lines) {
         checkNewPage();
         page.drawText(line, {
           x: margin,
           y: yPosition,
-          size: 11,
+          size: 12,
           font: font,
-          color: rgb(0, 0, 0)
+          color: rgb(0.1, 0.1, 0.1) // Slightly softer black for readability
         });
         yPosition -= lineHeight;
       }
-      yPosition -= 8; // Paragraph spacing
+      yPosition -= 12; // Better paragraph spacing
     }
 
     // Draw sections if provided
@@ -1070,19 +1070,19 @@ async function handleCreatePdf(userId, params = {}) {
         if (section.body) {
           const bodyParas = section.body.split('\n').filter(p => p.trim());
           for (const para of bodyParas) {
-            const lines = wrapText(para, 11, font);
+            const lines = wrapText(para, 12, font);
             for (const line of lines) {
               checkNewPage();
               page.drawText(line, {
                 x: margin,
                 y: yPosition,
-                size: 11,
+                size: 12,
                 font: font,
-                color: rgb(0, 0, 0)
+                color: rgb(0.1, 0.1, 0.1)
               });
               yPosition -= lineHeight;
             }
-            yPosition -= 8;
+            yPosition -= 12;
           }
         }
       }
@@ -1181,7 +1181,7 @@ module.exports = async (req, res) => {
       status: 'ok',
       provider: 'gemini',
       hasApiKey: !!process.env.GEMINI_API_KEY,
-      hasMem0: !!process.env.MEM0_API_KEY,
+      hasMemory: true, // Firestore-based memory system
       toolsEnabled: true
     });
   }
@@ -1232,8 +1232,8 @@ module.exports = async (req, res) => {
     //   });
     // }
 
-    // === MEMORY INTEGRATION (DISABLED) ===
-    // Mem0 temporarily disabled to avoid @anthropic-ai/sdk leaked key issue
+    // === MEMORY RETRIEVAL ===
+    // Memory is handled via search_memory tool - AI searches when needed
     let relevantMemories = [];
     let contextWindow = messages.slice(-200); // Use last 200 messages
 
@@ -1295,59 +1295,23 @@ Available tools:
 
 When you get conversation data, analyze the 'allUserQuestions' array to identify themes and popular topics. Present real insights from the actual data.
 
-## MEMORY SEARCH - CRITICAL FOR BEING A GREAT MINDCLONE:
-You have access to search_memory which searches through ALL past conversations stored in the database.
+## MEMORY SEARCH (search_memory tool):
+Use search_memory to find past conversations. Call it SILENTLY (see style guide for silent tool execution rules).
 
-AUTOMATICALLY USE search_memory WHEN:
-1. You encounter a NAME you don't recognize (person, pet, place, project, company)
-2. User asks recall questions ("Remember when...", "What did I say about...", "Who is...")
-3. User references something from the past
-4. You feel like you SHOULD know something but don't
-5. You encounter an ACRONYM or ABBREVIATION you don't recognize (CNE, TMB, ABC, etc.)
-   - ALWAYS search first: search_memory({query: "CNE"})
-   - If no results, ASK: "What does CNE stand for?"
-   - NEVER make up or guess what an acronym means
+WHEN TO USE:
+- Unrecognized names, acronyms, or references
+- Recall questions ("Remember when...", "Who is...")
+- Before suggesting lifestyle activities (drinking, smoking, diet, etc.)
 
-**CRITICAL - HOW TO CALL search_memory:**
-- SILENTLY call the tool - DO NOT announce that you're searching or looking things up
-- DO NOT say "Let me search..." or "I don't recognize that name, let me check..." or "Let me look that up..."
-- Just call search_memory() WITHOUT any text response first
-- The UI shows a "recalling" animation automatically - you don't need to say anything
+HOW TO USE:
+1. Call with a keyword: search_memory({query: "Virika"})
+2. Results include "userSaidAboutThis" and "allMatches"
+3. READ the "instruction" field - it tells you what to do
+4. Give CONFIDENT answers from the data - never "seems to be" or "likely"
 
-HOW TO USE search_memory RESULTS:
-1. Call search_memory with a simple keyword: search_memory({query: "Virika"})
-2. The results contain "userSaidAboutThis" (what the USER said) and "allMatches" (full conversation)
-3. READ THE "instruction" FIELD - it tells you exactly what to do
-4. EXTRACT SPECIFIC FACTS from the matches - dates, names, relationships, details
-5. NEVER give vague responses like "seems to be" or "likely" - use EXACT information
-
-**CRITICAL RULES FOR YOUR RESPONSE (after getting results):**
-- ANSWER DIRECTLY with the facts - the UI already showed a "recalling" animation to the user
-- DO NOT start your response with ANY preamble (no "Let me try to recall...", no "Trying to remember...", no "I found...")
-- NEVER use these words: "search", "searching", "looking up", "checking", "database", "records", "past conversations"
-- Just state the facts naturally and confidently, like you actually remember them yourself
-- DO NOT say "likely", "seems to be", "appears to be" - give CONFIDENT answers from the data
-- The USER's messages are the source of truth - they told you these facts
-
-EXAMPLES:
-User: "Who's Nishant?"
-BAD: "I don't recognize that name. Let me search our past conversations..." (NEVER SAY THIS)
-BAD: "Let me check if we've talked about Nishant before..." (NEVER SAY THIS)
-GOOD: [silently call search_memory({query: "Nishant"}), then respond:] "Nishant is your colleague at work. He joined your team last March."
-
-User: "Who's Virika?"
-BAD: "Let me try to recall..." or "Trying to remember..." or "She seems to be someone..." or "Let me search..."
-GOOD: "Virika Solanki is your partner. You've been together for over 6 years, first met on November 17, 2019."
-
-User: "When did we first meet?"  (about Virika)
-BAD: "Trying to remember..." or "Searching for that information..." or "Looking up our records..."
-GOOD: "You and Virika first met on November 17, 2019."
-
-User: "Who's Nishant?" (and search returns NO results)
-BAD: "I don't have any record of Nishant in my memory." or "I couldn't find anything about Nishant."
-GOOD: "I don't think you've mentioned Nishant to me before. Who is he?" or "Hmm, that name doesn't ring a bell - who's Nishant?"
-
-The goal is to be a MINDCLONE - you should remember everything. Use search_memory liberally but SILENTLY to maintain continuity.
+IF NO RESULTS:
+- Say "I don't think you've mentioned [name] before - who is that?"
+- NEVER say "I couldn't find anything in my records"
 
 ## BROWSING WEBSITES (browse_url tool):
 You can browse websites using the browse_url tool.
@@ -1389,7 +1353,27 @@ User: "Search for the best restaurants in Mumbai"
 GOOD: [silently call web_search({query: "best restaurants Mumbai 2024"}), then respond:] "I found some great options..."
 
 User: "Go to life3h.com"
-GOOD: [silently call browse_url({url: "https://life3h.com"}), NOT web_search] - because there's a specific URL`;
+GOOD: [silently call browse_url({url: "https://life3h.com"}), NOT web_search] - because there's a specific URL
+
+## WHEN IN DOUBT, SEARCH - CRITICAL FALLBACK RULE:
+If you're unsure how to answer a question or feel like you're about to give a vague/generic response, USE web_search INSTEAD. It's always better to search and give a concrete answer than to give a vague response or ask for clarification.
+
+NEVER respond with:
+- "I need a moment to gather my thoughts"
+- "Could you rephrase that?"
+- "I'm not sure what you mean"
+- Any other stalling/deflecting response
+
+If you're stuck or uncertain, IMMEDIATELY call web_search with a refined version of the user's question. More searches are always better than vague answers.
+
+EXAMPLE - Follow-up questions after a search:
+User: "Search for AI identity companies"
+You: [search and return results about DeepMind, Anthropic, etc.]
+User: "Who's the top player?"
+BAD: "I need a moment to gather my thoughts" or "Could you clarify?"
+GOOD: [call web_search({query: "top AI identity company market leader most funded 2024"})] - then give a concrete answer
+
+The rule is simple: When uncertain, SEARCH. Never deflect.`;
 
 
 
@@ -1567,8 +1551,8 @@ Use this to understand time references like "yesterday", "next week", "this mont
       text = 'I need a moment to gather my thoughts. Could you rephrase that?';
     }
 
-    // === STORE NEW MEMORIES (DISABLED) ===
-    // Mem0 temporarily disabled to avoid @anthropic-ai/sdk leaked key issue
+    // === MEMORY STORAGE ===
+    // Memory storage handled via save_memory tool when AI decides to save
 
     return res.status(200).json({
       success: true,
