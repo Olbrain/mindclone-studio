@@ -1178,7 +1178,9 @@
             min-height: 0; /* Required for flex child overflow to work */
             overflow-y: auto;
             overflow-x: hidden;
-            padding-bottom: 24px; /* Ensure space at bottom for scroll */
+            padding-bottom: 80px; /* Extra padding to ensure submit button isn't covered by footer */
+            position: relative;
+            z-index: 1;
         }
 
         /* Panel Sections */
