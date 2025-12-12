@@ -6005,7 +6005,7 @@
             </div>
             <div class="feedback-modal-footer">
                 <button id="feedbackCancelBtn" class="feedback-btn feedback-btn-secondary">Cancel</button>
-                <button id="feedbackSubmitBtn" class="feedback-btn feedback-btn-primary">
+                <button type="button" id="feedbackSubmitBtn" class="feedback-btn feedback-btn-primary" onclick="submitModalFeedback()">
                     <span class="btn-text">Submit Feedback</span>
                     <span class="btn-loading hidden">Sending...</span>
                 </button>
@@ -7766,22 +7766,32 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
 
         // Submit feedback from modal
         async function submitModalFeedback() {
+            console.log('[Feedback Modal] Submit button clicked');
+
             const messageInput = document.getElementById('feedbackMessageInput');
             const typeSelect = document.getElementById('feedbackTypeSelect');
             const submitBtn = document.getElementById('feedbackSubmitBtn');
             const successMsg = document.getElementById('feedbackSuccessMessage');
+
+            if (!submitBtn) {
+                console.error('[Feedback Modal] Submit button not found');
+                return;
+            }
+
             const btnText = submitBtn.querySelector('.btn-text');
             const btnLoading = submitBtn.querySelector('.btn-loading');
 
             if (!messageInput || messageInput.value.trim().length < 10) {
-                showPanelAlert('Please enter at least 10 characters of feedback', 'error');
+                alert('Please enter at least 10 characters of feedback');
                 return;
             }
 
             try {
                 submitBtn.disabled = true;
-                btnText.classList.add('hidden');
-                btnLoading.classList.remove('hidden');
+                if (btnText) btnText.classList.add('hidden');
+                if (btnLoading) btnLoading.classList.remove('hidden');
+
+                console.log('[Feedback Modal] Preparing payload...');
 
                 const payload = {
                     userId: currentUser?.uid || 'anonymous',
@@ -7794,18 +7804,23 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
                     url: window.location.href
                 };
 
+                console.log('[Feedback Modal] Sending to /api/feedback...');
+
                 const response = await fetch('/api/feedback', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
+                console.log('[Feedback Modal] Response status:', response.status);
+
                 if (!response.ok) {
-                    throw new Error('Failed to submit feedback');
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || 'Failed to submit feedback');
                 }
 
                 // Show success message
-                successMsg.classList.remove('hidden');
+                if (successMsg) successMsg.classList.remove('hidden');
 
                 // Close modal after 2 seconds
                 setTimeout(() => {
@@ -7814,11 +7829,11 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
 
             } catch (error) {
                 console.error('[Feedback Modal] Submission failed:', error);
-                showPanelAlert('Failed to submit feedback. Please try again.', 'error');
+                alert('Failed to submit feedback: ' + error.message);
             } finally {
                 submitBtn.disabled = false;
-                btnText.classList.remove('hidden');
-                btnLoading.classList.add('hidden');
+                if (btnText) btnText.classList.remove('hidden');
+                if (btnLoading) btnLoading.classList.add('hidden');
             }
         }
 
@@ -7857,7 +7872,10 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
             // Submit button
             const submitBtn = document.getElementById('feedbackSubmitBtn');
             if (submitBtn) {
+                console.log('[Feedback Modal] Attaching submit button listener');
                 submitBtn.addEventListener('click', submitModalFeedback);
+            } else {
+                console.error('[Feedback Modal] Submit button not found during init!');
             }
 
             // Close on Escape key
