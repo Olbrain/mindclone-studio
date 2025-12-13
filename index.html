@@ -10284,7 +10284,38 @@ Your responses should be SHORT like text messages. If you're writing paragraphs,
                 messageContent.appendChild(actualContent);
             } else {
                 const actualContent = document.createElement('div');
-                actualContent.textContent = content;
+
+                // Check if message contains an image URL (from uploads)
+                const imageUrlMatch = content.match(/Image URL:\s*(https:\/\/[^\s]+)/);
+                if (imageUrlMatch) {
+                    // Extract text before the [Image:...] part
+                    const textBeforeImage = content.split(/\[Image:/)[0].trim();
+
+                    // Add the text message if any
+                    if (textBeforeImage) {
+                        const textPart = document.createElement('div');
+                        textPart.textContent = textBeforeImage;
+                        textPart.style.marginBottom = '8px';
+                        actualContent.appendChild(textPart);
+                    }
+
+                    // Create image element
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'chat-image-container';
+                    imgContainer.style.cssText = 'max-width: 300px; border-radius: 12px; overflow: hidden; cursor: pointer;';
+
+                    const img = document.createElement('img');
+                    img.src = imageUrlMatch[1];
+                    img.alt = 'Uploaded image';
+                    img.style.cssText = 'width: 100%; height: auto; display: block;';
+                    img.onclick = () => window.open(imageUrlMatch[1], '_blank');
+
+                    imgContainer.appendChild(img);
+                    actualContent.appendChild(imgContainer);
+                } else {
+                    actualContent.textContent = content;
+                }
+
                 messageContent.appendChild(actualContent);
             }
 
