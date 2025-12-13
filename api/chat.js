@@ -1779,6 +1779,32 @@ Use this to understand time references like "yesterday", "next week", "this mont
     const findFunctionCall = (parts) => parts?.find(p => p.functionCall)?.functionCall;
     const findText = (parts) => parts?.filter(p => p.text).map(p => p.text).join('');
 
+    // Sanitize response to remove leaked internal tool call patterns
+    // Gemini sometimes outputs tool calls as text instead of structured functionCall
+    const sanitizeResponse = (text) => {
+      if (!text) return text;
+
+      // Remove "tool_code print(default_api.function_name(...))" patterns
+      text = text.replace(/tool_code\s+print\(default_api\.\w+\([^)]*\)\)/g, '');
+
+      // Remove standalone "print(default_api.function_name(...))" patterns
+      text = text.replace(/print\(default_api\.\w+\([^)]*\)\)/g, '');
+
+      // Remove "thought ..." lines (Gemini's internal reasoning)
+      text = text.replace(/^thought\s+.+$/gm, '');
+
+      // Remove "tool_code" prefix without print
+      text = text.replace(/tool_code\s+/g, '');
+
+      // Remove multiple consecutive newlines that result from removals
+      text = text.replace(/\n{3,}/g, '\n\n');
+
+      // Trim whitespace
+      text = text.trim();
+
+      return text;
+    };
+
     let functionCall = findFunctionCall(candidate?.content?.parts);
 
     while (functionCall && toolCallCount < maxToolCalls) {
@@ -1843,7 +1869,8 @@ Use this to understand time references like "yesterday", "next week", "this mont
     }
 
     // Extract final text response (use findText to handle multi-part responses)
-    let text = findText(candidate?.content?.parts) || '';
+    // Then sanitize to remove any leaked internal tool call patterns
+    let text = sanitizeResponse(findText(candidate?.content?.parts) || '');
 
     // === AUTO-RETRY LOGIC ===
     // If Gemini returns empty or "unable to generate" response, silently retry with a nudge
@@ -1879,7 +1906,7 @@ Use this to understand time references like "yesterday", "next week", "this mont
 
       if (retryResponse.ok) {
         const retryCandidate = retryData.candidates?.[0];
-        const retryText = findText(retryCandidate?.content?.parts);
+        const retryText = sanitizeResponse(findText(retryCandidate?.content?.parts));
 
         if (retryText && retryText.trim().length > 5 && !retryText.includes('unable to generate')) {
           console.log('[Auto-Retry] Retry successful, using new response');
