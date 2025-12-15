@@ -345,6 +345,25 @@ const tools = [
           },
           required: []
         }
+      },
+      {
+        name: "generate_image",
+        description: "Generate an image using AI based on a text description. Use this when the user asks you to create, generate, draw, make, or design an image, picture, artwork, illustration, sketch, or visual. Supports various styles: realistic photos, illustrations, sketches, paintings, digital art, etc.",
+        parameters: {
+          type: "object",
+          properties: {
+            prompt: {
+              type: "string",
+              description: "Detailed description of the image to generate. Be specific about style, composition, colors, mood, and details. Example: 'A detailed pencil sketch of a human eye with visible eyelashes, realistic shading, high contrast, artistic style'"
+            },
+            style: {
+              type: "string",
+              enum: ["photo", "art", "sketch", "painting", "digital_art"],
+              description: "Style of the image: photo (photorealistic), art (artistic/creative), sketch (pencil/line drawing), painting (traditional painted look), digital_art (modern digital illustration)"
+            }
+          },
+          required: ["prompt"]
+        }
       }
     ]
   }
@@ -1424,6 +1443,121 @@ async function handleGetBeliefs(userId, params = {}) {
   }
 }
 
+// Handle generate_image tool - generate images using Google Imagen via Gemini API
+async function handleGenerateImage(params = {}) {
+  const { put } = require('@vercel/blob');
+
+  try {
+    const { prompt, style = 'art' } = params;
+
+    if (!prompt) {
+      return { success: false, error: 'A prompt describing the image is required' };
+    }
+
+    console.log(`[Tool] Generating image: "${prompt.substring(0, 50)}..." (style: ${style})`);
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return { success: false, error: 'Image generation is not configured' };
+    }
+
+    // Enhance prompt based on style
+    let enhancedPrompt = prompt;
+    switch (style) {
+      case 'sketch':
+        enhancedPrompt = `Detailed pencil sketch, hand-drawn style, black and white or grayscale, artistic shading: ${prompt}`;
+        break;
+      case 'painting':
+        enhancedPrompt = `Traditional painting style, oil or watercolor aesthetic, artistic brushstrokes: ${prompt}`;
+        break;
+      case 'photo':
+        enhancedPrompt = `Photorealistic, high quality photograph, realistic lighting and details: ${prompt}`;
+        break;
+      case 'digital_art':
+        enhancedPrompt = `Digital art illustration, modern digital painting style, vibrant and polished: ${prompt}`;
+        break;
+      case 'art':
+      default:
+        enhancedPrompt = `Artistic creative illustration: ${prompt}`;
+        break;
+    }
+
+    // Call Gemini's Imagen model
+    const imagenResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          instances: [{ prompt: enhancedPrompt }],
+          parameters: {
+            sampleCount: 1,
+            aspectRatio: '1:1',
+            safetyFilterLevel: 'block_only_high',
+            personGeneration: 'allow_adult'
+          }
+        })
+      }
+    );
+
+    if (!imagenResponse.ok) {
+      const errorText = await imagenResponse.text();
+      console.error('[Tool] Imagen API error:', imagenResponse.status, errorText);
+
+      // Parse error for better user messaging
+      try {
+        const errorData = JSON.parse(errorText);
+        if (errorData.error?.message?.includes('safety')) {
+          return {
+            success: false,
+            error: 'The image request was blocked for safety reasons. Try a different description.'
+          };
+        }
+      } catch (e) {}
+
+      return { success: false, error: `Image generation failed: ${imagenResponse.status}` };
+    }
+
+    const imagenData = await imagenResponse.json();
+
+    // Extract the generated image (base64 encoded)
+    const predictions = imagenData.predictions;
+    if (!predictions || predictions.length === 0 || !predictions[0].bytesBase64Encoded) {
+      console.error('[Tool] No image in response:', JSON.stringify(imagenData).substring(0, 500));
+      return { success: false, error: 'No image was generated. Try a different prompt.' };
+    }
+
+    const imageBase64 = predictions[0].bytesBase64Encoded;
+    const imageBuffer = Buffer.from(imageBase64, 'base64');
+
+    // Upload to Vercel Blob
+    const filename = `generated_${Date.now()}.png`;
+    const blob = await put(filename, imageBuffer, {
+      access: 'public',
+      contentType: 'image/png'
+    });
+
+    console.log(`[Tool] Image generated and uploaded: ${blob.url}`);
+
+    return {
+      success: true,
+      url: blob.url,
+      prompt: prompt,
+      style: style,
+      instruction: 'Image generated successfully. Show the user the image by including this URL in your response. You can say something like "Here\'s the image I created for you!" and the image will display automatically.',
+      displayAction: {
+        type: 'generated_image',
+        url: blob.url,
+        prompt: prompt
+      }
+    };
+
+  } catch (error) {
+    console.error('[Tool] Error generating image:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 // Execute tool call
 async function executeTool(toolName, toolArgs, userId) {
   console.log(`[Tool] Executing: ${toolName}`, toolArgs);
@@ -1459,6 +1593,8 @@ async function executeTool(toolName, toolArgs, userId) {
       return await handleReviseBelief(userId, toolArgs);
     case 'get_beliefs':
       return await handleGetBeliefs(userId, toolArgs);
+    case 'generate_image':
+      return await handleGenerateImage(toolArgs);
     default:
       return { success: false, error: `Unknown tool: ${toolName}` };
   }
