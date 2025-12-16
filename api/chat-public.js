@@ -387,6 +387,28 @@ async function loadKnowledgeBase(userId) {
   }
 }
 
+// Load link behavior settings (custom instructions from owner)
+async function loadLinkBehaviorSettings(userId) {
+  try {
+    const linkSettingsDoc = await db.collection('users').doc(userId)
+      .collection('linkSettings').doc('config').get();
+
+    if (!linkSettingsDoc.exists) {
+      return null;
+    }
+
+    const data = linkSettingsDoc.data();
+    return {
+      behaviorInstructions: data.linkBehaviorInstructions || null,
+      topicFocus: data.linkTopicFocus || null,
+      topicRestrictions: data.linkTopicRestrictions || null
+    };
+  } catch (error) {
+    console.error('Error loading link behavior settings:', error);
+    return null;
+  }
+}
+
 // Load owner's public messages (fallback if no knowledge base)
 async function loadOwnerPublicMessages(userId, limit = 50) {
   try {
@@ -1248,6 +1270,9 @@ module.exports = async (req, res) => {
     // 2. Load owner's knowledge base
     const knowledgeBase = await loadKnowledgeBase(userId);
 
+    // 3. Load owner's custom link behavior settings
+    const linkBehavior = await loadLinkBehaviorSettings(userId);
+
     // Debug logging
     console.log('[ChatPublic] Knowledge base loaded:', {
       hasSections: Object.keys(knowledgeBase?.sections || {}).length,
@@ -1393,7 +1418,25 @@ module.exports = async (req, res) => {
       enhancedSystemPrompt += '\nWhen answering questions about the business, pitch, or financials, reference the specific data above. Quote numbers accurately. You have FULL ACCESS to the uploaded documents.';
     }
 
-    // 4. Build conversation context
+    // 4. Add owner's custom link behavior settings (if configured)
+    if (linkBehavior) {
+      let customBehavior = '';
+      if (linkBehavior.behaviorInstructions) {
+        customBehavior += `\n\n## OWNER'S INSTRUCTIONS FOR YOU\n${linkBehavior.behaviorInstructions}`;
+      }
+      if (linkBehavior.topicFocus) {
+        customBehavior += `\n\n## FOCUS AREA\nYou should focus your conversations on: ${linkBehavior.topicFocus}`;
+      }
+      if (linkBehavior.topicRestrictions) {
+        customBehavior += `\n\n## TOPICS TO AVOID\nDo NOT discuss or share information about: ${linkBehavior.topicRestrictions}`;
+      }
+      if (customBehavior) {
+        enhancedSystemPrompt += customBehavior;
+        console.log('[ChatPublic] Added custom link behavior to prompt');
+      }
+    }
+
+    // 5. Build conversation context
     let contextMessages = [];
 
     // Add visitor's conversation history

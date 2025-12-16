@@ -364,6 +364,35 @@ const tools = [
           },
           required: ["prompt"]
         }
+      },
+      {
+        name: "update_link_behavior",
+        description: "Update how the public link should behave when talking to visitors. Use when the user says things like 'my link should focus on X', 'tell my link to always Y', 'my link should never discuss Z', or 'make my link ask about startups first'.",
+        parameters: {
+          type: "object",
+          properties: {
+            behaviorInstructions: {
+              type: "string",
+              description: "Natural language instructions for how the link should behave with visitors (e.g., 'Always ask visitors what they are building first', 'Be more formal and professional')"
+            },
+            topicFocus: {
+              type: "string",
+              description: "What topics the link should focus on or specialize in (e.g., 'startup advice', 'investment opportunities', 'fundraising help', 'pitch feedback')"
+            },
+            topicRestrictions: {
+              type: "string",
+              description: "Topics the link should avoid or not discuss (e.g., 'personal life', 'family', 'controversial topics', 'politics')"
+            }
+          }
+        }
+      },
+      {
+        name: "get_link_behavior",
+        description: "Get the current behavior settings for the public link. Use when the user asks 'how is my link configured?', 'what's my link set up to do?', or 'what behavior rules does my link have?'.",
+        parameters: {
+          type: "object",
+          properties: {}
+        }
       }
     ]
   }
@@ -455,6 +484,93 @@ async function handleUpdateLinkSettings(userId, params) {
     };
   } catch (error) {
     console.error('[Tool] Error updating link settings:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Update link behavior settings (how the link talks to visitors)
+async function handleUpdateLinkBehavior(userId, params) {
+  try {
+    console.log('[Tool] Updating link behavior for user:', userId, params);
+
+    const updates = {
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+
+    if (params.behaviorInstructions !== undefined) {
+      updates.linkBehaviorInstructions = params.behaviorInstructions;
+    }
+    if (params.topicFocus !== undefined) {
+      updates.linkTopicFocus = params.topicFocus;
+    }
+    if (params.topicRestrictions !== undefined) {
+      updates.linkTopicRestrictions = params.topicRestrictions;
+    }
+
+    // Store in linkSettings config
+    await db.collection('users').doc(userId)
+      .collection('linkSettings').doc('config')
+      .set(updates, { merge: true });
+
+    const updatedFields = Object.keys(updates).filter(k => k !== 'updatedAt');
+
+    return {
+      success: true,
+      message: `Link behavior updated: ${updatedFields.map(f => f.replace('link', '').replace(/([A-Z])/g, ' $1').trim()).join(', ')}`,
+      updatedFields: updatedFields
+    };
+  } catch (error) {
+    console.error('[Tool] Error updating link behavior:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Get current link behavior settings
+async function handleGetLinkBehavior(userId) {
+  try {
+    console.log('[Tool] Getting link behavior for user:', userId);
+
+    const linkSettingsDoc = await db.collection('users').doc(userId)
+      .collection('linkSettings').doc('config').get();
+
+    if (!linkSettingsDoc.exists) {
+      return {
+        success: true,
+        hasBehaviorSettings: false,
+        message: 'No custom behavior settings configured for your link yet.',
+        behaviorInstructions: null,
+        topicFocus: null,
+        topicRestrictions: null
+      };
+    }
+
+    const data = linkSettingsDoc.data();
+
+    const result = {
+      success: true,
+      hasBehaviorSettings: !!(data.linkBehaviorInstructions || data.linkTopicFocus || data.linkTopicRestrictions),
+      behaviorInstructions: data.linkBehaviorInstructions || null,
+      topicFocus: data.linkTopicFocus || null,
+      topicRestrictions: data.linkTopicRestrictions || null
+    };
+
+    // Build a friendly summary
+    const parts = [];
+    if (data.linkBehaviorInstructions) {
+      parts.push(`Custom behavior: "${data.linkBehaviorInstructions}"`);
+    }
+    if (data.linkTopicFocus) {
+      parts.push(`Focus area: ${data.linkTopicFocus}`);
+    }
+    if (data.linkTopicRestrictions) {
+      parts.push(`Topics to avoid: ${data.linkTopicRestrictions}`);
+    }
+
+    result.summary = parts.length > 0 ? parts.join(' | ') : 'No custom behavior configured';
+
+    return result;
+  } catch (error) {
+    console.error('[Tool] Error getting link behavior:', error);
     return { success: false, error: error.message };
   }
 }
@@ -1597,6 +1713,10 @@ async function executeTool(toolName, toolArgs, userId) {
       return await handleGetBeliefs(userId, toolArgs);
     case 'generate_image':
       return await handleGenerateImage(toolArgs);
+    case 'update_link_behavior':
+      return await handleUpdateLinkBehavior(userId, toolArgs);
+    case 'get_link_behavior':
+      return await handleGetLinkBehavior(userId);
     default:
       return { success: false, error: `Unknown tool: ${toolName}` };
   }
@@ -1755,6 +1875,29 @@ WRONG: "What kind of eyes would you like? Human eyes, cat eyes..."
 RIGHT: [call generate_image({prompt: "detailed pencil sketch of expressive human eyes with realistic shading", style: "sketch"})]
 
 If user says "yes" or confirms after you mention drawing/sketching something, ACTUALLY GENERATE IT. Don't change topic!
+
+## ⚠️ PUBLIC LINK SETTINGS - IMMEDIATE ACTION ⚠️
+When the user asks to change/update/modify their link, greeting, bio, display name, or any link setting:
+1. IMMEDIATELY call update_link_settings - DO NOT ask for confirmation
+2. Use the exact values the user provides
+3. If they want you to write something creative (like a bio), write it and call the tool
+
+Examples:
+- "Change my bio to X" → call update_link_settings({bio: "X"})
+- "Turn off my link" → call update_link_settings({linkEnabled: false})
+- "My greeting should be X" → call update_link_settings({customGreeting: "X"})
+- "Write me a cool bio" → write a bio and call update_link_settings({bio: "your creative bio"})
+- "Make my display name 'Dr. Smith'" → call update_link_settings({displayName: "Dr. Smith"})
+
+When user asks about current settings → IMMEDIATELY call get_link_settings
+
+WRONG: "Would you like me to update your greeting?"
+RIGHT: [call update_link_settings] → "Done! Your greeting is now: ..."
+
+For link BEHAVIOR control (how your link should act with visitors):
+- "My link should focus on X" → call update_link_behavior({topicFocus: "X"})
+- "Tell my link to never discuss Y" → call update_link_behavior({topicRestrictions: "Y"})
+- "My link should always greet visitors by asking about their startup" → call update_link_behavior({behaviorInstructions: "Always ask visitors about their startup first"})
 
 ## SETTINGS, KNOWLEDGE BASE & CONVERSATION ACCESS:
 You have access to the user's link settings, knowledge base, and visitor conversations.
