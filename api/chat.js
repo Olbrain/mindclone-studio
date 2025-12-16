@@ -1744,7 +1744,19 @@ module.exports = async (req, res) => {
       }
 
       // Add tool usage instructions
-      enhancedPrompt += `\n\n## SETTINGS, KNOWLEDGE BASE & CONVERSATION ACCESS:
+      enhancedPrompt += `\n\n## ⚠️ HIGHEST PRIORITY - IMAGE GENERATION ⚠️
+When the user asks you to DRAW, SKETCH, CREATE, GENERATE, or MAKE an image/picture:
+1. IMMEDIATELY call generate_image - DO NOT ask clarifying questions
+2. NEVER say "What kind of..." or "Would you like..." or "Can you describe..."
+3. Use your creativity to fill in details - that's what the user wants!
+4. If request is vague, make a creative choice and generate something beautiful
+
+WRONG: "What kind of eyes would you like? Human eyes, cat eyes..."
+RIGHT: [call generate_image({prompt: "detailed pencil sketch of expressive human eyes with realistic shading", style: "sketch"})]
+
+If user says "yes" or confirms after you mention drawing/sketching something, ACTUALLY GENERATE IT. Don't change topic!
+
+## SETTINGS, KNOWLEDGE BASE & CONVERSATION ACCESS:
 You have access to the user's link settings, knowledge base, and visitor conversations.
 
 CRITICAL INSTRUCTIONS - READ CAREFULLY:
