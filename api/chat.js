@@ -2154,7 +2154,7 @@ module.exports = async (req, res) => {
 
     if (context === 'public' && !baseSystemPrompt) {
       // Build public link system prompt with owner's name and knowledge base
-      const ownerName = userData.displayName || userData.name || username;
+      const ownerName = userData?.displayName || userData?.name || username;
       baseSystemPrompt = PUBLIC_LINK_SYSTEM_PROMPT.replace(/\[OWNER_NAME\]/g, ownerName);
 
       console.log(`[Chat] Built public link system prompt for ${ownerName}`);
